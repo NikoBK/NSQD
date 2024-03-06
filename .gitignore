@@ -1,0 +1,15 @@
+# CMake build directory
+build/
+
+# Compiled object files
+*.o
+*.obj
+
+# Compiled executables
+*.exe
+*.out
+
+# Generated CMake files
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
