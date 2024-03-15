@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
 
 # Source files
-SRCS = main.cpp functions.cpp  # Add your source files here
+SRCS = camera.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
