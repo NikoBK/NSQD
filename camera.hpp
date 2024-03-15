@@ -10,6 +10,8 @@
 
 void initCam();
 
+void takePic();
+
 void log(const std::string& text);
 
 #endif

@@ -2,29 +2,22 @@
 CXX = g++
 
 # Compiler flags
-CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic
+CXXFLAGS = -I/usr/include/opencv4
+LDFLAGS = -L/usr/lib/qt6
 
-# Source files
-SRCS = camera.cpp
+# Libraries
+LIBS = -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -lQt6Core -lQt6Gui -lQt6Widgets -lopencv_videoio
 
-# Object files
-OBJS = $(SRCS:.cpp=.o)
+# Source file
+SRC = camera.cpp
 
-# Executable name
-TARGET = my_program
+# Output executable
+OUT = dronecam
 
-# Default rule
-all: $(TARGET)
-
-# Rule to link object files and create the executable
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-# Rule to compile source files into object files
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# Compile rule
+$(OUT): $(SRC)
+	$(CXX) $(CXXFLAGS) -o $(OUT) $(SRC) $(LIBS)
 
 # Clean rule
 clean:
-	rm -f $(OBJS) $(TARGET)
-
+	rm -f $(OUT)
