@@ -4,7 +4,6 @@
 */
 
 #include <iostream>
-#include <string>
 #include "camera.hpp"
 
 int main() {
@@ -13,5 +12,9 @@ int main() {
 }
 
 void initCam() {
-		// TODO: Implement something here.
+		log("Initalizing camera...");	
+}
+
+void log(const std::string& text) {
+		std::cout << text << std::endl;
 }
