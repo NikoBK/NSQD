@@ -6,12 +6,8 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
-#include <string>
-
 void initCam();
 
 void takePic();
-
-void log(const std::string& text);
 
 #endif
