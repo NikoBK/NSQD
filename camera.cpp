@@ -34,11 +34,11 @@ void takePic() {
 				std::cerr << "Error: Unable to capture frame" << std::endl;
 		}
 
-		cv::imwrite("capured_img.jpg", frame);
+		cv::imwrite("images/capured_img.jpg", frame);
 		cap.release();
 
-		std::cout << "Image captured succesfully" << std::endl;
-		log("Picture taken.");
+		log("Image captured succesfully");
+		log("Image saved in images/");
 }
 
 void log(const std::string& text) {
