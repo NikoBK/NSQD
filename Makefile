@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -I/usr/include/opencv4
 
 # Libraries
-LIBS = -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lQt6Core -lQt6Gui -lQt6Widgets
+LIBS = -lopencv_core -lopencv_imgcodecs -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lQt6Core -lQt6Gui -lQt6Widgets -ltinyxml2
 
 # Source files directory
 SRCDIR = src
