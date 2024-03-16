@@ -12,9 +12,6 @@ int main() {
 		return 0;
 }
 
-/**
- * Load the drone's configuration from a XML config file using TinyXML2.
- */
 void loadConfig(const char* path) {
 		log("Loading XML config files...");
 
@@ -42,10 +39,6 @@ void loadConfig(const char* path) {
 		parseXML(xml);
 }
 
-/**
- * Parse config from XML to a configuration container see:
- * <see="../include/config.hpp:DroneConfig/>.
- */
 void parseXML(tinyxml2::XMLDocument& xml) {
 		log("Parsing config XML file...");
 		DroneConfig cfg;
@@ -81,9 +74,6 @@ void parseXML(tinyxml2::XMLDocument& xml) {
 		initDrone(cfg);
 }
 
-/**
- * Apply the configuration values and initialize the drone.
- */
 void initDrone(const DroneConfig& cfg) {
 		log("Initializing drone...");
 		// TODO: Implement something here.
