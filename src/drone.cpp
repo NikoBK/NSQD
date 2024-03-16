@@ -76,7 +76,33 @@ void parseXML(tinyxml2::XMLDocument& xml) {
 
 void initDrone(const DroneConfig& cfg) {
 		log("Initializing drone...");
-		// TODO: Implement something here.
+		initCamera(cfg.CaptureDeviceID, cfg.CaptureOutputName, cfg.Extension);
+}
+
+void initCamera(const int& id, const std::string& output, const std::string& ext) {
+		log("Initializing drone camera unit...");
+		cv::VideoCapture cap(id);
+
+		// Check if camera opened succesfully.
+		if (!cap.isOpened()) {
+				std::cerr << "Error: Unable to open camera (" << std::to_string(id) << ")" << std::endl;
+				log("Abandoned camera setup.");
+				return;
+		}
+
+		// Capture a single frame (image)
+		cv::Mat frame;
+		cap >> frame;
+		if (frame.empty()) {
+				std::cerr << "Error: Unable to capture frame" << std::endl;
+		}
+
+		std::string imgName = output + ""/*unix_epoch_time*/ + "." + ext;
+		cv::imwrite("images/" + imgName, frame);
+		cap.release();
+
+		log("Image captured: " + imgName);
+		log("Camera initialized succesfully.");
 }
 
 void log(const std::string& text) {

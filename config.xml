@@ -1,5 +1,5 @@
 <DroneConfig>
-    <CaptureDeviceID>2</CaptureDeviceID>
+    <CaptureDeviceID>0</CaptureDeviceID>
     <CaptureOutputName>CapturedImage</CaptureOutputName>
     <Extension>jpg</Extension>
 </DroneConfig>
