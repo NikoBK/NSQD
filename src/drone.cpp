@@ -77,6 +77,9 @@ void parseXML(tinyxml2::XMLDocument& xml) {
 void initDrone(const DroneConfig& cfg) {
 		log("Initializing drone...");
 		initCamera(cfg.CaptureDeviceID, cfg.CaptureOutputName, cfg.Extension);
+		// TODO: Init telemetry (?)
+		// TODO: Init gyroscope (?)
+		// TODO: Init GPS
 }
 
 void initCamera(const int& id, const std::string& output, const std::string& ext) {
