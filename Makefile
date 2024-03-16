@@ -20,7 +20,7 @@ SRCS := $(wildcard $(SRCDIR)/*.cpp)
 OBJS := $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCS))
 
 # Output executable
-OUT = main
+OUT = flight_control
 
 # Compile rule
 $(OUT): $(OBJS)
