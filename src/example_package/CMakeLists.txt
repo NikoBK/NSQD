@@ -206,26 +206,26 @@ include_directories(
 
 add_executable(talker src/talker.cpp)
 target_link_libraries(talker ${catkin_LIBRARIES})
-add_dependencies(talker example_package_generate_messages_cpp)
+#add_dependencies(talker example_package_generate_messages_cpp)
 
 add_executable(listener src/listener.cpp)
 target_link_libraries(listener ${catkin_LIBRARIES})
-add_dependencies(listener example_package_generate_messages_cpp)
+#add_dependencies(listener example_package_generate_messages_cpp)
 
 add_executable(add_two_ints_server src/add_two_ints_server.cpp)
 target_link_libraries(add_two_ints_server ${catkin_LIBRARIES})
-add_dependencies(add_two_ints_server example_package_gencpp)
+#add_dependencies(add_two_ints_server example_package_gencpp)
 
 add_executable(add_two_ints_client src/add_two_ints_client.cpp)
 target_link_libraries(add_two_ints_client ${catkin_LIBRARIES})
-add_dependencies(add_two_ints_client example_package_gencpp)
+#add_dependencies(add_two_ints_client example_package_gencpp)
 
 add_executable(dji_control_example src/dji_control_examples.cpp)
 target_link_libraries(dji_control_example ${catkin_LIBRARIES})
-add_dependencies(dji_control_example example_package_gencpp)
+#add_dependencies(dji_control_example example_package_gencpp)
 
 add_executable(move src/move.cpp)
 target_link_libraries(move ${catkin_LIBRARIES})
-add_dependencies(move example_package_gencpp)
+#add_dependencies(move example_package_gencpp)
 
 
