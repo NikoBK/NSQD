@@ -14,11 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-## Gustav done the following line
-## Run dji_sdk cmake file, to allow include of dji_sdk.h
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Onboard-SDK-ROS/cmake-modules")
-
-
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 

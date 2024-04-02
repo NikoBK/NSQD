@@ -18,26 +18,25 @@ int main(int argc, char **argv)
   uint8_t flag = 35;
 
   // Set rate of whileloop. controlData needs to be published at 40 hertz (Need source for this).
-  ross::Rate rate(40);
+  ros::Rate rate(40);
 
   while(ros::ok())
   {
-  
-  ros::spinOnce();
+	  ros::spinOnce();
 
-  // Make a sensor_msgs message, populate it, and publish.
-  sensor_msgs::Joy controlData;
-  controlData.axes.push_back(0);
-  controlData.axes.push_back(0);
-  controlData.axes.push_back(0);
-  controlData.axes.push_back(0);
-  controlData.axes.push_back(flag);
-  
+	  // Make a sensor_msgs message, populate it, and publish.
+	  sensor_msgs::Joy controlData;
+	  controlData.axes.push_back(0);
+	  controlData.axes.push_back(0);
+	  controlData.axes.push_back(0);
+	  controlData.axes.push_back(0);
+	  controlData.axes.push_back(flag);
+	  
 
-  move.publish(controlData);
-  //ROS_INFO("Test print");
+	  move.publish(controlData);
+	  ROS_INFO("This is a new test");
 
-  rate.sleep();
+	  rate.sleep();
   }
 
   
