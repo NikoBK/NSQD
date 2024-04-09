@@ -15,5 +15,5 @@ include_directories(
 	${catkin_INCLUDE_DIRS}
 )
 
-add_executable(flight_control src/flight_control.cpp)
+add_executable(flight_control src/controller.cpp src/socketserver.cpp src/debug.cpp)
 target_link_libraries(flight_control ${catkin_LIBRARIES})
