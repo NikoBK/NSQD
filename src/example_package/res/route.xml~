@@ -42,29 +42,7 @@ during runtime.
 				<ele>50</ele> <!-- Meters above water surface???? -->
 				<time>0000_00_00_000000</time>
 			</trkpt>
-
-			<trkpt lat="PLACEHOLDER" lon="PLACEHOLDER">
-				<ele>50</ele> <!-- Meters above water surface???? -->
-				<time>0000_00_00_000000</time>
-			</trkpt>
-			<trkpt lat="PLACEHOLDER" lon="PLACEHOLDER">
-				<ele>50</ele> <!-- Meters above water surface???? -->
-				<time>0000_00_00_000000</time>
-			</trkpt>
-			<trkpt lat="PLACEHOLDER" lon="PLACEHOLDER">
-				<ele>50</ele> <!-- Meters above water surface???? -->
-				<time>0000_00_00_000000</time>
-			</trkpt>
-			<trkpt lat="PLACEHOLDER" lon="PLACEHOLDER">
-				<ele>50</ele> <!-- Meters above water surface???? -->
-				<time>0000_00_00_000000</time>
-			</trkpt>
 		</trkseg>
 	</trk>
-	<trk>
-		<name>Field Route</name>
-		<trkseg>
-			
-		</trkseg>
-	</trk>
+	<!-- TODO: Add the actual flight path here. -->
 </gps>
