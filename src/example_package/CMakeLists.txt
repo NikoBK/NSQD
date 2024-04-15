@@ -227,3 +227,6 @@ target_link_libraries(dji_control_example ${catkin_LIBRARIES})
 add_executable(move src/move.cpp src/xmlparser.cpp)
 target_link_libraries(move ${catkin_LIBRARIES})
 #add_dependencies(move example_package_gencpp)
+
+add_executable(test src/test.cpp)
+target_link_libraries(test ${catkin_LIBRARIES})
