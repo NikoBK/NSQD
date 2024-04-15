@@ -224,6 +224,6 @@ add_executable(dji_control_example src/dji_control_examples.cpp)
 target_link_libraries(dji_control_example ${catkin_LIBRARIES})
 #add_dependencies(dji_control_example example_package_gencpp)
 
-add_executable(move src/move.cpp src/xmlparser.cpp)
+add_executable(move src/move.cpp) #src/xmlparser.cpp
 target_link_libraries(move ${catkin_LIBRARIES})
 #add_dependencies(move example_package_gencpp)
