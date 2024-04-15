@@ -27,6 +27,7 @@ int imuSample = 0;
 #define REFRESH_RATE_HZ 50
 
 // Imu and Gps data.
+std::ofstream csvFile;
 float imuRoll = 0;
 float imuPitch = 0;
 float imuYaw = 0;
@@ -71,7 +72,7 @@ void pubAngle(int roll,int pitch,int thrust,int yaw,int flag) {
 
 
 // Write imu data to csv file
-void csvWrite(ros::Time begin, int sampleRate, std::ofstream csvFile)
+void csvWrite(ros::Time begin, int sampleRate)
 {	
 	if (imuSample % sampleRate == 0)
 	{
@@ -89,24 +90,23 @@ int main(int argc, char **argv)
 	// Starting ros
 	ros::init(argc, argv, "test_node");
 	ros::NodeHandle nh;
-  
-	// Check if node recived right amount of input
-	if (argc != 5) 
-	{	
-  	    std::cout << "Error : test needs 4 arguments : Roll/Pitch angle Thrust fileName\n" ;
-	}
-	else
-	{
-        std::ofstream csvFile(argv[4]);
 
-        if (argv[1]=="roll"){
+    if (argc != 5) 
+    {	
+        std::cout << "Error : test needs 4 arguments : Roll/Pitch angle Thrust fileName\n";
+    }
+    else
+    {
+        csvFile.open(argv[4]);
+
+        if (argv[1] == "roll") {
             roll = std::stof(argv[2]); 
-        } else if (argv[1]=="pitch") {
+        } else if (argv[1] == "pitch") {
             pitch = std::stof(argv[2]); 
         }
             
         thrust = std::stof(argv[3]);
-	}
+    }
   
 	// Telling ros master that move is a message of type sensor_msgs/Joy and is released on topic ..generic
 	move = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_generic", 1);
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 		ROS_INFO("imu yaw [%f]", imuYaw);
 	
 		// Write every 3 imu data to csv file. (begin time, sample rate, file object to write to)
- 		csvWrite(begin, 3, csvFile);
+ 		csvWrite(begin, 3);
 
         if (argv[1]=="roll"){
             pitch = imuPitch; 
