@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <vector>
 #include "tinyxml2.h"
 
 /*
@@ -16,14 +17,14 @@ struct trackPoint {
 	double lon;
 	int elevation;
 	std::string time;
-}
+};
 
 /*
  * Segment/collection of multiple track points.
 */
 struct trackSegment {
 	std::vector<trackPoint> trackPoints;
-}
+};
 
 /*
  * Contains a track name as well aswell as a
@@ -33,7 +34,7 @@ struct trackSegment {
 struct gpxTrack {
 	std::string name;
 	std::vector<trackSegment> trackSegments;
-}
+};
 
 /*
  * All data the drone receives on startup.
@@ -42,7 +43,7 @@ struct droneData {
 	std::string creator;
 	float gpxVersion;
 	std::vector<gpxTrack> tracks;
-}
+};
 
 /*
  * Initialize the XMLParser.

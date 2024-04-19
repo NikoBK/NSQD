@@ -6,6 +6,7 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/UInt8.h>
+#include "dji_sdk/DroneArmControl.h"
 
 // Misc
 #include <string>
@@ -13,9 +14,15 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
+#include <cstdlib>
+#include <signal.h>
 
 // Service client
 ros::ServiceClient localServiceClient;
+
+ros::ServiceClient arm_client; 
+dji_sdk::DroneArmControl arm_srv;
 
 // Topic publisher
 ros::Publisher move;
@@ -38,6 +45,20 @@ float pitch = 0;
 float yaw = 0;
 float thrust = 0;
 
+double latitude = 0;
+double longitude = 0;
+double altitude = 0;
+
+//using namespace std;
+
+// Define the function to be called when ctrl-c (SIGINT) is sent to process
+void signal_callback_handler(int signum) {
+   ROS_INFO("The function runs");
+	
+   arm_client.call(arm_srv);
+   // Terminate program
+   exit(signum);
+}
 
 //Callback event for dji_sdk/imu subscription event.
 void imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
@@ -50,6 +71,7 @@ void imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
 	// Convert quaternions to roll,pitch and yaw.
 	// Roll (x-axis)
 	imuRoll = atan2( 2 * (w * x + y * z) , 1 - 2 * (x * x + y * y) );
+	ROS_INFO("quaternion y is [%f]", y);
 	
 	// Pitch (y-axis)
 	imuPitch = 2 * atan2( sqrt(1 + 2 * (w * y - x * z)) , sqrt(1 - 2 * (w * y - x * z)) ) - M_PI / 2; 
@@ -58,8 +80,17 @@ void imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
 	imuYaw = atan2( 2 * (w * z + x * y) , 1 - 2 * (y * y + z * z) );
 }
 
+
+//Callback event for dji_sdk/gps_position subscription event.
+void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) {
+	// Gps position.
+        latitude = msg->latitude;
+	longitude = msg->longitude;
+	altitude = msg->altitude;
+}
+
 // Publish message of type sensor::Joy drone orientation/angles (roll,pitch, thrust and yaw) with a given flag. 
-void pubAngle(int roll,int pitch,int thrust,int yaw,int flag) {
+void pubAngle(float roll,float pitch, float thrust, float yaw,int flag) {
 	sensor_msgs::Joy controlData;
 	controlData.axes.push_back(roll);
 	controlData.axes.push_back(pitch);
@@ -91,6 +122,15 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "test_node");
 	ros::NodeHandle nh;
 
+	struct sigaction sigIntHandler;
+
+	sigIntHandler.sa_handler = signal_callback_handler;
+   	sigemptyset(&sigIntHandler.sa_mask);
+   	sigIntHandler.sa_flags = 0;
+
+   	sigaction(SIGINT, &sigIntHandler, NULL);
+
+
     if (argc != 5) 
     {	
         std::cout << "Error : test needs 4 arguments : Roll/Pitch angle Thrust fileName\n";
@@ -99,10 +139,12 @@ int main(int argc, char **argv)
     {
         csvFile.open(argv[4]);
 
-        if (argv[1] == "roll") {
-            roll = std::stof(argv[2]); 
-        } else if (argv[1] == "pitch") {
-            pitch = std::stof(argv[2]); 
+
+        if (std::string(argv[1]) == "roll") {
+            roll = std::stof(argv[2]) * 3.14/180; 
+	    ROS_INFO("roll set to [%f]", roll);
+        } else if (std::string(argv[1]) == "pitch") {
+            pitch = std::stof(argv[2]) * 3.14/180; 
         }
             
         thrust = std::stof(argv[3]);
@@ -110,9 +152,18 @@ int main(int argc, char **argv)
   
 	// Telling ros master that move is a message of type sensor_msgs/Joy and is released on topic ..generic
 	move = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_generic", 1);
-
+	//move = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_rollpitch_yawrate_zposition", 1);
+	
+	arm_client = nh.serviceClient<dji_sdk::DroneArmControl>("dji_sdk/drone_arm_control");
+ 
+        arm_srv.request.arm = 0;
+	
 	// Subcribing to sensor data 
 	ros::Subscriber imuDataSub = nh.subscribe("dji_sdk/imu", 1, imuCallback); //Imu
+
+	ros::Subscriber gpsDataSub = nh.subscribe("dji_sdk/gps_position", 1, gpsCallback); //Gps
+
+	pubAngle(roll,pitch,thrust,yaw, 35);
 
 	// Set rate of whileloop. controlData needs to be published at 50 hertz (Need source for this).
 	ros::Rate rate(REFRESH_RATE_HZ);
@@ -120,6 +171,7 @@ int main(int argc, char **argv)
 	// Time at start, used for csv logging of imu data
 	ros::Time begin = ros::Time::now();
 	csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "\n";
+	//pubAngle(0.3,0.3,10,0, 227);
   
 	// Tick loop time 20 ms (50 hz)
 	while(ros::ok())
@@ -129,18 +181,22 @@ int main(int argc, char **argv)
 		ROS_INFO("imu roll [%f]", imuRoll);
 		ROS_INFO("imu pitch [%f]", imuPitch);
 		ROS_INFO("imu yaw [%f]", imuYaw);
+
+		ROS_INFO("roll [%f]", roll);
+		ROS_INFO("pitch [%f]", pitch);
+		ROS_INFO("yaw [%f]", yaw);
 	
 		// Write every 3 imu data to csv file. (begin time, sample rate, file object to write to)
  		csvWrite(begin, 3);
 
-        if (argv[1]=="roll"){
+        if (std::string(argv[1])=="roll"){
             pitch = imuPitch; 
-        } else if (argv[1]=="pitch")
+        } else if (std::string(argv[1])=="pitch")
             roll = imuRoll; 
 
         yaw = imuYaw; 
             
-		pubAngle(roll,pitch,thrust,yaw,35); //(Flag 35 for stable mode, 34 unstable)
+		pubAngle(roll,pitch,thrust,yaw, 35); //(Flag 35 for stable mode, 34 unstable)
 
 		// Sleep, so while loop reach desired hertz.
 		rate.sleep();
