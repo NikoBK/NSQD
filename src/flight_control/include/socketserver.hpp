@@ -10,6 +10,18 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+/**
+* A struct to represent the header and payload of a message
+* sent to the backend (drone manifold).
+* 
+* MESSAGE IDS:
+* debug: 1
+* init: 2
+* takeoff: 3
+* land: 4
+* 
+* TODO: Factory based message creation??
+*/
 struct Message {
 		uint8_t id; // message id (1 byte)
 		std::string msg;
@@ -19,8 +31,9 @@ struct Message {
  * Create a socket listening for incoming connections on
  * a given port and address. Should ALWAYS be called from
  * the controller.
+ * if debugMode is true it will send debug messages to the frontend.
 */
-void startServer(int port);
+void startServer(int port, bool debugMode);
 
 /**
  * Eliminate the socket and force-stop all connected clients.
