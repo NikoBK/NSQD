@@ -84,8 +84,6 @@ void handleMessage(const Message& msg) {
 						// Unknown msgId..
 						std::cout << "Received unknown message id: " << msg.id << std::endl;
 						break;
-				}
-
 }
 
 void stopServer() {

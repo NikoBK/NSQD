@@ -9,7 +9,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <string>
 
 /**
 * A struct to represent the header and payload of a message

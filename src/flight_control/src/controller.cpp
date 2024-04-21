@@ -22,5 +22,5 @@ void loadConfig(const char* path) {
 	cfg.Port = 8080;
 
 	// Start socketserver.
-	startServer(cfg.Port);
+	startServer(cfg.Port, 0);
 }
