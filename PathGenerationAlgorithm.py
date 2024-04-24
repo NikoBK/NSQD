@@ -1,8 +1,5 @@
 import numpy as np
 import cv2
-import networkx as nx
-from ortools.constraint_solver import pywrapcp
-from ortools.constraint_solver import routing_enums_pb2
 
 size = 800
 qudrant_size= size//4
@@ -67,114 +64,7 @@ def FromFieldToPointcloud(field):
         
 
 def FromPointcloudToPath(point_cloud, hull_field, drone_location):
-    # Method 1 - Using the Traveling Salesman Problem Approximation algorithm from NetworkX
-    """""
-    # Create a graph
-    G = nx.Graph()
-
-    # Add nodes to the graph
-    for point in point_cloud:
-        G.add_node(tuple(point))
-
-    # Add edges to the graph
-    
-    for i in range(len(point_cloud)):
-        for j in range(i+1, len(point_cloud)):
-            distance = np.linalg.norm(np.array(point_cloud[i]) - np.array(point_cloud[j]))    
-            G.add_edge(tuple(point_cloud[i]), tuple(point_cloud[j]), weight=distance)
-            
-    # Find the shortest path using the Traveling Salesman Problem algorithm
-    path = nx.approximation.traveling_salesman_problem(G)  # If we want to use a different algorithm, we can change this line.
-
-    # Convert the path to a list of points
-    path = [list(point) for point in path]
-
-    # Add the drone location to the beginning of the path
-    path.insert(0, drone_location)
-
-    # Print the path in (x,y) format
-    print("Path:", path)
-    
-    # Visualize the path on the field - Debugging
-    for i in range(len(path)-1):
-        cv2.line(hull_field, tuple(path[i]), tuple(path[i+1]), 255, 1)
-    cv2.imshow("Field with Path", hull_field), cv2.waitKey(0), cv2.destroyAllWindows()
-    return path
-    """""
-    
-    # Method 2 - Using the OR-Tools library to solve the Traveling Salesman Problem
-    """""
-    point_cloud.append(drone_location)
-
-    # Create a routing index manager
-    manager = pywrapcp.RoutingIndexManager(len(point_cloud), 1, point_cloud.index(drone_location))
-
-    # Create a routing model
-    routing = pywrapcp.RoutingModel(manager)
-
-    # Define distance function (callback) with penalty for long movements
-    def distance_callback(from_index, to_index):
-        from_node = manager.IndexToNode(from_index)
-        to_node = manager.IndexToNode(to_index)
-        # Calculate Euclidean distance between nodes
-        distance = np.linalg.norm(np.array(point_cloud[from_node]) - np.array(point_cloud[to_node]))
-        return distance
-
-    transit_callback_index = routing.RegisterTransitCallback(distance_callback)
-
-    # Define cost function
-    routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
-
-    # Set first node (drone location) as the starting point
-    search_parameters = pywrapcp.DefaultRoutingSearchParameters()
-    search_parameters.local_search_metaheuristic = (
-        routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-    search_parameters.time_limit.seconds = 90
-    search_parameters.log_search = True
-
-    # Number of solutions to generate
-    num_solutions = num_paths_to_generate
-
-    # Collect all solutions
-    solutions = []
-    for _ in range(num_solutions):
-        # Solve TSP for a new solution
-        assignment = routing.SolveWithParameters(search_parameters)
-
-        # Extract path
-        path = []
-        index = routing.Start(0)
-        while not routing.IsEnd(index):
-            node = manager.IndexToNode(index)
-            path.append(point_cloud[node])
-            index = assignment.Value(routing.NextVar(index))
-
-        # Add the drone location to the beginning of the path
-        path.insert(0, drone_location)
-        solutions.append(path)
-
-    # Calculate path lengths for each solution
-    path_lengths = [sum(np.linalg.norm(np.array(path[i]) - np.array(path[i + 1])) for i in range(len(path) - 1)) for path in solutions]
-    print(path_lengths)
-
-    # Find the index of the shortest path
-    shortest_path_index = np.argmin(path_lengths)
-    shortest_path = solutions[shortest_path_index]
-    print("Shortest Path:", shortest_path)
-
-    # Visualize the shortest path on the field
-    for i in range(len(shortest_path) - 1):
-        cv2.line(hull_field, tuple(shortest_path[i]), tuple(shortest_path[i + 1]), 255, 1)
-
-    # Show the field with the shortest path
-    cv2.imshow("Field with Shortest Path", hull_field)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-    return shortest_path
-    """""
-    
-    # Method 3 - Solving the field with a sweep line algorithm
+    #Solving the field with a sweep line algorithm
     path = []
     
     # Find the top and bottom of our field
@@ -232,6 +122,5 @@ def main():
     return path
     
     
-
 if __name__ == "__main__":
     main()                    
