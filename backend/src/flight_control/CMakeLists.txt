@@ -18,5 +18,5 @@ include_directories(
 	/usr/include
 )
 
-add_executable(flight_control src/test.cpp)
+add_executable(flight_control src/Main.cpp src/Message.hpp src/Server.cpp src/Server.h)
 target_link_libraries(flight_control ${catkin_LIBRARIES})
