@@ -100,7 +100,9 @@ void makeCamPanel() {
     ImGui::EndChild();
 }
 
-void makeCmdPanel() {
+void makeCmdPanel(HWND hwnd) {
+    static WCHAR filePath[MAX_PATH] = L"";
+
     // Begin Hierachy Panel (Top Right)
     ImGui::SetNextWindowPos(ImVec2(1000, 19), ImGuiCond_Always);
     ImGui::BeginChild("Commands", ImVec2(300, 300), true, ImGuiWindowFlags_None);
@@ -147,6 +149,22 @@ void makeCmdPanel() {
             }
         }
 
+        if (ImGui::Button("Export Logs")) {
+            log("Exporting logs to: {export_path}...", prefix);
+            if (SaveFileDialog(hwnd, filePath, L"myFile.txt", L"Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0")) {
+                std::wstring selectedFilePath(filePath);
+                if (SaveDataToFile(selectedFilePath)) {
+                    log("Logs succesfully exported", prefix);
+                }
+                else {
+                    log("Could not export logs to selected path", "ERROR");
+                }
+            }
+            else {
+                log("Log export aborted", prefix);
+            }
+        }
+
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
         ImGui::Button("Connect to Manifold");
         ImGui::PopStyleVar();
@@ -172,7 +190,7 @@ void makeCmdPanel() {
 void makePropsPanel() {
     // Begin Properties Panel (Bottom Right)
     ImGui::SetNextWindowPos(ImVec2(1000, 319), ImGuiCond_Always);
-    ImGui::BeginChild("Properties", ImVec2(300, 300), true, ImGuiWindowFlags_None);
+    ImGui::BeginChild("Properties", ImVec2(300, 500), true, ImGuiWindowFlags_None);
     ImGui::TextUnformatted("Properties");
     ImGui::Separator();
 
@@ -231,34 +249,6 @@ void makeConnectWindow() {
     ImGui::Begin("Connect to Drone");
 }
 
-void makeMiscPanel(HWND hwnd) {
-    static WCHAR filePath[MAX_PATH] = L"";
-    std::string prefix = "MISC";
-
-    // Begin Console Panel (Bottom Left)
-    ImGui::SetNextWindowPos(ImVec2(1000, 619), ImGuiCond_Always);
-    ImGui::BeginChild("Misc", ImVec2(300, 200), true, ImGuiWindowFlags_None);
-    ImGui::TextUnformatted("Misc");
-    ImGui::Separator();
-
-    if (ImGui::Button("Export Logs")) {
-        log("Exporting logs to: {export_path}...", prefix);
-        if (SaveFileDialog(hwnd, filePath, L"myFile.txt", L"Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0")) {
-            std::wstring selectedFilePath(filePath);
-            if (SaveDataToFile(selectedFilePath)) {
-                log("Logs succesfully exported", prefix);
-            }
-            else {
-                log("Could not export logs to selected path", "ERROR");
-            }
-        }
-        else {
-            log("Log export aborted", prefix);
-        }
-    }
-    ImGui::EndChild();
-}
-
 void renderUI(HWND hwnd) 
 {
     // Resize the window to fit the directx window.
@@ -270,11 +260,10 @@ void renderUI(HWND hwnd)
 
     // Make the info panels
     makeCamPanel();
-    makeCmdPanel();
+    makeCmdPanel(hwnd);
     makePropsPanel();
     makeLogPanel();
     makeDebugPanel();
-    makeMiscPanel(hwnd);
 
     // End main window
     ImGui::End();
