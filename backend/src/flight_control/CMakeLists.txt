@@ -6,7 +6,6 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
-	dji_sdk
 )
 
 catkin_package(

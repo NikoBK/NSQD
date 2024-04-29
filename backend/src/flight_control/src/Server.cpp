@@ -154,7 +154,6 @@ void Server::HandleConnection()
     {
         TestMessage m;
         m.decode(decoder);
-
         std::string message = "TestMessage: \n";
 
         std::string a = (m.a == true) ? "true\n" : "false\n";
@@ -170,18 +169,20 @@ void Server::HandleConnection()
     }
     case RPY_MESSAGE_ID:
     {
-        RPYMessage m;
-        m.decode(decoder);
+	RPYMessage m;
+	m.decode(decoder);
 
-	_drone->pubAngle(m.roll,m.pitch,m.thrust,m.yaw, 35);
+	std::cout << "her1" << '\n';
+	_drone->arm(1); //pubAngle(m.roll,m.pitch, 20, m.yaw, 35);
+	std::cout << "her2" << '\n';
 
-        std::string message = "RPYMessage: \n";
-        message += "Roll: " + std::to_string(m.roll) + "\n";
-        message += "Pitch: " + std::to_string(m.pitch) + "\n";
-        message += "Yaw: " + std::to_string(m.yaw);
+	std::string message = "RPYMessage: \n";
+	message += "Roll: " + std::to_string(m.roll) + "\n";
+	message += "Pitch: " + std::to_string(m.pitch) + "\n";
+	message += "Yaw: " + std::to_string(m.yaw);
 
-        std::cout << message << std::endl;
-        break;
+	std::cout << message << std::endl;
+	break;
     }
     }
 

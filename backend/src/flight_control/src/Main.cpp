@@ -24,9 +24,8 @@ float thrust = 0;
 
 
 
-int main()
+int main(int argc, char **argv)
 {
-    Server server(8888, drone);
 
     // Starting ros
     ros::init(argc, argv, "flight_control_node");
@@ -35,7 +34,9 @@ int main()
     // Initialise the Matrice100 object (calling its constructor)
     drone = new Matrice100(&nh);
 
-    ros::Rate rate(REFRESH_RATE_HZ)
+    Server server(8888, drone);
+
+    ros::Rate rate(REFRESH_RATE_HZ);
 
     while (ros::ok()) 
     {	
