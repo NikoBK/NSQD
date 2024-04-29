@@ -13,9 +13,6 @@ def MakeAMagicField():
     y = [np.random.randint(0,qudrant_size*2), np.random.randint(qudrant_size*2,qudrant_size*4), 
          np.random.randint(qudrant_size,qudrant_size*2), np.random.randint(qudrant_size*2,qudrant_size*4)]
     
-    cv2.circle(arr_to_fill, (x[0],y[0]), 3, 255, 1), cv2.circle(arr_to_fill, (x[1],y[1]), 3, 255, 1),
-    cv2.circle(arr_to_fill, (x[2],y[2]), 3, 255, 1), cv2.circle(arr_to_fill, (x[3],y[3]), 3, 255, 1)
-    
     cv2.line(arr_to_fill, (x[0],y[0]), (x[1],y[1]), 255, 1), cv2.line(arr_to_fill, (x[1],y[1]), (x[3],y[3]), 255, 1),
     cv2.line(arr_to_fill, (x[3],y[3]), (x[2],y[2]), 255, 1), cv2.line(arr_to_fill, (x[2],y[2]), (x[0],y[0]), 255, 1)
     
@@ -57,8 +54,6 @@ def FromFieldToPointcloud(field):
     # Draw the drone on the field.
     DroneLocation = [np.random.randint(0,qudrant_size*4), np.random.randint(0,qudrant_size*4)] # Random drone location - Change to GPS
     hull_field[DroneLocation[1], DroneLocation[0]] = 255
-    cv2.circle(hull_field, (DroneLocation[0], DroneLocation[1]), 5, 255, 1)
-    cv2.imshow("Field with Drone", hull_field), cv2.waitKey(0), cv2.destroyAllWindows()
     
     return point_cloud, hull_field, DroneLocation
         
@@ -102,15 +97,6 @@ def FromPointcloudToPath(point_cloud, hull_field, drone_location):
             path.extend(sorted_ass)
         else:
             path.extend(sorted_des)
-    
-    # Visualize the path on the field
-    for i in range(len(path) - 1):
-        cv2.line(hull_field, tuple(path[i]), tuple(path[i + 1]), 255, 1)
-
-    # Show the field with the path
-    cv2.imshow("Field with Path", hull_field)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
     
     return path
     
