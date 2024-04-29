@@ -38,10 +38,7 @@ void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 bool _connected = false;
-
-float terrainHeight = 50.0f; // Define terrainHeight as a global variable
 std::vector<std::string> logs;
-bool plotOpen = false;
 
 // Function to save data to a file
 bool SaveDataToFile(const std::wstring& filePath) {
@@ -230,49 +227,8 @@ void makeDebugPanel() {
     ImGui::EndChild();
 }
 
-// Testing
-constexpr int numPoints = 100;
-ImVec2 plannedPath[numPoints]; // Planned flight path
-ImVec2 dronePosition; // Current drone position
-
-void generatePlannedPath() {
-    // Generate square wave flight path
-    for (int i = 0; i < numPoints; ++i) {
-        float x = 10.0f * i / (numPoints - 1); // Scale the x-coordinate to fit the range
-        float y = ((i / (numPoints / 4)) % 2 == 0) ? 0.0f : 10.0f; // Alternating between 0 and 10 every quarter of the path
-        plannedPath[i] = ImVec2(x, y);
-    }
-}
-
-void makeFlightPathPlotWin() {
-    ImGui::Begin("Flight Path");
-
-    ImGui::Text("Planned Flight Path");
-
-    ImVec2 plotSize(300, 300);
-    ImVec2 plotOrigin = ImGui::GetCursorScreenPos(); // Get the position of the top-left corner of the plot
-
-    // Create a rectangular region for the plot
-    ImGui::InvisibleButton("Plot", plotSize);
-
-    ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-    // Draw x and y axes
-    // drawList->AddLine(ImVec2(plotOrigin.x + plotSize.x * 0.1f, plotOrigin.y + plotSize.y), ImVec2(plotOrigin.x + plotSize.x * 0.1f, plotOrigin.y), IM_COL32(255, 255, 255, 255));
-    // drawList->AddLine(ImVec2(plotOrigin.x, plotOrigin.y + plotSize.y * 0.9f), ImVec2(plotOrigin.x + plotSize.x, plotOrigin.y + plotSize.y * 0.9f), IM_COL32(255, 255, 255, 255));
-
-    // Plot planned flight path
-    for (int i = 0; i < numPoints - 1; ++i) {
-        ImVec2 p1 = ImVec2(plotOrigin.x + plotSize.x * 0.1f + plannedPath[i].x * (plotSize.x * 0.8f / 10.0f), plotOrigin.y + plotSize.y - plannedPath[i].y * (plotSize.y * 0.8f / 10.0f));
-        ImVec2 p2 = ImVec2(plotOrigin.x + plotSize.x * 0.1f + plannedPath[i + 1].x * (plotSize.x * 0.8f / 10.0f), plotOrigin.y + plotSize.y - plannedPath[i + 1].y * (plotSize.y * 0.8f / 10.0f));
-        drawList->AddLine(p1, p2, IM_COL32(255, 255, 0, 255), 2.0f);
-    }
-
-    // Plot drone position
-    ImVec2 dronePos = ImVec2(plotOrigin.x + plotSize.x * 0.1f + dronePosition.x * (plotSize.x * 0.8f / 10.0f), plotOrigin.y + plotSize.y - dronePosition.y * (plotSize.y * 0.8f / 10.0f));
-    drawList->AddCircleFilled(dronePos, 5.0f, IM_COL32(255, 0, 0, 255)); // Red circle to represent drone position
-
-    ImGui::End();
+void makeConnectWindow() {
+    ImGui::Begin("Connect to Drone");
 }
 
 void makeMiscPanel(HWND hwnd) {
@@ -300,15 +256,6 @@ void makeMiscPanel(HWND hwnd) {
             log("Log export aborted", prefix);
         }
     }
-    if (ImGui::Button("Flight Path Plotter")) {
-        plotOpen = !plotOpen;
-    }
-    if (ImGui::Button("xtest")) {
-        dronePosition.x += 1;
-    }
-    if (ImGui::Button("ytest")) {
-        dronePosition.y += 1;
-    }
     ImGui::EndChild();
 }
 
@@ -328,10 +275,6 @@ void renderUI(HWND hwnd)
     makeLogPanel();
     makeDebugPanel();
     makeMiscPanel(hwnd);
-
-    if (plotOpen) {
-        makeFlightPathPlotWin();
-    }
 
     // End main window
     ImGui::End();
@@ -395,9 +338,6 @@ int main(int, char**)
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    // Testing
-    generatePlannedPath();
 
     // Main loop
     bool done = false;
