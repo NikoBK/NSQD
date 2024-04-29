@@ -2,14 +2,11 @@
 #include "../include/gui.h"
 #include "Message.hpp"
 
-TCPSocket::TCPSocket()
-	: _connected(false), _socket(-1), _currentSize(0)
-{
-}
+TCPSocket::TCPSocket() : _connected(false), _socket(-1), _currentSize(0)
+{ }
 
 TCPSocket::~TCPSocket()
-{
-}
+{ }
 
 bool TCPSocket::Connect(const std::string& host, int port)
 {
@@ -82,7 +79,7 @@ void TCPSocket::HandleReceive()
 	{
 		int bytesReadable = 0;
 		int result = recv(_socket, reinterpret_cast<char*>(&bytesReadable), sizeof(int), MSG_PEEK);
-#ifdef _WIN32
+
 		if (result <= 0) {
 			int err = WSAGetLastError();
 			if (err == WSAEWOULDBLOCK) {
@@ -93,25 +90,6 @@ void TCPSocket::HandleReceive()
 			if (result == 0 || err == WSAECONNRESET) {
 				Disconnect("");
 			}
-			else 
-			{
-				// everything else is error
-				std::string message = "FATAL ERROR: Recv Error: " + std::to_string(err);
-				Disconnect(message);
-			}
-			return;
-		}
-#elif __linux
-		if (result <= 0) {
-			int err = errno;
-			if (err == EWOULDBLOCK) {
-				return;
-			}
-
-			// returning 0 or WSAECONNRESET means closed by host
-			if (result == 0 || err == ECONNRESET) {
-				Disconnect("");
-			}
 			else
 			{
 				// everything else is error
@@ -120,7 +98,6 @@ void TCPSocket::HandleReceive()
 			}
 			return;
 		}
-#endif
 
 		if (result < sizeof(int)) {
 			return;
@@ -136,7 +113,7 @@ void TCPSocket::HandleReceive()
 
 	std::vector<char> b(_currentSize);
 	int result = recv(_socket, b.data(), _currentSize, 0);
-#ifdef _WIN32
+
 	if (result <= 0) {
 		int err = WSAGetLastError();
 		if (err == WSAEWOULDBLOCK) {
@@ -155,26 +132,6 @@ void TCPSocket::HandleReceive()
 		}
 		return;
 	}
-#elif __linux
-	if (result <= 0) {
-		int err = errno;
-		if (err == EWOULDBLOCK) {
-			return;
-		}
-
-		// returning 0 or WSAECONNRESET means closed by host
-		if (result == 0 || err == ECONNRESET) {
-			Disconnect("");
-		}
-		else
-		{
-			// everything else is error
-			std::string message = "FATAL ERROR: Recv Error: " + std::to_string(err);
-			Disconnect(message);
-		}
-		return;
-	}
-#endif
 
 	// + 4 as thats offset to what we already read
 	Decoder decoder(b.data() + 4, _currentSize);
@@ -187,35 +144,35 @@ void TCPSocket::HandleReceive()
 
 	switch ((int)messageId)
 	{
-	case TEST_MESSAGE_ID:
-	{
-		TestMessage m;
-		m.decode(decoder);
+		case TEST_MESSAGE_ID:
+		{
+			TestMessage m;
+			m.decode(decoder);
 
-		std::string a = (m.a == true) ? "true\n" : "false\n";
-		message += "a: " + a;
-		message += "b: " + std::to_string(m.b) + "\n";
-		message += "c: " + std::to_string(m.c) + "\n";
-		message += "d: " + std::to_string(m.d) + "\n";
-		message += "e: " + std::to_string(m.e) + "\n";
-		message += "f: " + m.f;
+			std::string a = (m.a == true) ? "true\n" : "false\n";
+			message += "a: " + a;
+			message += "b: " + std::to_string(m.b) + "\n";
+			message += "c: " + std::to_string(m.c) + "\n";
+			message += "d: " + std::to_string(m.d) + "\n";
+			message += "e: " + std::to_string(m.e) + "\n";
+			message += "f: " + m.f;
 
-		log(message, "INFO");
-		break;
-	}
-	case RPY_MESSAGE_ID:
-	{
-		RPYMessage m;
-		m.decode(decoder);
+			log(message, "INFO");
+			break;
+		}
+		case RPY_MESSAGE_ID:
+		{
+			RPYMessage m;
+			m.decode(decoder);
 
-		std::string message = "RPYMessage: \n";
-		message += "Roll: " + std::to_string(m.roll) + "\n";
-		message += "Pitch: " + std::to_string(m.pitch) + "\n";
-		message += "Yaw: " + std::to_string(m.yaw);
+			std::string message = "RPYMessage: \n";
+			message += "Roll: " + std::to_string(m.roll) + "\n";
+			message += "Pitch: " + std::to_string(m.pitch) + "\n";
+			message += "Yaw: " + std::to_string(m.yaw);
 
-		log(message, "INFO");
-		break;
-	}
+			log(message, "INFO");
+			break;
+		}
 	}
 
 	_currentSize = 0;
@@ -230,7 +187,6 @@ void TCPSocket::Send(Message& message)
 	int size = encoder.size();
 
 	int result = send(_socket, buffer, size, 0);
-#ifdef _WIN32
 	if (result <= 0)
 	{
 		int err = WSAGetLastError();
@@ -250,26 +206,6 @@ void TCPSocket::Send(Message& message)
 		}
 		return;
 	}
-#elif __linux
-	if (result <= 0) {
-		int err = errno;
-		if (err == EWOULDBLOCK) {
-			return;
-		}
-
-		// returning 0 or WSAECONNRESET means closed by host
-		if (result == 0 || err == ECONNRESET) {
-			Disconnect("");
-		}
-		else
-		{
-			// everything else is error
-			std::string m = "FATAL ERROR: send Error: " + std::to_string(err);
-			Disconnect(m);
-		}
-		return;
-	}
-#endif
 
 	std::string m = "Sent: " + std::to_string(result) + " bytes";
 	log(m, "WARNING");
@@ -291,7 +227,6 @@ void TCPSocket::Disconnect(const std::string& reason)
 	WSACleanup();
 }
 
-bool TCPSocket::connected() const
-{
+bool TCPSocket::connected() const {
 	return _connected;
 }
