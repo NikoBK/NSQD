@@ -1,7 +1,8 @@
 import numpy as np
 import xml.etree.ElementTree as ET
+import cv2
 
-stepsize = 0.0003
+stepsize = 0.0002
 
 def ReadCoordinatesFromXML(xml_file, target_block, target_field):
     tree = ET.parse(xml_file)
@@ -18,32 +19,26 @@ def ReadCoordinatesFromXML(xml_file, target_block, target_field):
                 coordinates.append([lat, lon])
             return coordinates
 
+
 def FromCoordinatesToField(coordinates):
     points = np.array(coordinates, dtype=np.float32)
-
-    # Find the highest and lowest lon and lat values from points
-    min_lon = np.min(points[:, 0]) # X-coordinate
-    max_lon = np.max(points[:, 0])
-    min_lat = np.min(points[:, 1]) # Y-coordinate
-    max_lat = np.max(points[:, 1])
+    hull = cv2.convexHull(points, clockwise=False)  # Compute the convex hull
 
     inside_points = []
+
+    min_lon = np.min(points[:, 0])
+    max_lon = np.max(points[:, 0])
+    min_lat = np.min(points[:, 1])
+    max_lat = np.max(points[:, 1])
+
+    # Check if each point is inside the convex hull
     for lat in np.arange(min_lat, max_lat, stepsize):
         for lon in np.arange(min_lon, max_lon, stepsize):
-            point = (lon, lat)
-            inside = False
-            for i in range(len(coordinates) - 1):
-                p1, p2 = coordinates[i], coordinates[i + 1]
-                # Check if the point is on the line segment between p1 and p2
-                if ((p1[0] <= lon <= p2[0]) or (p2[0] <= lon <= p1[0])) and ((p1[1] <= lat <= p2[1]) or (p2[1] <= lat <= p1[1])):
-                    inside = True
-                    break
-            if inside:
-                inside_points.append(point)
+            if cv2.pointPolygonTest(hull, (lon, lat), measureDist=False) >= 0:
+                inside_points.append((lon, lat))
 
     return inside_points
     
-
 
 def FromPointcloudToPath(point_cloud):
     #Solving the field with a sweep line algorithm
@@ -117,6 +112,10 @@ def main():
     path = FromPointcloudToPath(points)
     FromPathtoXML(path)
     
+    """"" - Debugging, for use on Mi Map Tools: GeoPlotter
+    for lon, lat in path:
+        print(f"{lat},{lon},")    
+    """""
     
 if __name__ == "__main__":
     main()
