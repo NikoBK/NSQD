@@ -1,0 +1,10 @@
+<package format="2">
+	<name>flight_control</name>
+	<version>0.0.1</version>
+	<description>Description of your package</description>
+	<maintainer email="es-24-rob-4-463@student.aau.dk">g463</maintainer>
+	<license>MIT</license>
+	<buildtool_depend>catkin</buildtool_depend>
+	<build_depend>roscpp</build_depend>
+	<exec_depend>roscpp</exec_depend>
+</package>
