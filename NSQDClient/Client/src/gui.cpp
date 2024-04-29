@@ -6,7 +6,7 @@
 // - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
 // - Introduction, links and more at the top of imgui.cpp
 
-#include "../include/client.h"
+#include "../include/gui.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx9.h"

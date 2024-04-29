@@ -132,7 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\TCPSocket.cpp" />
-    <ClCompile Include="src\client.cpp" />
+    <ClCompile Include="src\gui.cpp" />
     <ClCompile Include="src\netserver.cpp" />
     <ClCompile Include="vendor\ImGui\backends\imgui_impl_dx9.cpp" />
     <ClCompile Include="vendor\ImGui\backends\imgui_impl_win32.cpp" />
@@ -144,7 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\TCPSocket.h" />
-    <ClInclude Include="include\client.h" />
+    <ClInclude Include="include\gui.h" />
     <ClInclude Include="src\Message.hpp" />
     <ClInclude Include="vendor\ImGui\backends\imgui_impl_dx9.h" />
     <ClInclude Include="vendor\ImGui\backends\imgui_impl_win32.h" />

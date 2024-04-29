@@ -1,5 +1,5 @@
 #include "../include/TCPSocket.h"
-#include "../include/client.h"
+#include "../include/gui.h"
 #include "Message.hpp"
 
 TCPSocket::TCPSocket()

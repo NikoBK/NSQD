@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\client.cpp">
+    <ClCompile Include="src\gui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vendor\ImGui\imgui.cpp">
@@ -71,7 +71,7 @@
     <ClInclude Include="vendor\ImGui\backends\imgui_impl_win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\client.h">
+    <ClInclude Include="include\gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\TCPSocket.h">

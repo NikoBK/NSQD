@@ -1,7 +1,7 @@
-// client.h
+// gui.h
 
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef GUI_H
+#define GUI_H
 
 #include <string>
 #include <vector>
