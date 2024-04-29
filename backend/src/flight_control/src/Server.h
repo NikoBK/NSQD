@@ -15,12 +15,15 @@
 #include <fcntl.h>
 
 #include <string>
+#include "../include/Matrice100.hpp"
+
 
 class Message;
+
 class Server
 {
 public:
-    Server(int port);
+    Server(int port, Matrice100* drone);
     ~Server();
     
     bool connected() const { return _connected; }
@@ -36,6 +39,7 @@ private:
     int _currentSize;
 
     int _serverSocket;
+    Matrice100* _drone;
 };
 
 #endif

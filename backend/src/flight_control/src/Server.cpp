@@ -1,9 +1,10 @@
 #include "Server.h"
 #include <vector>
 #include "Message.hpp"
+#include "../include/Matrice100.hpp"
 
-Server::Server(int port)
-    : _socket(0), _connected(false), _currentSize(0)
+Server::Server(int port, Matrice100* drone)
+    : _socket(0), _connected(false), _currentSize(0), _drone(drone)
 {
     // define TCP socket
     _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -171,6 +172,8 @@ void Server::HandleConnection()
     {
         RPYMessage m;
         m.decode(decoder);
+
+	_drone->pubAngle(m.roll,m.pitch,m.thrust,m.yaw, 35);
 
         std::string message = "RPYMessage: \n";
         message += "Roll: " + std::to_string(m.roll) + "\n";

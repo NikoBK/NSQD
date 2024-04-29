@@ -7,4 +7,5 @@
 	<buildtool_depend>catkin</buildtool_depend>
 	<build_depend>roscpp</build_depend>
 	<exec_depend>roscpp</exec_depend>
+	<depend>dji_sdk</depend>
 </package>
