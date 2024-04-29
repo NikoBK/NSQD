@@ -10,49 +10,41 @@
 class Encoder
 {
 public:
-    Encoder()
-    {
+    Encoder() {
         // Reserve enough space for the size of this buffer
         WriteInt(0);
     }
 
-    void WriteBoolean(bool value)
-    {
+    void WriteBoolean(bool value) {
         Write((char*)&value, sizeof(bool));
     }
 
-    void WriteByte(char value)
-    {
+    void WriteByte(char value) {
         Write((char*)&value, sizeof(char));
     }
 
-    void WriteShort(short value)
-    {
+    void WriteShort(short value) {
         value = htons(value);
         Write((char*)&value, sizeof(short));
     }
 
-    void WriteInt(int value)
-    {
+    void WriteInt(int value) {
         value = htonl(value);
         Write((char*)&value, sizeof(int));
     }
 
-    void WriteFloat(float value)
-    {
+    void WriteFloat(float value) {
         unsigned int val = htonf(value);
         Write((char*)&val, sizeof(float));
     }
 
-    void WriteString(const std::string& value)
-    {
+    void WriteString(const std::string& value) {
         short size = value.length();
         WriteShort(size);
         Write((char*)value.c_str(), size);
     }
 
-    const char* buffer() const
-    {
+    const char* buffer() const {
         // get the position and then copy to the front of the _buffer
         int length = htonl(_position);
         memcpy((char*)_buffer.data(), &length, sizeof(int));
@@ -64,8 +56,7 @@ public:
     }
 
 private:
-    void Write(char* data, unsigned int size)
-    {
+    void Write(char* data, unsigned int size) {
         // Reserve space in the buffer to avoid reallocations
         _buffer.reserve(_buffer.size() + size);
 
@@ -83,10 +74,8 @@ private:
 
 class Decoder {
 public:
-    Decoder(const char* data, int size)
-        : _buffer(data, data + size), _position(0)
-    {
-    }
+    Decoder(const char* data, int size) : _buffer(data, data + size), _position(0)
+    { }
 
     void ReadBoolean(bool* value) {
         Read(reinterpret_cast<char*>(value), sizeof(bool));
@@ -138,8 +127,7 @@ private:
 #define TEST_MESSAGE_ID 0
 #define RPY_MESSAGE_ID 1
 
-struct Message
-{
+struct Message {
     virtual void encode(Encoder& encoder) = 0;
     virtual void decode(Decoder& decoder) = 0;
 };
@@ -197,4 +185,4 @@ struct RPYMessage : public Message
     }
 };
 
-#endif // !MESSAGE_H
+#endif // !MESSAGE_HP
