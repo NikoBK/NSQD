@@ -119,7 +119,7 @@ void makeCmdPanel() {
     {
         if (ImGui::Button("Connect to Manifold"))
         {        
-            bool connected = _socket->Connect("127.0.0.1", 8888);
+            bool connected = _socket->Connect("192.168.4.2", 8888); //"127.0.0.1", 8888);
             if (connected) {
                 _connected = true;
             }
