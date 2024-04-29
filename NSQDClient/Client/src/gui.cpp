@@ -100,7 +100,7 @@ void makeCamPanel() {
     ImGui::EndChild();
 }
 
-void makeCmdPanel(HWND hwnd) {
+void makeCmdPanel() {
     static WCHAR filePath[MAX_PATH] = L"";
 
     // Begin Hierachy Panel (Top Right)
@@ -149,22 +149,6 @@ void makeCmdPanel(HWND hwnd) {
             }
         }
 
-        if (ImGui::Button("Export Logs")) {
-            log("Exporting logs to: {export_path}...", prefix);
-            if (SaveFileDialog(hwnd, filePath, L"myFile.txt", L"Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0")) {
-                std::wstring selectedFilePath(filePath);
-                if (SaveDataToFile(selectedFilePath)) {
-                    log("Logs succesfully exported", prefix);
-                }
-                else {
-                    log("Could not export logs to selected path", "ERROR");
-                }
-            }
-            else {
-                log("Log export aborted", prefix);
-            }
-        }
-
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
         ImGui::Button("Connect to Manifold");
         ImGui::PopStyleVar();
@@ -184,6 +168,7 @@ void makeCmdPanel(HWND hwnd) {
             log("Landing...\n", prefix);
         }
     }
+
     ImGui::EndChild();
 }
 
@@ -199,6 +184,16 @@ void makePropsPanel() {
     ImGui::Text("Connection Status: ");
     ImGui::SameLine();
     ImGui::TextColored(connStrColor, connStr);
+
+    ImGui::Text("Camera Feed FPS: %d", 0);
+    ImGui::Text("Drone Current Time: %s", "0");
+    ImGui::Text("Drone X: %d", 0);
+    ImGui::Text("Drone Y: %d", 0);
+    ImGui::Text("Drone Z: %d", 0);
+    ImGui::Text("Drone Roll: %d", 0);
+    ImGui::Text("Drone Pitch: %d", 0);
+    ImGui::Text("Drone Yaw: %d", 0);
+    ImGui::Text("Drone Thrust: %d", 0);
 
     ImGui::EndChild();
 }
@@ -225,23 +220,31 @@ void makeLogPanel() {
     ImGui::EndChild();
 }
 
-void makeDebugPanel() {
+void makeDebugPanel(HWND hwnd) {
+    static WCHAR filePath[MAX_PATH] = L"";
+    std::string prefix = "DEBUG";
+
     // Begin Debug Panel (Bottom Center-ish)
     ImGui::SetNextWindowPos(ImVec2(750, 619), ImGuiCond_Always);
     ImGui::BeginChild("Debug", ImVec2(250, 200), true, ImGuiWindowFlags_None);
     ImGui::TextUnformatted("Debug");
     ImGui::Separator();
 
-    ImGui::Text("Camera Feed FPS: %d", 25);
-    ImGui::Text("Drone Current Time: %s", "0");
-    ImGui::Text("X: %d", 0);
-    ImGui::Text("Y: %d", 0);
-    ImGui::Text("Z: %d", 0);
-    ImGui::Text("Roll: %d", 0);
-    ImGui::Text("Pitch: %d", 0);
-    ImGui::Text("Yaw: %d", 0);
-    ImGui::Text("Thrust: %d", 0);
-
+    if (ImGui::Button("Export Logs")) {
+        log("Exporting logs to: {export_path}...", prefix);
+        if (SaveFileDialog(hwnd, filePath, L"myFile.txt", L"Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0")) {
+            std::wstring selectedFilePath(filePath);
+            if (SaveDataToFile(selectedFilePath)) {
+                log("Logs succesfully exported", prefix);
+            }
+            else {
+                log("Could not export logs to selected path", "ERROR");
+            }
+        }
+        else {
+            log("Log export aborted", prefix);
+        }
+    }
     ImGui::EndChild();
 }
 
@@ -260,10 +263,10 @@ void renderUI(HWND hwnd)
 
     // Make the info panels
     makeCamPanel();
-    makeCmdPanel(hwnd);
+    makeCmdPanel();
     makePropsPanel();
     makeLogPanel();
-    makeDebugPanel();
+    makeDebugPanel(hwnd);
 
     // End main window
     ImGui::End();
