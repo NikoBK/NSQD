@@ -133,7 +133,6 @@
   <ItemGroup>
     <ClCompile Include="src\TCPSocket.cpp" />
     <ClCompile Include="src\gui.cpp" />
-    <ClCompile Include="src\netserver.cpp" />
     <ClCompile Include="vendor\ImGui\backends\imgui_impl_dx9.cpp" />
     <ClCompile Include="vendor\ImGui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="vendor\ImGui\imgui.cpp" />
