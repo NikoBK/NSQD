@@ -1,0 +1,13 @@
+#ifndef MAIN_HPP
+#define MAIN_HPP
+
+#define GROUNDED_STATE 0
+#define ARMED_STATE 1
+#define HOVER_STATE 2
+#define ENROUTE_STATE 3
+#define PUBLISH_ANGLE_STATE 4
+#define START_TEST_STATE 5
+#define RUNNING_TEST_STATE 6
+#define STOP_TEST_STATE 7
+
+#endif

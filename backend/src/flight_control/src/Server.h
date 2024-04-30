@@ -29,7 +29,7 @@ public:
     bool connected() const { return _connected; }
 
     void AcceptConnection();
-    void HandleConnection();
+    void HandleConnection(int state* state_ptr);
     void Send(Message& message);
     void Disconnect(const std::string& reason);
 
@@ -40,6 +40,7 @@ private:
 
     int _serverSocket;
     Matrice100* _drone;
+    std::ofstream* _csvFile;
 };
 
 #endif

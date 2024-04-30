@@ -36,9 +36,9 @@ struct VEL {
 
 class Matrice100 {
 	private:
-		float imuRoll;
-		float imuPitch;
-		float imuYaw;
+		float imuRoll, imuPitch, ImuYaw;
+		float K_p, K_i, K_d;
+		float imuAccX, imuAccY , imuAccZ;
 		float batteryVoltage;
 		double latitude;
 		double longitude;
@@ -82,13 +82,16 @@ class Matrice100 {
 		void velocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
 	public:
-		void pubAngle(float roll,float pitch, float thrust, float yaw,int flag);
-		void getRPY(RPY* rpy_struct);
+		void setPIDValues(float kp, float ki, float kd);
+		void setTargetValues(float roll,float pitch, float thrust, float yaw,int flag);
+		void pubTargetValues();
+		void getRPY(RPY* rpy_struct, bool fusion_data = true);
 		void getGPSData(GPS_Data* gps_struct);
 		void getVel(VEL* vel_struct);
 		int getFlightStatus();
 		float getBatteryVoltage();
-
+		
+		int getTargetThrust();
 		int arm(int arm_drone);
 		int request_permission(int permission = 1);
 		int takeOff();

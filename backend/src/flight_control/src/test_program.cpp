@@ -141,8 +141,9 @@ int main(int argc, char **argv)
 			pitch = rpy.pitch;
 		}
 
-		// Publish desired angles            
-		drone->pubAngle(roll,pitch,thrust,yaw, 33); //(Flag 35 for stable mode, 34 unstable)
+		// Publish desired angles   
+		drone->setTargetValues(roll,pitch,thrust,yaw, 35);         
+		drone->pubTargetValues(); //(Flag 35 for stable mode, 34 unstable)
 
 		// Sleep, so while loop reach desired hertz.
 		rate.sleep();
