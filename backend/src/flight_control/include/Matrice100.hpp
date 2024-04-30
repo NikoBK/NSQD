@@ -36,7 +36,7 @@ struct VEL {
 
 class Matrice100 {
 	private:
-		float imuRoll, imuPitch, ImuYaw;
+		float imuRoll, imuPitch, imuYaw;
 		float K_p, K_i, K_d;
 		float imuAccX, imuAccY , imuAccZ;
 		float batteryVoltage;

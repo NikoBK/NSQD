@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <iostream>
+#include <fstream>
 #include <errno.h>
 
 #include <sys/time.h>
@@ -23,13 +24,13 @@ class Message;
 class Server
 {
 public:
-    Server(int port, Matrice100* drone);
+    Server(int port, Matrice100* drone, std::ofstream* csvFile);
     ~Server();
     
     bool connected() const { return _connected; }
 
     void AcceptConnection();
-    void HandleConnection(int state* state_ptr);
+    void HandleConnection(int *state);
     void Send(Message& message);
     void Disconnect(const std::string& reason);
 

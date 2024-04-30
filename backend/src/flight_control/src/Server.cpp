@@ -5,7 +5,7 @@
 #include "../include/Main.hpp"
 
 
-Server::Server(int port, Matrice100* drone, std::ofstream csvFile)
+Server::Server(int port, Matrice100* drone, std::ofstream *csvFile)
     : _socket(0), _connected(false), _currentSize(0), _drone(drone), _csvFile(csvFile)
 {
     // define TCP socket
@@ -83,7 +83,7 @@ void Server::AcceptConnection()
     _socket = socket;
 }
 
-void Server::HandleConnection(int state* state_ptr) 
+void Server::HandleConnection(int * state) 
 {
     if (_currentSize == 0)
     {
@@ -190,7 +190,7 @@ void Server::HandleConnection(int state* state_ptr)
         m.decode(decoder);
 
         //update target angles and target thrust so main loop can publish given values
-        drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, 35);
+        _drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, 35);
 
         //Update current state
         *state = PUBLISH_ANGLE_STATE;
@@ -224,7 +224,7 @@ void Server::HandleConnection(int state* state_ptr)
         _csvFile->open(m.filePath);
 
         //Set target values
-        drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, m.flag);
+        _drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, m.flag);
 
         //Update current state
         *state = START_TEST_STATE;
@@ -239,7 +239,7 @@ void Server::HandleConnection(int state* state_ptr)
         PIDMessage m;
         m.decode(decoder);
 
-        drone->setPIDValues(m.kp, m.ki, m.kd);
+        _drone->setPIDValues(m.kp, m.ki, m.kd);
     }
     }
 

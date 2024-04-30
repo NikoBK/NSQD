@@ -1,4 +1,6 @@
 #include "Server.h"
+#include <iostream>
+#include <fstream>
 #include "../include/Matrice100.hpp"
 #include "../include/Main.hpp"
 
@@ -21,6 +23,13 @@ int imuSample = 0;
 // FileHandler.
 std::ofstream csvFile;
 
+std::string message;
+
+ros::Time begin;
+
+//Used for storing target thrust to be written to csv file
+float thrust = 0;
+
 
 // Write imu data to csv file
 void csvWrite(ros::Time begin, int sampleRate)
@@ -34,9 +43,6 @@ void csvWrite(ros::Time begin, int sampleRate)
 	imuSample += 1;
 }
 
-
-//Used for storing target thrust to be written to csv file
-float thrust = 0;
 
 //Inspired from finite statemachines in PLC workshop the code runs in states
 int state = GROUNDED_STATE;
@@ -113,7 +119,7 @@ int main(int argc, char **argv)
             //csvFile has been opened on serverside and can no be written to
 
             // Time at start, used for csv logging of imu data
-            ros::Time begin = ros::Time::now();
+            begin = ros::Time::now();
             csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust" << "\n";
 
             //Publish target values at each loop iteration

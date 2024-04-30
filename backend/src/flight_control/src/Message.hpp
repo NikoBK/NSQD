@@ -261,7 +261,7 @@ struct StartTestMessage : public Message
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
         encoder.WriteFloat(thrust);
-        encoder.WriteInt(flag)
+        encoder.WriteInt(flag);
         encoder.WriteString(filePath);
 
     }
@@ -272,7 +272,7 @@ struct StartTestMessage : public Message
         decoder.ReadFloat(&pitch);
         decoder.ReadFloat(&yaw);
         decoder.ReadFloat(&thrust);
-        decoder.ReadInt(&flag)
+        decoder.ReadInt(&flag);
         decoder.ReadString(&filePath);
     }
 };
