@@ -43,10 +43,15 @@ bool _connected = false;
 
 // Debug
 std::vector<std::string> logs;
+bool _manualInput = false;
 
 // Textfields
 char addrBuffer[255]{};
 char portBuffer[255]{};
+char rBuffer[255]{};
+char pBuffer[255]{};
+char yBuffer[255]{};
+char tBuffer[255]{};
 
 // Function to save data to a file
 bool SaveDataToFile(const std::wstring& filePath) {
@@ -121,16 +126,42 @@ std::string OpenFileDialog(HWND hWnd, LPWSTR filePath, LPCWSTR defaultExtension,
     }
 }
 
+void makeManualInputWindow()
+{
+    ImGui::Begin("Send Manual Inputs");
+
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("Roll", rBuffer, sizeof(rBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("Pitch", pBuffer, sizeof(pBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("Yaw", yBuffer, sizeof(yBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("Thrust", tBuffer, sizeof(tBuffer));
+    
+    if (ImGui::Button("Send to Drone")) {
+        log("TODO: Send values to drone");
+        std::cout << "Updating values\n Roll: " << rBuffer << ", Pitch: " << pBuffer << ", Yaw: " << yBuffer << ", Thrust: " << tBuffer << std::endl;
+        _manualInput = false;
+    }
+
+    if (ImGui::Button("Cancel")) {
+        _manualInput = false;
+    }
+
+    ImGui::End();
+}
+
 void makeConnectWindow() {
     // ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
     ImGui::Begin("Connect to Drone");
 
     std::string addrText{ "Address" };
     std::string portText{ "8888" };
-    //strncpy_s(buf, s.c_str(), sizeof(buf) - 1);
-    // ImGui::PushItemWidth(100);
     ImGui::InputText("Address", addrBuffer, sizeof(addrBuffer));
-    // ImGui::PushItemWidth(50);
     ImGui::InputText("Port", portBuffer, sizeof(portBuffer));
 
     if (ImGui::Button("Connect")) {
@@ -308,8 +339,7 @@ void makeDebugPanel(HWND hwnd) {
         }
     }
     if (ImGui::Button("Manual Input")) {
-        // TODO: Implement something here.
-        log("Not yet implemented");
+        _manualInput = !_manualInput;
     }
     if (ImGui::Button("Upload Flight Path Data")) {
         std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
@@ -347,6 +377,9 @@ void renderUI(HWND hwnd)
 
     if (_connecting) {
         makeConnectWindow();
+    }
+    if (_manualInput) {
+        makeManualInputWindow();
     }
 
     // End main window
