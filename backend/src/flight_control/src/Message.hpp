@@ -235,7 +235,7 @@ struct ArmMessage : public Message
     virtual void encode(Encoder& encoder) override
     {
         encoder.WriteByte(ARM_MESSAGE_ID);
-        encoder.WriteFloat(arm);
+        encoder.WriteBoolean(arm);
     }
 
     virtual void decode(Decoder& decoder) override

@@ -159,6 +159,8 @@ int main(int argc, char **argv)
                 drone->loadRouteFromGPX(filePath)
                 drone->calculateInterpolations(desired_vel, update_frequency)
                 drone->startMission()
+                
+                state = ENROUTE_STATE
 
             case ENROUTE_STATE:
                 drone->calculateError()

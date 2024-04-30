@@ -34,6 +34,7 @@ struct VEL {
 	double z;
 };
 
+
 class Matrice100 {
 	private:
 		float imuRoll, imuPitch, imuYaw;
