@@ -90,8 +90,35 @@ void log(std::string text, std::string prefix) {
     logs.push_back("[" + prefix + "] " + text);
 }
 
-void makeManualInputWindow() {
+std::string OpenFileDialog(HWND hWnd, LPWSTR filePath, LPCWSTR defaultExtension, LPCWSTR fileFilter) {
+    OPENFILENAME ofn;       // common dialog box structure
 
+    // Initialize OPENFILENAME
+    ZeroMemory(&ofn, sizeof(ofn));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = hWnd;
+    ofn.lpstrFile = filePath;
+    ofn.lpstrFile[0] = '\0';
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = fileFilter; // "All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.lpstrDefExt = defaultExtension;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+    // Display the Open dialog box
+    if (GetOpenFileName(&ofn) == TRUE) {
+        // Convert wide-character string to narrow-character string
+        int bufferSize = WideCharToMultiByte(CP_UTF8, 0, ofn.lpstrFile, -1, NULL, 0, NULL, NULL);
+        std::string filePath(bufferSize, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, ofn.lpstrFile, -1, &filePath[0], bufferSize, NULL, NULL);
+        return filePath;
+    }
+    else {
+        return ""; // User canceled the dialog
+    }
 }
 
 void makeConnectWindow() {
@@ -267,7 +294,7 @@ void makeDebugPanel(HWND hwnd) {
 
     if (ImGui::Button("Export Logs")) {
         log("Exporting logs to: {export_path}...", prefix);
-        if (SaveFileDialog(hwnd, filePath, L"myFile.txt", L"Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0")) {
+        if (SaveFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0")) {
             std::wstring selectedFilePath(filePath);
             if (SaveDataToFile(selectedFilePath)) {
                 log("Logs succesfully exported", prefix);
@@ -284,9 +311,20 @@ void makeDebugPanel(HWND hwnd) {
         // TODO: Implement something here.
         log("Not yet implemented");
     }
-    if (ImGui::Button("Upload GPX Path")) {
-        // TODO: Implement something here.
-        log("Not yet implemented");
+    if (ImGui::Button("Upload Flight Path Data")) {
+        std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
+        
+        std::ifstream file(gpxPath);
+        if (file.is_open()) {
+            std::string line;
+            while (std::getline(file, line)) {
+                log(line);
+            }
+            file.close();
+        }
+        else {
+            log("Failed to open file GPX data file.", "ERROR");
+        }
     }
     ImGui::EndChild();
 }
