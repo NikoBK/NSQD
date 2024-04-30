@@ -145,6 +145,7 @@ private:
 #define LAND_MESSAGE_ID 8
 #define FLIGHT_PATH_MESSAGE_ID 9
 #define STOP_FLIGHT_PATH_MESSAGE_ID 10
+#define AUTHORITY_MESSAGE_ID 11
 
 struct Message
 {
@@ -285,6 +286,7 @@ struct PIDMessage : public Message
     float kp;
     float ki;
     float kd;
+    int type; //Roll (1), pitch (2), yaw (3) or thrust (4) pid values
 
     virtual void encode(Encoder& encoder) override
     {
@@ -292,6 +294,7 @@ struct PIDMessage : public Message
         encoder.WriteFloat(kp);
         encoder.WriteFloat(ki);
         encoder.WriteFloat(kd);
+	encoder.WriteInt(type);
     }
 
     virtual void decode(Decoder& decoder) override
@@ -299,6 +302,7 @@ struct PIDMessage : public Message
         decoder.ReadFloat(&kp);
         decoder.ReadFloat(&ki);
         decoder.ReadFloat(&kd);
+	decoder.ReadInt(&type);
     }
 };
 
@@ -375,6 +379,13 @@ struct StopFlightPathMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(STOP_FLIGHT_PATH_MESSAGE_ID);
+	}
+}
+
+struct GetAuthorityMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(AUTHORITY_MESSAGE_ID);
 	}
 }
 
