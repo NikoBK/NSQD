@@ -299,4 +299,38 @@ struct PIDMessage : public Message
     }
 };
 
+struct UpdateMessage : public Message
+{
+    float roll;
+    float pitch;
+    float yaw;
+    float thrust;
+    float lat;
+    float lon;
+    float alt;
+
+    virtual void encode(Encoder& encoder) override
+    {
+        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteFloat(roll);
+        encoder.WriteFloat(pitch);
+        encoder.WriteFloat(yaw);
+	encoder.WriteFloat(thrust);
+        encoder.WriteFloat(lat);
+        encoder.WriteFloat(lon);   
+	encoder.WriteFloat(alt);    
+    }
+
+    virtual void decode(Decoder& decoder) override
+    {
+        decoder.ReadFloat(&roll);
+        decoder.ReadFloat(&pitch);
+        decoder.ReadFloat(&yaw);
+	decoder.ReadFloat(&thrust);
+        decoder.ReadFloat(&lat);
+        decoder.ReadFloat(&lon);   
+	decoder.ReadFloat(&alt); 
+    }
+};
+
 #endif // !MESSAGE_H

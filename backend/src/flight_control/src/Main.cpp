@@ -67,6 +67,21 @@ int main(int argc, char **argv)
     //Main loop running at given frequency until ROS is closed
     while (ros::ok()) 
     {	
+
+	// Update drone position and orientation on client.
+	drone->getRPY(&rpy);
+        drone->getGPSData(&gps_data);
+
+	UpdateMessage msg;
+	msg.roll = rpy.roll;
+	msg.pitch = rpy.pitch;
+	msg.yaw = rpy.yaw;
+	msg.thrust = drone->getTargetThrust();
+	msg.lat = (float)gps_data.latitude;
+	msg.lon = (float)gps_data.longitude;
+	msg.alt = (float)gps_data.altitude;
+	server->send(msg);
+
         //Update all topics and services
 	    ros::spinOnce();
 
