@@ -37,8 +37,16 @@ void CleanupDeviceD3D();
 void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+// Networking
+bool _connecting = false;
 bool _connected = false;
+
+// Debug
 std::vector<std::string> logs;
+
+// Textfields
+char addrBuffer[255]{};
+char portBuffer[255]{};
 
 // Function to save data to a file
 bool SaveDataToFile(const std::wstring& filePath) {
@@ -82,20 +90,76 @@ void log(std::string text, std::string prefix) {
     logs.push_back("[" + prefix + "] " + text);
 }
 
-void makeCamPanel() {
-    // Begin Scene Panel (Top Left)
-    ImGui::SetNextWindowPos(ImVec2(0, 19), ImGuiCond_Always);
-    ImGui::BeginChild("CamFeed", ImVec2(1000, 600), true, ImGuiWindowFlags_None);
-    ImGui::TextUnformatted("Camera Feed");
+void makeConnectWindow() {
+    // ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Connect to Drone");
+
+    std::string addrText{ "Address" };
+    std::string portText{ "8888" };
+    //strncpy_s(buf, s.c_str(), sizeof(buf) - 1);
+    // ImGui::PushItemWidth(100);
+    ImGui::InputText("Address", addrBuffer, sizeof(addrBuffer));
+    // ImGui::PushItemWidth(50);
+    ImGui::InputText("Port", portBuffer, sizeof(portBuffer));
+
+    if (ImGui::Button("Connect")) {
+        addrText = addrBuffer;
+        portText = portBuffer;
+        std::cout << addrText << ":" << portText << std::endl;
+
+        bool connected = _socket->Connect(addrText, std::stoi(portText));
+    }
+    if (ImGui::Button("Cancel")) {
+        _connecting = false;
+    }
+
+    ImGui::End();
+}
+
+void makeLogPanel() {
+    // Begin Console Panel (Bottom Left)
+    ImGui::SetNextWindowPos(ImVec2(0, 619), ImGuiCond_Always);
+    ImGui::BeginChild("Console", ImVec2(750, 200), true, ImGuiWindowFlags_None);
+    ImGui::BeginChild("LogOutput", ImVec2(-1, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::TextUnformatted("Log Output");
     ImGui::Separator();
 
-    ImVec2 imageSize(1000, 525); // Adjust the size as needed
-    ImVec2 imagePos = ImVec2(0, 19);
-    ImVec2 uv_min = ImVec2(0.0f, 0.0f); // UV coordinates for the rectangle corners
-    ImVec2 uv_max = ImVec2(1.0f, 1.0f);
-    ImVec4 tint_col = ImVec4(0.25f, 0.25f, 0.25f, 0.25f); // No tint
-    ImVec4 border_col = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); // Black border
-    ImGui::Image(nullptr, imageSize, uv_min, uv_max, tint_col, border_col);
+    // Display logs
+    for (const auto& log : logs) {
+        ImGui::TextWrapped("%s", log.c_str());
+    }
+
+    // Ensure scroll is at bottom to show latest logs
+    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+        ImGui::SetScrollHereY(1.0f);
+    }
+
+    ImGui::EndChild();
+    ImGui::EndChild();
+}
+
+void makePropsPanel() {
+    // Begin Properties Panel (Bottom Right)
+    ImGui::SetNextWindowPos(ImVec2(1000, 319), ImGuiCond_Always);
+    ImGui::BeginChild("Properties", ImVec2(300, 500), true, ImGuiWindowFlags_None);
+    ImGui::TextUnformatted("Properties");
+    ImGui::Separator();
+
+    ImVec4 connStrColor = _connected ? ImVec4(0, 1.0f, 0, 1.0f) : ImVec4(1.0f, 0, 0, 1.0f);
+    const char* connStr = _connected ? "Connected" : "Not Connected";
+    ImGui::Text("Connection Status: ");
+    ImGui::SameLine();
+    ImGui::TextColored(connStrColor, connStr);
+
+    ImGui::Text("Camera Feed FPS: %d", 0);
+    ImGui::Text("Drone Current Time: %s", "0");
+    ImGui::Text("Drone X: %d", 0);
+    ImGui::Text("Drone Y: %d", 0);
+    ImGui::Text("Drone Z: %d", 0);
+    ImGui::Text("Drone Roll: %d", 0);
+    ImGui::Text("Drone Pitch: %d", 0);
+    ImGui::Text("Drone Yaw: %d", 0);
+    ImGui::Text("Drone Thrust: %d", 0);
 
     ImGui::EndChild();
 }
@@ -116,28 +180,20 @@ void makeCmdPanel() {
 
     if (!_connected) 
     {
-        if (ImGui::Button("Connect to Manifold"))
-        {        
-            bool connected = _socket->Connect("192.168.4.2", 8888); //"127.0.0.1", 8888);
-            if (connected) {
-                _connected = true;
-            }
+        if (ImGui::Button("Connect to Drone")) {
+            _connecting = true;
         }
     }
-    else
+    else 
     {
-        if (ImGui::Button("Test Message"))
-        {
-            {
+        if (ImGui::Button("Test Message")) {{
+                // TODO: Should send some init message or something.
                 RPYMessage m;
                 m.roll = 1.0f;
                 m.pitch = 2.0f;
                 m.yaw = 3.0f;
                 _socket->Send(m);
-
-            }
-
-            {
+            } {
                 TestMessage m;
                 m.a = true;
                 m.b = 222;
@@ -172,51 +228,21 @@ void makeCmdPanel() {
     ImGui::EndChild();
 }
 
-void makePropsPanel() {
-    // Begin Properties Panel (Bottom Right)
-    ImGui::SetNextWindowPos(ImVec2(1000, 319), ImGuiCond_Always);
-    ImGui::BeginChild("Properties", ImVec2(300, 500), true, ImGuiWindowFlags_None);
-    ImGui::TextUnformatted("Properties");
+void makeCamPanel() {
+    // Begin Scene Panel (Top Left)
+    ImGui::SetNextWindowPos(ImVec2(0, 19), ImGuiCond_Always);
+    ImGui::BeginChild("CamFeed", ImVec2(1000, 600), true, ImGuiWindowFlags_None);
+    ImGui::TextUnformatted("Camera Feed");
     ImGui::Separator();
 
-    ImVec4 connStrColor = _connected ? ImVec4(0, 1.0f, 0, 1.0f) : ImVec4(1.0f, 0, 0, 1.0f);
-    const char* connStr = _connected ? "Connected" : "Not Connected";
-    ImGui::Text("Connection Status: ");
-    ImGui::SameLine();
-    ImGui::TextColored(connStrColor, connStr);
+    ImVec2 imageSize(1000, 525); // Adjust the size as needed
+    ImVec2 imagePos = ImVec2(0, 19);
+    ImVec2 uv_min = ImVec2(0.0f, 0.0f); // UV coordinates for the rectangle corners
+    ImVec2 uv_max = ImVec2(1.0f, 1.0f);
+    ImVec4 tint_col = ImVec4(0.25f, 0.25f, 0.25f, 0.25f); // No tint
+    ImVec4 border_col = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); // Black border
+    ImGui::Image(nullptr, imageSize, uv_min, uv_max, tint_col, border_col);
 
-    ImGui::Text("Camera Feed FPS: %d", 0);
-    ImGui::Text("Drone Current Time: %s", "0");
-    ImGui::Text("Drone X: %d", 0);
-    ImGui::Text("Drone Y: %d", 0);
-    ImGui::Text("Drone Z: %d", 0);
-    ImGui::Text("Drone Roll: %d", 0);
-    ImGui::Text("Drone Pitch: %d", 0);
-    ImGui::Text("Drone Yaw: %d", 0);
-    ImGui::Text("Drone Thrust: %d", 0);
-
-    ImGui::EndChild();
-}
-
-void makeLogPanel() {
-    // Begin Console Panel (Bottom Left)
-    ImGui::SetNextWindowPos(ImVec2(0, 619), ImGuiCond_Always);
-    ImGui::BeginChild("Console", ImVec2(750, 200), true, ImGuiWindowFlags_None);
-    ImGui::BeginChild("LogOutput", ImVec2(-1, -ImGui::GetFrameHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
-    ImGui::TextUnformatted("Log Output");
-    ImGui::Separator();
-
-    // Display logs
-    for (const auto& log : logs) {
-        ImGui::TextWrapped("%s", log.c_str());
-    }
-
-    // Ensure scroll is at bottom to show latest logs
-    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-        ImGui::SetScrollHereY(1.0f);
-    }
-
-    ImGui::EndChild();
     ImGui::EndChild();
 }
 
@@ -248,10 +274,6 @@ void makeDebugPanel(HWND hwnd) {
     ImGui::EndChild();
 }
 
-void makeConnectWindow() {
-    ImGui::Begin("Connect to Drone");
-}
-
 void renderUI(HWND hwnd) 
 {
     // Resize the window to fit the directx window.
@@ -267,6 +289,10 @@ void renderUI(HWND hwnd)
     makePropsPanel();
     makeLogPanel();
     makeDebugPanel(hwnd);
+
+    if (_connecting) {
+        makeConnectWindow();
+    }
 
     // End main window
     ImGui::End();
