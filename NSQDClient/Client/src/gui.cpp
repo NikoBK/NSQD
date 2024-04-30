@@ -90,6 +90,10 @@ void log(std::string text, std::string prefix) {
     logs.push_back("[" + prefix + "] " + text);
 }
 
+void makeManualInputWindow() {
+
+}
+
 void makeConnectWindow() {
     // ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
     ImGui::Begin("Connect to Drone");
@@ -108,6 +112,10 @@ void makeConnectWindow() {
         std::cout << addrText << ":" << portText << std::endl;
 
         bool connected = _socket->Connect(addrText, std::stoi(portText));
+        if (connected) {
+            _connecting = false;
+            _connected = true;
+        }
     }
     if (ImGui::Button("Cancel")) {
         _connecting = false;
@@ -186,25 +194,6 @@ void makeCmdPanel() {
     }
     else 
     {
-        if (ImGui::Button("Test Message")) {{
-                // TODO: Should send some init message or something.
-                RPYMessage m;
-                m.roll = 1.0f;
-                m.pitch = 2.0f;
-                m.yaw = 3.0f;
-                _socket->Send(m);
-            } {
-                TestMessage m;
-                m.a = true;
-                m.b = 222;
-                m.c = 4568;
-                m.d = -24573;
-                m.e = 12512.52323;
-                m.f = "Test";
-                _socket->Send(m);
-            }
-        }
-
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
         ImGui::Button("Connect to Manifold");
         ImGui::PopStyleVar();
@@ -222,6 +211,26 @@ void makeCmdPanel() {
         if (ImGui::Button("Land")) {
             // Land logic
             log("Landing...\n", prefix);
+        }
+
+        if (ImGui::Button("Test Message")) {
+            {
+                // TODO: Should send some init message or something.
+                RPYMessage m;
+                m.roll = 1.0f;
+                m.pitch = 2.0f;
+                m.yaw = 3.0f;
+                _socket->Send(m);
+            } {
+                TestMessage m;
+                m.a = true;
+                m.b = 222;
+                m.c = 4568;
+                m.d = -24573;
+                m.e = 12512.52323;
+                m.f = "Test";
+                _socket->Send(m);
+            }
         }
     }
 
@@ -270,6 +279,14 @@ void makeDebugPanel(HWND hwnd) {
         else {
             log("Log export aborted", prefix);
         }
+    }
+    if (ImGui::Button("Manual Input")) {
+        // TODO: Implement something here.
+        log("Not yet implemented");
+    }
+    if (ImGui::Button("Upload GPX Path")) {
+        // TODO: Implement something here.
+        log("Not yet implemented");
     }
     ImGui::EndChild();
 }
