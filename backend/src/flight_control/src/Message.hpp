@@ -141,7 +141,10 @@ private:
 #define START_TEST_MESSAGE_ID 4
 #define STOP_TEST_MESSAGE_ID 5
 #define PID_MESSAGE_ID 6
-
+#define TAKEOFF_MESSAGE_ID 7
+#define LAND_MESSAGE_ID 8
+#define FLIGHT_PATH_MESSAGE_ID 9
+#define STOP_FLIGHT_PATH_MESSAGE_ID 10
 
 struct Message
 {
@@ -337,6 +340,41 @@ struct AbortTestMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(STOP_TEST_MESSAGE_ID);
+	}
+}
+
+struct TakeOffMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(TAKEOFF_MESSAGE_ID);
+	}
+}
+
+struct LandMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(LAND_MESSAGE_ID);
+	}
+}
+
+struct SetFlightPathMessage : public Message
+{
+	std::string xmlContent;
+
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(FLIGHT_PATH_MESSAGE_ID);
+		encoder.WriteString(xmlContent);
+	}
+
+	virtual void decode(Decoder& decoder) override {
+		decoder.ReadString(&xmlContent);
+	}
+}
+
+struct StopFlightPathMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(STOP_FLIGHT_PATH_MESSAGE_ID);
 	}
 }
 
