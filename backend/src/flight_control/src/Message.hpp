@@ -333,4 +333,11 @@ struct UpdateMessage : public Message
     }
 };
 
+struct AbortTestMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(STOP_TEST_MESSAGE_ID);
+	}
+}
+
 #endif // !MESSAGE_H
