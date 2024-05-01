@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 	msg.alt = (float)gps_data.altitude;
     msg.state = state;
 
-	server.Send(msg);
+	
 
         //Update all topics and services
 	    ros::spinOnce();
@@ -98,6 +98,7 @@ int main(int argc, char **argv)
         {
             // handle the current connection and update state
             server.HandleConnection(&state);
+	server.Send(msg);
         }
 
 

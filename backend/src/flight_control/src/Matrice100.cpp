@@ -108,11 +108,11 @@ void Matrice100::pubTargetValues() {
 void Matrice100::setTargetValues(float roll,float pitch, float thrust, float yaw, int flag) {
 
 	//Update controlData if any parameters are given otherwise keep same values
-	controlData.axes[0] = roll; 	//(roll != NULL) ? roll : controlData.axes[0];
-	controlData.axes[1] = pitch; 	//(pitch != NULL) ? pitch : controlData.axes[1];
+	controlData.axes[0] = roll * 3.14/180; 	//(roll != NULL) ? roll : controlData.axes[0];
+	controlData.axes[1] = pitch * 3.14/180; 	//(pitch != NULL) ? pitch : controlData.axes[1];
 	controlData.axes[2] = thrust;	//(thrust != NULL) ? thrust : controlData.axes[2];
-	controlData.axes[3] = yaw; 		//(yaw != NULL) ? yaw : controlData.axes[3];
-	controlData.axes[4] = flag;; 	//(flag != NULL) ? flag : controlData.axes[4];
+	controlData.axes[3] = yaw * 3.14/180; 		//(yaw != NULL) ? yaw : controlData.axes[3];
+	controlData.axes[4] = flag; 	//(flag != NULL) ? flag : controlData.axes[4];
 }
 
 
