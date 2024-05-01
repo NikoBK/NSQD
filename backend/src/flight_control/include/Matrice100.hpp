@@ -121,6 +121,7 @@ class Matrice100 {
 		void runPIDController();
 		void updateTargetYaw();	
 		void updateTargetPoints();
+		void startMission();
 
 		float getBatteryVoltage();
 		float getTargetYaw();

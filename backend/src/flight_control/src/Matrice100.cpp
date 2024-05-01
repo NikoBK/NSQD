@@ -84,6 +84,25 @@ void Matrice100::velocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr&
 	z_vel = msg->vector.z;
 }
 
+void Matrice100::startMission() {
+	// Start mission
+	trackState = 0; //0 = regular flight
+	lineStep = 0;
+	pointStep = 0;
+	errorLat = 0;
+	errorLon = 0;
+	errorAlt = 0;
+	errorYaw = 0;
+	integralLat = 0;
+	integralLon = 0;
+	integralAlt = 0;
+	integralYaw = 0;
+	derivativeLat = 0;
+	derivativeLon = 0;
+	derivativeAlt = 0;
+	derivativeYaw = 0;
+}
+
 void Matrice100::setPIDValues(float kp, float ki, float kd, int type) {
 	// Set PID values for a given axis
 	pidParamsArray[type][0] = kp;
@@ -200,8 +219,6 @@ void Matrice100::getTargetRPY(TargetRPY* targetRPY_struct) {
 	targetRPY_struct->pitch = controlData.axes[1];
 	targetRPY_struct->yaw = controlData.axes[3];
 }
-
-
 
 void Matrice100::getError(Error* error_struct) {
 		error_struct->errorLat = errorLat;

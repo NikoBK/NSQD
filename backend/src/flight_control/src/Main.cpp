@@ -58,7 +58,7 @@ void csvWritePathLog(ros::Time begin, int sampleRate)
                             << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust
                             << " , "<< errorData.errorLat << " , " << errorData.errorLon  << " , " << errorData.errorAlt << "\n";
 	}
-  
+
 	imuSample += 1;
 }
 
@@ -203,6 +203,7 @@ int main(int argc, char **argv)
                 state = ENROUTE_STATE
 
             case ENROUTE_STATE:
+                drone->updateTargetValues() 
                 drone->calculateError()
                 error = drone->getError()
                 csvFile.write(error)
