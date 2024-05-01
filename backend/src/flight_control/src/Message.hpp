@@ -141,11 +141,12 @@ private:
 #define START_TEST_MESSAGE_ID 4
 #define STOP_TEST_MESSAGE_ID 5
 #define PID_MESSAGE_ID 6
-#define TAKEOFF_MESSAGE_ID 7
-#define LAND_MESSAGE_ID 8
-#define FLIGHT_PATH_MESSAGE_ID 9
-#define STOP_FLIGHT_PATH_MESSAGE_ID 10
-#define AUTHORITY_MESSAGE_ID 11
+#define UPDATE_MESSAGE_ID 7
+#define TAKEOFF_MESSAGE_ID 8
+#define LAND_MESSAGE_ID 9
+#define FLIGHT_PATH_MESSAGE_ID 10
+#define STOP_FLIGHT_PATH_MESSAGE_ID 11
+#define AUTHORITY_MESSAGE_ID 12
 
 struct Message
 {
@@ -215,7 +216,7 @@ struct RPYTMessage : public Message
 
     virtual void encode(Encoder& encoder) override
     {
-        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteByte(RPYT_MESSAGE_ID);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
@@ -255,18 +256,18 @@ struct StartTestMessage : public Message
     float yaw;
     float thrust;
     int flag;
-    std::string filePath;
+    std::string fileName;
     
 
     virtual void encode(Encoder& encoder) override
     {
-        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteByte(START_TEST_MESSAGE);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
         encoder.WriteFloat(thrust);
         encoder.WriteInt(flag);
-        encoder.WriteString(filePath);
+        encoder.WriteString(fileName);
 
     }
 
@@ -277,7 +278,7 @@ struct StartTestMessage : public Message
         decoder.ReadFloat(&yaw);
         decoder.ReadFloat(&thrust);
         decoder.ReadInt(&flag);
-        decoder.ReadString(&filePath);
+        decoder.ReadString(&fileName);
     }
 };
 
@@ -319,14 +320,14 @@ struct UpdateMessage : public Message
 
     virtual void encode(Encoder& encoder) override
     {
-        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteByte(UPDATE_MESSAGE_ID);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
-	    encoder.WriteFloat(thrust);
+	encoder.WriteFloat(thrust);
         encoder.WriteFloat(lat);
         encoder.WriteFloat(lon);   
-	    encoder.WriteFloat(alt);  
+	encoder.WriteFloat(alt);  
         encoder.WriteInt(state);  
     }
 
@@ -335,19 +336,20 @@ struct UpdateMessage : public Message
         decoder.ReadFloat(&roll);
         decoder.ReadFloat(&pitch);
         decoder.ReadFloat(&yaw);
-	    decoder.ReadFloat(&thrust);
+	decoder.ReadFloat(&thrust);
         decoder.ReadFloat(&lat);
         decoder.ReadFloat(&lon);   
-	    decoder.ReadFloat(&alt); 
+	decoder.ReadFloat(&alt); 
         decoder.ReadInt(&state);
     }
 };
 
-struct AbortTestMessage : public Message
+struct StopTestMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(STOP_TEST_MESSAGE_ID);
 	}
+	virtual void decode(Decoder& decoder) override { }
 };
 
 struct TakeOffMessage : public Message
@@ -355,6 +357,7 @@ struct TakeOffMessage : public Message
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(TAKEOFF_MESSAGE_ID);
 	}
+	virtual void decode(Decoder& decoder) override { }
 };
 
 struct LandMessage : public Message
@@ -362,6 +365,7 @@ struct LandMessage : public Message
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(LAND_MESSAGE_ID);
 	}
+	virtual void decode(Decoder& decoder) override { }
 };
 
 struct SetFlightPathMessage : public Message
@@ -383,6 +387,7 @@ struct StopFlightPathMessage : public Message
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(STOP_FLIGHT_PATH_MESSAGE_ID);
 	}
+	virtual void decode(Decoder& decoder) override { }
 };
 
 struct GetAuthorityMessage : public Message
@@ -390,6 +395,7 @@ struct GetAuthorityMessage : public Message
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(AUTHORITY_MESSAGE_ID);
 	}
+	virtual void decode(Decoder& decoder) override { }
 };
 
 #endif // !MESSAGE_H

@@ -223,7 +223,7 @@ void Server::HandleConnection(int * state)
         m.decode(decoder);
 
         //Open or create file at given location
-        _csvFile->open(m.filePath);
+        _csvFile->open(m.fileName);
 
         //Set target values
         _drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, m.flag);
