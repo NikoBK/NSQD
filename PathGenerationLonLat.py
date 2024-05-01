@@ -2,13 +2,14 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import cv2
 
-stepsize = 0.0002
+stepsize = 0.0003
 
-def ReadCoordinatesFromXML(xml_file, target_block, target_field):
+
+def read_coordinates_from_xml(xml_file, target_block, target_field):
     tree = ET.parse(xml_file)
     root = tree.getroot()
     coordinates = []
-    
+
     for trk in root.findall('.//trk'):
         block_nr = trk.find('BlockNr').text
         field_nr = trk.find('FieldNr').text
@@ -20,7 +21,7 @@ def ReadCoordinatesFromXML(xml_file, target_block, target_field):
             return coordinates
 
 
-def FromCoordinatesToField(coordinates):
+def from_coordinates_to_field(coordinates):
     points = np.array(coordinates, dtype=np.float32)
     hull = cv2.convexHull(points, clockwise=False)  # Compute the convex hull
 
@@ -38,20 +39,20 @@ def FromCoordinatesToField(coordinates):
                 inside_points.append((lon, lat))
 
     return inside_points
-    
 
-def FromPointcloudToPath(point_cloud):
-    #Solving the field with a sweep line algorithm
+
+def from_pointcloud_to_path(point_cloud):
+    # Solving the field with a sweep line algorithm
     path = []
-    
+
     # Implement a quick read of the drones lon location in order to fly to the cloest side of the field.
     """""
     drone_location_lon = 12.3456789
-    
+
     # Figure out if the drone is closer to the top or bottom of the field:
     distance_to_min_y = np.linalg.norm(drone_location_lon - min_y)  # drone_location only needs to be lon
     distance_to_max_y = np.linalg.norm(drone_location_lon - max_y)
-    
+
     if distance_to_min_y > distance_to_max_y:
         # Sort the point cloud by y-coordinate in descending order
         sorted_point_cloud = sorted(point_cloud, key=lambda point: point[1], reverse=True)
@@ -60,7 +61,7 @@ def FromPointcloudToPath(point_cloud):
         sorted_point_cloud = sorted(point_cloud, key=lambda point: point[1])
     """""
     sorted_point_cloud = sorted(point_cloud, key=lambda point: point[1])
-        
+
     unique_rows = []
     current_row = [sorted_point_cloud[0]]
     for i in range(1, len(sorted_point_cloud)):
@@ -73,49 +74,51 @@ def FromPointcloudToPath(point_cloud):
 
     # Print the coordinates in each unique row
     for i, row in enumerate(unique_rows):
-        sorted_ass = sorted(row, key=lambda point: point[0]) # Low --> High
-        sorted_des = sorted(row, key=lambda point: point[0], reverse=True) # High --> Low
-        
+        sorted_ass = sorted(row, key=lambda point: point[0])  # Low --> High
+        sorted_des = sorted(row, key=lambda point: point[0], reverse=True)  # High --> Low
+
         # We need to move the oppisite direction every other itteration.
-        if i%2:
+        if i % 2:
             path.extend(sorted_ass)
         else:
             path.extend(sorted_des)
-            
+
     return path
 
-def FromPathtoXML(path):
+
+def from_path_to_xml(path):
     # Create the root element <gpx>
     gpx = ET.Element("gpx", version="1")
     trk = ET.SubElement(gpx, "trk")
     trk.text = "\n"
-    
+
     # Loop through each point in the route
     for point in path:
         trkpt = ET.SubElement(trk, "trkpt")
         trkpt.tail = "\n"
         trkpt.set("lat", str(point[0]))  # Set the latitude attribute
         trkpt.set("lon", str(point[1]))  # Set the longitude attribute
-    
+
     # Create an ElementTree object
     tree = ET.ElementTree(gpx)
-    
+
     # Write the XML tree to a file
     tree.write("pathfordrone.xml")
 
 
 def main():
-    BlockNr = input('What is the block number, of the field?\n')
-    FieldNr = input('What is the field number, of the field?\n')
-    coordinates = ReadCoordinatesFromXML('DkGpx1.xml', BlockNr, FieldNr)
-    points = FromCoordinatesToField(coordinates)
-    path = FromPointcloudToPath(points)
-    FromPathtoXML(path)
-    
+    blocknr = input('What is the block number, of the field?\n')
+    fieldnr = input('What is the field number, of the field?\n')
+    coordinates = read_coordinates_from_xml('DkGpx1.xml', blocknr, fieldnr)
+    points = from_coordinates_to_field(coordinates)
+    path = from_pointcloud_to_path(points)
+    from_path_to_xml(path)
+
     """"" - Debugging, for use on Mi Map Tools: GeoPlotter
     for lon, lat in path:
         print(f"{lat},{lon},")    
     """""
-    
+
+
 if __name__ == "__main__":
     main()
