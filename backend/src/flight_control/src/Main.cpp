@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
 	// Update drone position and orientation on client.
 	drone->getRPY(&rpy);
-        drone->getGPSData(&gps_data);
+    drone->getGPSData(&gps_data);
 
 	UpdateMessage msg;
 	msg.roll = rpy.roll;
@@ -80,6 +80,8 @@ int main(int argc, char **argv)
 	msg.lat = (float)gps_data.latitude;
 	msg.lon = (float)gps_data.longitude;
 	msg.alt = (float)gps_data.altitude;
+    msg.state = state;
+
 	server->send(msg);
 
         //Update all topics and services
@@ -103,23 +105,23 @@ int main(int argc, char **argv)
         {
         case GROUNDED_STATE: 
         {
-            message = "Waiting for command from client";
+            //message = "Waiting for command from client";
 
-            std::cout << message << std::endl;
+            //std::cout << message << std::endl;
             break;
         }
         case ARMED_STATE:
         {
-            message = "Drone armed and ready for action";
+            //message = "Drone armed and ready for action";
 
-            std::cout << message << std::endl;
+            //std::cout << message << std::endl;
             break;
         }
         case HOVER_STATE:
         {
-            message = "Drone hovering and waiting for instructions";
+            //message = "Drone hovering and waiting for instructions";
 
-            std::cout << message << std::endl;
+            //std::cout << message << std::endl;
             break;
         }
         case PUBLISH_ANGLE_STATE:
@@ -159,6 +161,7 @@ int main(int argc, char **argv)
         {
             //Close test file
             csvFile.close();
+            state = HOVER_STATE;
             break;
         }
         case ENROUTE_STATE:
@@ -184,6 +187,16 @@ int main(int argc, char **argv)
                 drone->pubTargetValues()
 
                 //Somewhere we must take pictures as well...
+
+            case ENROUTE_STOPPED_STATE:
+                drone->calculateError()
+                error = drone->getError()
+                csvFile.write(error)
+
+                drone->updateTargetValues() //function that has PID implmented and updates controlData struct
+
+                //Publish new data
+                drone->pubTargetValues()
             
             */
 

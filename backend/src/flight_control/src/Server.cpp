@@ -214,6 +214,8 @@ void Server::HandleConnection(int * state)
 
         //Update current state
         *state = ARMED_STATE;
+
+        break;
     }
     case START_TEST_MESSAGE_ID:
     {
@@ -228,11 +230,15 @@ void Server::HandleConnection(int * state)
 
         //Update current state
         *state = START_TEST_STATE;
+
+        break;
     }
     case STOP_TEST_MESSAGE_ID:
     {
          //Update current state
         *state = STOP_TEST_STATE;
+
+        break;
     }
     case PID_MESSAGE_ID:
     {
@@ -240,7 +246,52 @@ void Server::HandleConnection(int * state)
         m.decode(decoder);
 
         _drone->setPIDValues(m.kp, m.ki, m.kd);
+
+        break;
     }
+    case AUTHORITY_MESSAGE_ID:
+    {
+        _drone->request_permission();
+
+        break;
+    }
+    case TAKEOFF_MESSAGE_ID:
+    {
+        _drone->takeOff();
+
+        *state = HOVER_STATE;
+        break;
+    }
+    case LAND_MESSAGE_ID:
+    {
+        _drone->land();
+
+        *state = GROUNDED_STATE;
+        break;
+    }
+    case FLIGHT_PATH_MESSAGE_ID:
+    {
+        // Initialise path following
+        SetFlightPathMessage m;
+        m.decode(decoder);
+
+        //_drone->loadPathFromString(m.xmlContent)
+        //_drone->startMission();
+
+        *state = ENROUTE_STATE;
+
+        break;
+    }
+    case STOP_FLIGHT_PATH_MESSAGE_ID:
+    {
+        // Stop drone from following path
+        //_drone->stopMission();
+
+        *state = ENROUTE_STOPPED_STATE;
+
+        break;
+    }
+    
     }
 
     _currentSize = 0;

@@ -315,6 +315,7 @@ struct UpdateMessage : public Message
     float lat;
     float lon;
     float alt;
+    int state;
 
     virtual void encode(Encoder& encoder) override
     {
@@ -322,10 +323,11 @@ struct UpdateMessage : public Message
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
-	encoder.WriteFloat(thrust);
+	    encoder.WriteFloat(thrust);
         encoder.WriteFloat(lat);
         encoder.WriteFloat(lon);   
-	encoder.WriteFloat(alt);    
+	    encoder.WriteFloat(alt);  
+        encoder.WriteInt(state);  
     }
 
     virtual void decode(Decoder& decoder) override
@@ -333,10 +335,11 @@ struct UpdateMessage : public Message
         decoder.ReadFloat(&roll);
         decoder.ReadFloat(&pitch);
         decoder.ReadFloat(&yaw);
-	decoder.ReadFloat(&thrust);
+	    decoder.ReadFloat(&thrust);
         decoder.ReadFloat(&lat);
         decoder.ReadFloat(&lon);   
-	decoder.ReadFloat(&alt); 
+	    decoder.ReadFloat(&alt); 
+        decoder.ReadInt(&state);
     }
 };
 
@@ -345,21 +348,21 @@ struct AbortTestMessage : public Message
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(STOP_TEST_MESSAGE_ID);
 	}
-}
+};
 
 struct TakeOffMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(TAKEOFF_MESSAGE_ID);
 	}
-}
+};
 
 struct LandMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(LAND_MESSAGE_ID);
 	}
-}
+};
 
 struct SetFlightPathMessage : public Message
 {
@@ -373,20 +376,20 @@ struct SetFlightPathMessage : public Message
 	virtual void decode(Decoder& decoder) override {
 		decoder.ReadString(&xmlContent);
 	}
-}
+};
 
 struct StopFlightPathMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(STOP_FLIGHT_PATH_MESSAGE_ID);
 	}
-}
+};
 
 struct GetAuthorityMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(AUTHORITY_MESSAGE_ID);
 	}
-}
+};
 
 #endif // !MESSAGE_H
