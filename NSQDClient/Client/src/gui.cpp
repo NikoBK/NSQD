@@ -223,12 +223,11 @@ void makeManualInputWindow()
             fileName = rpytFilenameBuffer;
 
             StartTestMessage m;
-            //std::string filePathName(rpytFilenameBuffer);
             m.roll = std::stof(rpytRollBuffer);
             m.pitch = std::stof(rpytPitchBuffer);
             m.yaw = std::stof(rpytYawBuffer);
             m.flag = std::stoi(rpytFlagBuffer);
-            m.fileName = fileName;//filePathName;
+            m.fileName = fileName;
             _socket->Send(m);
             log("StartTestMessage sent");
         }
