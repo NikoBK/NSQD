@@ -131,11 +131,12 @@ private:
 #define START_TEST_MESSAGE_ID 4
 #define STOP_TEST_MESSAGE_ID 5
 #define PID_MESSAGE_ID 6
-#define TAKEOFF_MESSAGE_ID 7
-#define LAND_MESSAGE_ID 8
-#define FLIGHT_PATH_MESSAGE_ID 9
-#define STOP_FLIGHT_PATH_MESSAGE_ID 10
-#define AUTHORITY_MESSAGE_ID 11
+#define UPDATE_MESSAGE_ID 7
+#define TAKEOFF_MESSAGE_ID 8
+#define LAND_MESSAGE_ID 9
+#define FLIGHT_PATH_MESSAGE_ID 10
+#define STOP_FLIGHT_PATH_MESSAGE_ID 11
+#define AUTHORITY_MESSAGE_ID 12
 
 struct Message {
     virtual void encode(Encoder& encoder) = 0;
@@ -304,10 +305,11 @@ struct UpdateMessage : public Message
     float lat;
     float lon;
     float alt;
+    int state;
 
     virtual void encode(Encoder& encoder) override
     {
-        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteByte(UPDATE_MESSAGE_ID);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
@@ -315,6 +317,7 @@ struct UpdateMessage : public Message
         encoder.WriteFloat(lat);
         encoder.WriteFloat(lon);
         encoder.WriteFloat(alt);
+        encoder.WriteInt(state);
     }
 
     virtual void decode(Decoder& decoder) override
@@ -326,6 +329,7 @@ struct UpdateMessage : public Message
         decoder.ReadFloat(&lat);
         decoder.ReadFloat(&lon);
         decoder.ReadFloat(&alt);
+        decoder.ReadInt(&state);
     }
 };
 
