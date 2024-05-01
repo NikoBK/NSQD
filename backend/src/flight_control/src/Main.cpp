@@ -3,6 +3,7 @@
 #include <fstream>
 #include "../include/Matrice100.hpp"
 #include "../include/Main.hpp"
+#include "Message.hpp"
 
 
 #define REFRESH_RATE_HZ 50
@@ -82,7 +83,7 @@ int main(int argc, char **argv)
 	msg.alt = (float)gps_data.altitude;
     msg.state = state;
 
-	server->send(msg);
+	server.Send(msg);
 
         //Update all topics and services
 	    ros::spinOnce();
