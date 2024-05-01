@@ -401,19 +401,21 @@ struct GetAuthorityMessage : public Message
 
 struct ImageMessage : public Message
 {
-	short len;
-	byte[] btsImg;
+	std::vector<unsigned char> imgBytes;
+	int len;
 
 	virtual void encode(Encoder& encoder) override {
+		const unsigned char* imgBytesArr = imgBytes.data;
+
 		encoder.WriteByte(IMAGE_MESSAGE_ID);
-		encoder.WriteShort(len);
+		encoder.WriteInt(len);
 		for (int i = 0; i < (int)len; i++) {
 			btsImg[i] = encoder.WriteByte();
 		}
 	}
 
 	virtual void decode(Decoder& decoder) override {
-		len = decoder.ReadShort();
+		len = decoder.ReadInt();
 		for (int i = 0; i < (int)len; i++) {
 			byte[i] = decoder.ReadByte();
 		}

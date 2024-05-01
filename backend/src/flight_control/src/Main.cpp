@@ -83,31 +83,25 @@ int main(int argc, char **argv)
 
     //Main loop running at given frequency until ROS is closed
     while (ros::ok()) 
-    {	
+    {		
+	if (_captureDeviceReady) {
+		// Grab the latest frame from a VideoCapture device.
+		cap >> frame;
+		if (frame.empty()) {
+			std::cerr << "Error: Unable to capture frame" << std::endl;
+		}
+	}
 
 	// Update drone position and orientation on client.
 	drone->getRPY(&rpy);
     	drone->getGPSData(&gps_data);
 
-	UpdateMessage msg;
-	msg.roll = rpy.roll;
-	msg.pitch = rpy.pitch;
-	msg.yaw = rpy.yaw;
-	msg.thrust = drone->getTargetThrust();
-	msg.lat = (float)gps_data.latitude;
-	msg.lon = (float)gps_data.longitude;
-	msg.alt = (float)gps_data.altitude;
-    	msg.state = state;
-	
-	cap >> frame;
-	if (frame.empty()) {
-		std::cerr << "Error: Unable to capture frame" << std::endl;
-	}
-
-	cv::imshow("Frame", frame);	
+	// Instantiate tick messages.
+	UpdateMessage updMsg;
+	ImageMessage imgMsg;	
 
         //Update all topics and services
-	    ros::spinOnce();
+	ros::spinOnce();
 
         // if not connected
         if (!server.connected()) 
@@ -117,9 +111,34 @@ int main(int argc, char **argv)
         }
         else 
         {
+	    // handle the current connection and update state
+            server.HandleConnection(&state);
+	    
+	    // Convert frame to byte array and populate image message
+	    if (_captureDeviceReady && !frame.empty()) {
+		std::vector<unsigned char> imgBytes;
+		cv::imencode(".jpg", frame, imgBytes);
+		imgMsg.imgBytes = imgBytes;
+		imgMsg.len = imgBytes.size();
+		server.Send(imgMsg);
+	    }
+	    else {
+		std::cerr << "Error: Unable to capture frame" << std::endl;
+	    }
+
             // handle the current connection and update state
             server.HandleConnection(&state);
-	server.Send(msg);
+
+    	    // Populate update message
+	    updMsg.roll = rpy.roll;
+	    updMsg.pitch = rpy.pitch;
+	    updMsg.yaw = rpy.yaw;
+	    updMsg.thrust = drone->getTargetThrust();
+	    updMsg.lat = (float)gps_data.latitude;
+	    updMsg.lon = (float)gps_data.longitude;
+	    updMsg.alt = (float)gps_data.altitude;
+    	    updMsg.state = state;
+	    server.Send(updMsg);
         }
 
 
@@ -229,6 +248,7 @@ int main(int argc, char **argv)
     	rate.sleep();
     }
 	cap.release();
+	std::cout << "Press any key to stop the computer vision capture" << std::endl;
 	cv::waitKey(0);
 	cv::destroyAllWindows();
 }
