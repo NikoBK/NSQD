@@ -13,7 +13,11 @@
 // Data structs to save roll pitch adn yaw as well as gps data
 // Declared in Matrice100.hpp
 RPY rpy;
+TargetRPY targetRPY;
 GPS_Data gps_data;
+TargetGPS targetGPSData;
+Error errorData;
+
 
 // Make the matrice100 object globally available by making a pointer to the object
 // Notice that the object is first initialised in the main function using the "new" command
@@ -21,6 +25,7 @@ Matrice100* drone;
 
 // Used to write imu data to csv file.
 int imuSample = 0;
+float target = 0;
 
 // FileHandler.
 std::ofstream csvFile;
@@ -48,6 +53,19 @@ void csvWrite(ros::Time begin, int sampleRate)
 	imuSample += 1;
 }
 
+// Write imu data to csv file
+void csvWritePathLog(ros::Time begin, int sampleRate)
+{	
+	if (imuSample % sampleRate == 0)
+	{
+		ros::Duration timeDiff = ros::Time::now() - begin;
+  		csvFile << timeDiff << " , "<< rpy.roll << " , " << rpy.pitch << " , " << rpy.yaw << " , " << gps_data.latitude << " , " << gps_data.longitude << " , " << gps_data.altitude << " , " << thrust
+                            << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust
+                            << " , "<< errorData.errorLat << " , " << errorData.errorLon  << " , " << errorData.errorAlt << "\n";
+	}
+
+	imuSample += 1;
+}
 
 //Inspired from finite statemachines in PLC workshop the code runs in states
 int state = GROUNDED_STATE;
@@ -212,6 +230,14 @@ int main(int argc, char **argv)
             //Something like (pseudocode)
             /*
             case INITIALISE_ENROUTE_STATE:
+                begin = ros::Time::now();
+                csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust"
+                                        << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust"
+                
+                csvFile << timeDiff << " , "<< rpy.roll << " , " << rpy.pitch << " , " << rpy.yaw << " , " << gps_data.latitude << " , " << gps_data.longitude << " , " << gps_data.altitude << " , " << thrust
+                            << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust
+                            << " , "<< errorData.errorLat << " , " << errorData.errorLon  << " , " << errorData.errorAlt << "\n";
+                
                 drone->loadRouteFromGPX(filePath)
                 drone->calculateInterpolations(desired_vel, update_frequency)
                 drone->startMission()
@@ -219,28 +245,48 @@ int main(int argc, char **argv)
                 state = ENROUTE_STATE
 
             case ENROUTE_STATE:
+                drone->updateTargetValues() 
                 drone->calculateError()
                 error = drone->getError()
                 csvFile.write(error)
 
-                drone->updateTargetValues() //function that has PID implmented and updates controlData struct
+                drone->updateTargetValues() 
+
+                drone->runPIDController() //function that has PID implemented and updates controlData struct
 
                 //Publish new data
                 drone->pubTargetValues()
+                
+                if (drone->getTrackState() == 1) {
+                    state = ENROUTE_TURN_STATE
+                } 
+                else if (drone->getTrackState() == 2) {
+                    state = ENROUTE_STOPPED_STATE
+                }
 
                 //Somewhere we must take pictures as well...
 
-            case ENROUTE_STOPPED_STATE:
+            case ENROUTE_TURN_STATE:
                 drone->calculateError()
                 error = drone->getError()
                 csvFile.write(error)
 
-                drone->updateTargetValues() //function that has PID implmented and updates controlData struct
+                drone->runPIDController()
 
-                //Publish new data
-                drone->pubTargetValues()
+                targetYaw = drone->getTargetYaw()
+
+                if (targetYaw == rpy.yaw) {
+                    state = ENROUTE_STATE;
+                }
+            
+            
+            case ENROUTE_STOPPED_STATE:
+                csvFile.close();
+                state = HOVER_STATE;
+                csvFile.close()
             
             */
+
 
             break;
         }

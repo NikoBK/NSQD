@@ -21,8 +21,19 @@ struct RPY {
 	float yaw;
 };
 
+struct TargetRPY {
+	float roll;
+	float pitch;
+	float yaw;
+};
 
 struct GPS_Data {
+	double latitude;
+	double longitude;
+	double altitude;
+};
+
+struct TargetGPS {
 	double latitude;
 	double longitude;
 	double altitude;
@@ -34,11 +45,23 @@ struct VEL {
 	double z;
 };
 
+struct Error {
+	float errorLat;
+	float errorLon;
+	float errorAlt;
+	float errorYaw;
+};
+
 
 class Matrice100 {
 	private:
 		float imuRoll, imuPitch, imuYaw;
-		float K_p, K_i, K_d;
+		int pidParamsArray[4][3] = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_yaw, ki_yaw, kd_yaw}, {kp_alt, ki_alt, kd_alt}};
+		float targetLat, targetLon, targetAlt, targetYaw;
+		float errorLat, errorLon, errorAlt, errorYaw;
+		float integralLat, integralLon, integralAlt, integralYaw;
+		float derivativeLat, derivativeLon, derivativeAlt, derivativeYaw;
+		float prevErrorLat, prevErrorLon, prevErrorAlt, prevErrorYaw;
 		float imuAccX, imuAccY , imuAccZ;
 		float batteryVoltage;
 		double latitude;
@@ -47,9 +70,12 @@ class Matrice100 {
 		double x_vel;
 		double y_vel;
 		double z_vel;
+		int trackState;
 		int flightStatus;
+		int lineStep;
+		int pointStep; //aka time step
+		
 
- 
 		//Nodehandler
 		ros::NodeHandle _nh;
 
@@ -83,15 +109,25 @@ class Matrice100 {
 		void velocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
 	public:
-		void setPIDValues(float kp, float ki, float kd);
+		void setPIDValues(float kp, float ki, float kd, int type);
 		void setTargetValues(float roll,float pitch, float thrust, float yaw,int flag);
 		void pubTargetValues();
 		void getRPY(RPY* rpy_struct, bool fusion_data = true);
+		void getTargetRPY(TargetRPY* targetRPY_struct);
 		void getGPSData(GPS_Data* gps_struct);
+		void getTargetGPS(TargetGPS* targetGPS_struct)
 		void getVel(VEL* vel_struct);
-		int getFlightStatus();
+		void getError(Error* error_struct);
+		void runPIDController();
+		void updateTargetYaw();	
+		void updateTargetPoints();
+		void startMission();
+
 		float getBatteryVoltage();
+		float getTargetYaw();
 		
+		int getTrackState();
+		int getFlightStatus();
 		int getTargetThrust();
 		int arm(int arm_drone);
 		int request_permission(int permission = 1);
