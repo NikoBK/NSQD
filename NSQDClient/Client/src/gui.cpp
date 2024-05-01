@@ -271,6 +271,10 @@ void makeCmdPanel() {
             log("Landing...\n", prefix);
         }
 
+        if (ImGui::Button("Manual Input")) {
+            _manualInput = !_manualInput;
+        }
+
         if (ImGui::Button("Test Message")) {
             {
                 // TODO: Should send some init message or something.
@@ -337,9 +341,6 @@ void makeDebugPanel(HWND hwnd) {
         else {
             log("Log export aborted", prefix);
         }
-    }
-    if (ImGui::Button("Manual Input")) {
-        _manualInput = !_manualInput;
     }
     if (ImGui::Button("Upload Flight Path Data")) {
         std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
