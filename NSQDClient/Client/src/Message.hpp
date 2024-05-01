@@ -338,6 +338,7 @@ struct AbortTestMessage : public Message
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(STOP_TEST_MESSAGE_ID);
     }
+    virtual void decode(Decoder& decoder) override {}
 };
 
 struct TakeOffMessage : public Message
@@ -345,6 +346,7 @@ struct TakeOffMessage : public Message
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(TAKEOFF_MESSAGE_ID);
     }
+    virtual void decode(Decoder& decoder) override {}
 };
 
 struct LandMessage : public Message
@@ -352,6 +354,7 @@ struct LandMessage : public Message
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(LAND_MESSAGE_ID);
     }
+    virtual void decode(Decoder& decoder) override {}
 };
 
 struct SetFlightPathMessage : public Message
@@ -373,6 +376,7 @@ struct StopFlightPathMessage : public Message
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(STOP_FLIGHT_PATH_MESSAGE_ID);
     }
+    virtual void decode(Decoder& decoder) override {}
 };
 
 struct GetAuthorityMessage : public Message
@@ -380,6 +384,7 @@ struct GetAuthorityMessage : public Message
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(AUTHORITY_MESSAGE_ID);
     }
+    virtual void decode(Decoder& decoder) override {}
 };
 
 #endif // !MESSAGE_HP

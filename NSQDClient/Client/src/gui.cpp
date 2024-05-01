@@ -44,6 +44,9 @@ bool _connected = false;
 // Debug
 std::vector<std::string> logs;
 bool _manualInput = false;
+bool _hasAuthority = false;
+bool _takeOffStarted = false;
+bool _landingStarted = false;
 
 // Textfields
 char addrBuffer[255]{};
@@ -299,19 +302,55 @@ void makeCmdPanel() {
         ImGui::Button("Connect to Manifold");
         ImGui::PopStyleVar();
 
-        if (ImGui::Button("Initialize drone")) {
-            // Initialize drone logic
-            log("Initializing drone...\n", prefix);
-        }
+        if (!_hasAuthority) 
+        {
+            if (ImGui::Button("Set Control Authority")) {
+                GetAuthorityMessage msg;
+                _socket->Send(msg);
+                _hasAuthority = true;
+                log("Authority Set\n", prefix);
+            }
 
-        if (ImGui::Button("Take off")) {
-            // Take off logic
-            log("Taking off...\n", prefix);
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
+            ImGui::Button("Take off");
+            ImGui::Button("Land");
+            ImGui::PopStyleVar();
         }
+        else 
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
+            ImGui::Button("Set Control Authority");
+            ImGui::PopStyleVar();
 
-        if (ImGui::Button("Land")) {
-            // Land logic
-            log("Landing...\n", prefix);
+            if (!_takeOffStarted)
+            {
+                if (ImGui::Button("Take off")) {
+                    TakeOffMessage msg;
+                    _socket->Send(msg);
+                    log("Takeoff Initialized\n", prefix);
+                    _takeOffStarted = true;
+                }
+            }
+            else {
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
+                ImGui::Button("Take off");
+                ImGui::PopStyleVar();
+            }
+
+            if (!_landingStarted)
+            {
+                if (ImGui::Button("Land")) {
+                    LandMessage msg;
+                    _socket->Send(msg);
+                    log("Landing Initialized\n", prefix);
+                    _landingStarted = true;
+                }
+            }
+            else {
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
+                ImGui::Button("Land");
+                ImGui::PopStyleVar();
+            }
         }
 
         if (ImGui::Button("Manual Input")) {
