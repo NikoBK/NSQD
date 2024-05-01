@@ -159,7 +159,7 @@ void makeConnectWindow() {
     // ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
     ImGui::Begin("Connect to Drone");
 
-    std::string addrText{ "Address" };
+    std::string addrText{ "192.168.33.91" };
     std::string portText{ "8888" };
     ImGui::InputText("Address", addrBuffer, sizeof(addrBuffer));
     ImGui::InputText("Port", portBuffer, sizeof(portBuffer));
