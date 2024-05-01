@@ -84,12 +84,89 @@ void Matrice100::velocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr&
 	z_vel = msg->vector.z;
 }
 
-void Matrice100::setPIDValues(float kp, float ki, float kd) {
-	K_p = kp;
-	K_i = ki;
-	K_d = kd;
+void Matrice100::setPIDValues(float kp, float ki, float kd, int type) {
+	// Set PID values for a given axis
+	pidParamsArray[type][0] = kp;
+	pidParamsArray[type][1] = ki;
+	pidParamsArray[type][2] = kd;
 }
 
+// Calculate PID control signal
+float calculateError() {
+    errorX = targetLat - latitude;
+	errorY = targetLon - longitude;
+	errorZ = targetAlt - altitude;
+	errorYaw = targetYaw - imuYaw;
+
+	// REMEMBER TO SET TO 0!!!
+	integralX += errorX; 
+	integralY += errorY;
+	integralZ += errorZ;
+	integralYaw += errorYaw;
+
+    derivativeX = errorX - prevErrorX;
+    prevErrorX = errorX;
+	derivativeY = errorY - prevErrorY;
+	prevErrorY = errorY;
+	derivativeZ = errorZ - prevErrorZ;
+	prevErrorZ = errorZ;
+	derivativeYaw = errorYaw - prevErrorYaw;
+	prevErrorYaw = errorYaw;
+	
+}
+
+float Matrice100::getTargetYaw() {
+	return targetYaw;
+}
+
+void Matrice100::runPIDController() {    
+    // Calculate control signal
+	controlData.axes[0] += pidParamsArray[0][0] * errorX + pidParamsArray[0][1] * integralX + pidParamsArray[0][2] * derivativeX;
+	controlData.axes[1] += pidParamsArray[1][0] * errorY + pidParamsArray[1][1] * integralY + pidParamsArray[1][2] * derivativeY; 	
+	controlData.axes[2] += pidParamsArray[2][0] * errorZ + pidParamsArray[2][1] * integralZ + pidParamsArray[2][2] * derivativeZ;	
+	controlData.axes[3] += pidParamsArray[3][0] * errorYaw + pidParamsArray[3][1] * integralYaw + pidParamsArray[3][2] * derivativeYaw;
+}
+
+void Matrice100::updateTargetPoints() {
+	// Check if all points in line has been reached
+	if (pointStep == track[lineStep].size() - 1) {
+		if (lineStep == track.size() - 1) {
+			// All lines have been reached
+			trackState = 2; //2 = track finished
+		}
+		else {
+			pointStep = 0;
+			lineStep++;
+			updateTargetYaw();
+			trackState = 1; //1 = new line
+		}
+	}
+	else {
+		// Update target values
+		targetLat = 0; //track[lineStep][pointStep][0];
+		targetLon = 0; //track[lineStep][pointStep][1];
+		targetAlt = 0; //track[lineStep][pointStep][2];
+		pointStep++;
+		trackState = 0; //0 = new point
+	}
+}
+
+void Matrice100::updateTargetYaw() {
+	lat1 = track[linestep][0][0];
+	lon1 = track[linestep][0][1];
+	lat2 = track[linestep][track[lineStep].size() - 1][0];
+	lon2 = track[linestep][track[lineStep].size() - 1][1];
+	targetVector = {lat2 - lat1, lon2 - lon1};
+	refVector = {0, 1};
+	dotProduct = targetVector[0] * refVector[0] + targetVector[1] * refVector[1];
+	magTarget = sqrt(pow(targetVector[0], 2) + pow(targetVector[1], 2));
+	magRef = sqrt(pow(refVector[0], 2) + pow(refVector[1], 2));
+	targetYaw = acos(dotProduct / (magTarget * magRef));
+}
+
+bool Matrice100::turnToNextLine() {
+
+}
 // Publish message of type sensor::Joy drone orientation/angles (roll,pitch, thrust and yaw) with a given flag.
 void Matrice100::pubTargetValues() {
 
@@ -108,13 +185,20 @@ void Matrice100::pubTargetValues() {
 void Matrice100::setTargetValues(float roll,float pitch, float thrust, float yaw, int flag) {
 
 	//Update controlData if any parameters are given otherwise keep same values
-	controlData.axes[0] = roll; 	//(roll != NULL) ? roll : controlData.axes[0];
-	controlData.axes[1] = pitch; 	//(pitch != NULL) ? pitch : controlData.axes[1];
-	controlData.axes[2] = thrust;	//(thrust != NULL) ? thrust : controlData.axes[2];
-	controlData.axes[3] = yaw; 		//(yaw != NULL) ? yaw : controlData.axes[3];
-	controlData.axes[4] = flag;; 	//(flag != NULL) ? flag : controlData.axes[4];
+	controlData.axes[0] = roll; 
+	controlData.axes[1] = pitch; 	
+	controlData.axes[2] = thrust;	
+	controlData.axes[3] = yaw; 		
+	controlData.axes[4] = flag; 	
 }
 
+
+void Matrice100::getError(Error* error_struct) {
+		error_struct->errorX = errorX;
+		error_struct->errorY = errorY;
+		error_struct->errorZ = errorZ;
+		error_struct->errorYaw = errorYaw;
+}
 
 void Matrice100::getRPY(RPY* rpy_struct, bool fusion_data) {
 	//default gets data based on fusion between gyro and accelerometer using a simple complementary filter
@@ -136,6 +220,10 @@ void Matrice100::getGPSData(GPS_Data* gps_struct) {
 	gps_struct->latitude = latitude;
 	gps_struct->longitude = longitude;
 	gps_struct->altitude = altitude;
+}
+
+int Matrice100::getTrackState() {
+	return trackState;
 }
 
 int Matrice100::getFlightStatus() {

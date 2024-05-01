@@ -181,24 +181,42 @@ int main(int argc, char **argv)
                 error = drone->getError()
                 csvFile.write(error)
 
-                drone->updateTargetValues() //function that has PID implmented and updates controlData struct
+                drone->updateTargetValues() 
+
+                drone->runPIDController() //function that has PID implemented and updates controlData struct
 
                 //Publish new data
                 drone->pubTargetValues()
+                
+                if (drone->getTrackState() == 1) {
+                    state = ENROUTE_TURN_STATE
+                } 
+                else if (drone->getTrackState() == 2) {
+                    state = ENROUTE_STOPPED_STATE
+                }
 
                 //Somewhere we must take pictures as well...
 
-            case ENROUTE_STOPPED_STATE:
+            case ENROUTE_TURN_STATE:
                 drone->calculateError()
                 error = drone->getError()
                 csvFile.write(error)
 
-                drone->updateTargetValues() //function that has PID implmented and updates controlData struct
+                drone->runPIDController()
 
-                //Publish new data
-                drone->pubTargetValues()
+                targetYaw = drone->getTargetYaw()
+
+                if (targetYaw == rpy.yaw) {
+                    state = ENROUTE_STATE
+                }
+            
+            
+            case ENROUTE_STOPPED_STATE:
+                state = HOVER_STATE
+                csvFile.close()
             
             */
+
 
             break;
         }

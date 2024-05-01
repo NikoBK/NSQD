@@ -34,11 +34,23 @@ struct VEL {
 	double z;
 };
 
+struct Error {
+	float errorX;
+	float errorY;
+	float errorZ;
+	float errorYaw;
+};
+
 
 class Matrice100 {
 	private:
 		float imuRoll, imuPitch, imuYaw;
-		float K_p, K_i, K_d;
+		int pidParamsArray[4][3] = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_yaw, ki_yaw, kd_yaw}, {kp_alt, ki_alt, kd_alt}};
+		float targetLat, targetLon, targetAlt, targetYaw;
+		float errorX, errorY, errorZ, errorYaw;
+		float integralX, integralY, integralZ, integralYaw;
+		float derivativeX, derivativeY, derivativeZ, derivativeYaw;
+		float prevErrorX, prevErrorY, prevErrorZ, prevErrorYaw;
 		float imuAccX, imuAccY , imuAccZ;
 		float batteryVoltage;
 		double latitude;
@@ -47,7 +59,12 @@ class Matrice100 {
 		double x_vel;
 		double y_vel;
 		double z_vel;
+		int trackState;
 		int flightStatus;
+		int lineStep;
+		int pointStep; //aka time step
+		
+
 
  
 		//Nodehandler
@@ -83,15 +100,24 @@ class Matrice100 {
 		void velocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
 	public:
-		void setPIDValues(float kp, float ki, float kd);
+		void setPIDValues(float kp, float ki, float kd, int type);
 		void setTargetValues(float roll,float pitch, float thrust, float yaw,int flag);
 		void pubTargetValues();
 		void getRPY(RPY* rpy_struct, bool fusion_data = true);
 		void getGPSData(GPS_Data* gps_struct);
 		void getVel(VEL* vel_struct);
-		int getFlightStatus();
+		void getError(Error* error_struct);
+		void runPIDController();
+		void updateTargetYaw();	
+		void updateTargetPoints();
+
+		bool turnToNextLine();
+
 		float getBatteryVoltage();
+		float getTargetYaw();
 		
+		int getTrackState();
+		int getFlightStatus();
 		int getTargetThrust();
 		int arm(int arm_drone);
 		int request_permission(int permission = 1);
