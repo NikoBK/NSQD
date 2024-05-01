@@ -1,8 +1,9 @@
 import numpy as np
 import xml.etree.ElementTree as ET
 import cv2
+from math import radians, sin, cos, sqrt, atan2
 
-stepsize = 0.0003015 # 13.746 meters in latitude and longitude
+stepsize = 0.00022 # 13.746 meters in latitude and longitude
 
 
 def read_coordinates_from_xml(xml_file, target_block, target_field):
@@ -105,6 +106,23 @@ def from_path_to_xml(path):
     # Write the XML tree to a file
     tree.write("pathfordrone.xml")
 
+def haversine(lat1, lon1, lat2, lon2):
+    # Convert latitude and longitude from degrees to radians
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    # Haversine formula
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    
+    # Radius of the Earth in meters
+    R = 6371e3
+    
+    # Calculate the distance
+    distance = R * c
+    return distance
+
 
 def main():
     blocknr = input('What is the block number, of the field?\n')
@@ -116,7 +134,12 @@ def main():
 
     
     for lon, lat in path:
-        print(f"{lat},{lon},")    
+        print(f"{lat},{lon},")   
+    
+    print(path[0][1], path[0][0], path[1][1], path[1][0])
+        
+    distance = haversine(path[0][1], path[0][0], path[1][1], path[1][0])
+    print("Distance between the two points is {:.2f} meters".format(distance)) 
 
 
 if __name__ == "__main__":
