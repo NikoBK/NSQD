@@ -1,7 +1,6 @@
 import numpy as np
 import xml.etree.ElementTree as ET
 import cv2
-from math import radians, sin, cos, sqrt, atan2
 
 stepsize = 0.00022711 # 13.746 meters in latitude and longitude
 
@@ -45,22 +44,6 @@ def from_coordinates_to_field(coordinates):
 def from_pointcloud_to_path(point_cloud):
     # Solving the field with a sweep line algorithm
     path = []
-
-    # Implement a quick read of the drones lon location in order to fly to the cloest side of the field.
-    """""
-    drone_location_lon = 12.3456789
-
-    # Figure out if the drone is closer to the top or bottom of the field:
-    distance_to_min_y = np.linalg.norm(drone_location_lon - min_y)  # drone_location only needs to be lon
-    distance_to_max_y = np.linalg.norm(drone_location_lon - max_y)
-
-    if distance_to_min_y > distance_to_max_y:
-        # Sort the point cloud by y-coordinate in descending order
-        sorted_point_cloud = sorted(point_cloud, key=lambda point: point[1], reverse=True)
-    else:
-        # Sort the point cloud by y-coordinate in ascending order
-        sorted_point_cloud = sorted(point_cloud, key=lambda point: point[1])
-    """""
     sorted_point_cloud = sorted(point_cloud, key=lambda point: point[1])
 
     unique_rows = []
@@ -114,10 +97,6 @@ def main():
     points = from_coordinates_to_field(coordinates)
     path = from_pointcloud_to_path(points)
     from_path_to_xml(path)
-
-    
-    for lon, lat in path:
-        print(f"{lat},{lon},")   
 
 
 if __name__ == "__main__":
