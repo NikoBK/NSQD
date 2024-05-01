@@ -48,10 +48,14 @@ bool _manualInput = false;
 // Textfields
 char addrBuffer[255]{};
 char portBuffer[255]{};
-char rBuffer[255]{};
-char pBuffer[255]{};
-char yBuffer[255]{};
-char tBuffer[255]{};
+char rollBuffer[255]{}; // roll
+char pitchBuffer[255]{}; // pitch
+char yawBuffer[255]{}; // yaw
+char thrustBuffer[255]{}; // type
+char propBuffer[255]{};
+char integBuffer[255]{};
+char diffBuffer[255]{};
+char typeBuffer[255]{};
 
 // Function to save data to a file
 bool SaveDataToFile(const std::wstring& filePath) {
@@ -131,20 +135,57 @@ void makeManualInputWindow()
     ImGui::Begin("Send Manual Inputs");
 
     ImGui::PushItemWidth(50);
-    ImGui::InputText("Roll", rBuffer, sizeof(rBuffer));
+    ImGui::InputText("Roll", rollBuffer, sizeof(rollBuffer));
     ImGui::SameLine();
     ImGui::PushItemWidth(50);
-    ImGui::InputText("Pitch", pBuffer, sizeof(pBuffer));
+    ImGui::InputText("Pitch", pitchBuffer, sizeof(pitchBuffer));
     ImGui::SameLine();
     ImGui::PushItemWidth(50);
-    ImGui::InputText("Yaw", yBuffer, sizeof(yBuffer));
+    ImGui::InputText("Yaw", yawBuffer, sizeof(yawBuffer));
+    ImGui::SameLine();
+    //ImGui::PushItemWidth(50);
+    //ImGui::InputText("Thrust", tBuffer, sizeof(tBuffer));
+    //ImGui::SameLine();
+    if (ImGui::Button("Send RPY")) {
+        try {
+            RPYMessage m;
+            m.roll = std::stof(rollBuffer);
+            m.pitch = std::stof(pitchBuffer);
+            m.yaw = std::stof(yawBuffer);
+            _socket->Send(m);
+        } catch (const std::invalid_argument& e) {
+            log("Send RPY: Invalid argument!", "ERROR");
+        }
+    }
+
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("kp", propBuffer, sizeof(propBuffer));
     ImGui::SameLine();
     ImGui::PushItemWidth(50);
-    ImGui::InputText("Thrust", tBuffer, sizeof(tBuffer));
+    ImGui::InputText("ki", integBuffer, sizeof(integBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("kd", diffBuffer, sizeof(diffBuffer));
+    ImGui::SameLine();
+    ImGui::InputText("type", typeBuffer, sizeof(typeBuffer));
+    ImGui::SameLine();
+    if (ImGui::Button("Send PID")) {
+        try {
+            PIDMessage m;
+            m.kp = std::stof(propBuffer);
+            m.ki = std::stof(integBuffer);
+            m.kd = std::stof(diffBuffer);
+            m.type = std::stoi(typeBuffer);
+            _socket->Send(m);
+        }
+        catch (const std::invalid_argument& e) {
+            log("Send RPY: Invalid argument!", "ERROR");
+        }
+    }
     
     if (ImGui::Button("Send to Drone")) {
         log("TODO: Send values to drone");
-        std::cout << "Updating values\n Roll: " << rBuffer << ", Pitch: " << pBuffer << ", Yaw: " << yBuffer << ", Thrust: " << tBuffer << std::endl;
+        std::cout << "Updating values\n Roll: " << rollBuffer << ", Pitch: " << pitchBuffer << ", Yaw: " << yawBuffer << ", Thrust: " << thrustBuffer << std::endl;
         _manualInput = false;
     }
 
