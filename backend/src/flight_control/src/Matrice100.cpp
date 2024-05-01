@@ -93,23 +93,23 @@ void Matrice100::setPIDValues(float kp, float ki, float kd, int type) {
 
 // Calculate PID control signal
 float calculateError() {
-    errorX = targetLat - latitude;
-	errorY = targetLon - longitude;
-	errorZ = targetAlt - altitude;
+    errorLat = targetLat - latitude;
+	errorLon = targetLon - longitude;
+	errorAlt = targetAlt - altitude;
 	errorYaw = targetYaw - imuYaw;
 
 	// REMEMBER TO SET TO 0!!!
-	integralX += errorX; 
-	integralY += errorY;
-	integralZ += errorZ;
+	integralLat += errorLat; 
+	integralLon += errorLon;
+	integralAlt += errorAlt;
 	integralYaw += errorYaw;
 
-    derivativeX = errorX - prevErrorX;
-    prevErrorX = errorX;
-	derivativeY = errorY - prevErrorY;
-	prevErrorY = errorY;
-	derivativeZ = errorZ - prevErrorZ;
-	prevErrorZ = errorZ;
+    derivativeLat = errorLat - prevErrorLat;
+    prevErrorLat = errorLat;
+	derivativeLon = errorLon - prevErrorLon;
+	prevErrorLon = errorLon;
+	derivativeAlt = errorAlt - prevErrorAlt;
+	prevErrorAlt = errorAlt;
 	derivativeYaw = errorYaw - prevErrorYaw;
 	prevErrorYaw = errorYaw;
 	
@@ -121,9 +121,9 @@ float Matrice100::getTargetYaw() {
 
 void Matrice100::runPIDController() {    
     // Calculate control signal
-	controlData.axes[0] += pidParamsArray[0][0] * errorX + pidParamsArray[0][1] * integralX + pidParamsArray[0][2] * derivativeX;
-	controlData.axes[1] += pidParamsArray[1][0] * errorY + pidParamsArray[1][1] * integralY + pidParamsArray[1][2] * derivativeY; 	
-	controlData.axes[2] += pidParamsArray[2][0] * errorZ + pidParamsArray[2][1] * integralZ + pidParamsArray[2][2] * derivativeZ;	
+	controlData.axes[0] += pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat;
+	controlData.axes[1] += pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; 	
+	controlData.axes[2] += pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt;	
 	controlData.axes[3] += pidParamsArray[3][0] * errorYaw + pidParamsArray[3][1] * integralYaw + pidParamsArray[3][2] * derivativeYaw;
 }
 
@@ -204,9 +204,9 @@ void Matrice100::getTargetRPY(TargetRPY* targetRPY_struct) {
 
 
 void Matrice100::getError(Error* error_struct) {
-		error_struct->errorX = errorX;
-		error_struct->errorY = errorY;
-		error_struct->errorZ = errorZ;
+		error_struct->errorLat = errorLat;
+		error_struct->errorLon = errorLon;
+		error_struct->errorAlt = errorAlt;
 		error_struct->errorYaw = errorYaw;
 }
 

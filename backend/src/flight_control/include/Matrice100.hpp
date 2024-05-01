@@ -46,9 +46,9 @@ struct VEL {
 };
 
 struct Error {
-	float errorX;
-	float errorY;
-	float errorZ;
+	float errorLat;
+	float errorLon;
+	float errorAlt;
 	float errorYaw;
 };
 
@@ -58,10 +58,10 @@ class Matrice100 {
 		float imuRoll, imuPitch, imuYaw;
 		int pidParamsArray[4][3] = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_yaw, ki_yaw, kd_yaw}, {kp_alt, ki_alt, kd_alt}};
 		float targetLat, targetLon, targetAlt, targetYaw;
-		float errorX, errorY, errorZ, errorYaw;
-		float integralX, integralY, integralZ, integralYaw;
-		float derivativeX, derivativeY, derivativeZ, derivativeYaw;
-		float prevErrorX, prevErrorY, prevErrorZ, prevErrorYaw;
+		float errorLat, errorLon, errorAlt, errorYaw;
+		float integralLat, integralLon, integralAlt, integralYaw;
+		float derivativeLat, derivativeLon, derivativeAlt, derivativeYaw;
+		float prevErrorLat, prevErrorLon, prevErrorAlt, prevErrorYaw;
 		float imuAccX, imuAccY , imuAccZ;
 		float batteryVoltage;
 		double latitude;
@@ -76,8 +76,6 @@ class Matrice100 {
 		int pointStep; //aka time step
 		
 
-
- 
 		//Nodehandler
 		ros::NodeHandle _nh;
 

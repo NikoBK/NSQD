@@ -14,6 +14,7 @@ RPY rpy;
 TargetRPY targetRPY;
 GPS_Data gps_data;
 TargetGPS targetGPSData;
+Error errorData;
 
 
 // Make the matrice100 object globally available by making a pointer to the object
@@ -54,7 +55,8 @@ void csvWritePathLog(ros::Time begin, int sampleRate)
 	{
 		ros::Duration timeDiff = ros::Time::now() - begin;
   		csvFile << timeDiff << " , "<< rpy.roll << " , " << rpy.pitch << " , " << rpy.yaw << " , " << gps_data.latitude << " , " << gps_data.longitude << " , " << gps_data.altitude << " , " << thrust
-                            << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust << "\n";
+                            << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust
+                            << " , "<< errorData.errorLat << " , " << errorData.errorLon  << " , " << errorData.errorAlt << "\n";
 	}
   
 	imuSample += 1;
@@ -186,6 +188,14 @@ int main(int argc, char **argv)
             //Something like (pseudocode)
             /*
             case INITIALISE_ENROUTE_STATE:
+                begin = ros::Time::now();
+                csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust"
+                                        << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust"
+                
+                csvFile << timeDiff << " , "<< rpy.roll << " , " << rpy.pitch << " , " << rpy.yaw << " , " << gps_data.latitude << " , " << gps_data.longitude << " , " << gps_data.altitude << " , " << thrust
+                            << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust
+                            << " , "<< errorData.errorLat << " , " << errorData.errorLon  << " , " << errorData.errorAlt << "\n";
+                
                 drone->loadRouteFromGPX(filePath)
                 drone->calculateInterpolations(desired_vel, update_frequency)
                 drone->startMission()
@@ -223,12 +233,13 @@ int main(int argc, char **argv)
                 targetYaw = drone->getTargetYaw()
 
                 if (targetYaw == rpy.yaw) {
-                    state = ENROUTE_STATE
+                    state = ENROUTE_STATE;
                 }
             
             
             case ENROUTE_STOPPED_STATE:
-                state = HOVER_STATE
+                csvFile.close();
+                state = HOVER_STATE;
                 csvFile.close()
             
             */
