@@ -126,6 +126,16 @@ private:
 
 #define TEST_MESSAGE_ID 0
 #define RPY_MESSAGE_ID 1
+#define RPYT_MESSAGE_ID 2 //RPY and Thrust
+#define ARM_MESSAGE_ID 3
+#define START_TEST_MESSAGE_ID 4
+#define STOP_TEST_MESSAGE_ID 5
+#define PID_MESSAGE_ID 6
+#define TAKEOFF_MESSAGE_ID 7
+#define LAND_MESSAGE_ID 8
+#define FLIGHT_PATH_MESSAGE_ID 9
+#define STOP_FLIGHT_PATH_MESSAGE_ID 10
+#define AUTHORITY_MESSAGE_ID 11
 
 struct Message {
     virtual void encode(Encoder& encoder) = 0;
@@ -182,6 +192,189 @@ struct RPYMessage : public Message
         decoder.ReadFloat(&roll);
         decoder.ReadFloat(&pitch);
         decoder.ReadFloat(&yaw);
+    }
+};
+
+struct RPYTMessage : public Message
+{
+    float roll;
+    float pitch;
+    float yaw;
+    float thrust;
+
+    virtual void encode(Encoder& encoder) override
+    {
+        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteFloat(roll);
+        encoder.WriteFloat(pitch);
+        encoder.WriteFloat(yaw);
+        encoder.WriteFloat(thrust);
+
+    }
+
+    virtual void decode(Decoder& decoder) override
+    {
+        decoder.ReadFloat(&roll);
+        decoder.ReadFloat(&pitch);
+        decoder.ReadFloat(&yaw);
+        decoder.ReadFloat(&thrust);
+    }
+};
+
+struct ArmMessage : public Message
+{
+    bool arm; //true=arming drone false=disarming
+
+    virtual void encode(Encoder& encoder) override
+    {
+        encoder.WriteByte(ARM_MESSAGE_ID);
+        encoder.WriteBoolean(arm);
+    }
+
+    virtual void decode(Decoder& decoder) override
+    {
+        decoder.ReadBoolean(&arm);
+    }
+};
+
+struct StartTestMessage : public Message
+{
+    float roll;
+    float pitch;
+    float yaw;
+    float thrust;
+    int flag;
+    std::string filePath;
+
+
+    virtual void encode(Encoder& encoder) override
+    {
+        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteFloat(roll);
+        encoder.WriteFloat(pitch);
+        encoder.WriteFloat(yaw);
+        encoder.WriteFloat(thrust);
+        encoder.WriteInt(flag);
+        encoder.WriteString(filePath);
+
+    }
+
+    virtual void decode(Decoder& decoder) override
+    {
+        decoder.ReadFloat(&roll);
+        decoder.ReadFloat(&pitch);
+        decoder.ReadFloat(&yaw);
+        decoder.ReadFloat(&thrust);
+        decoder.ReadInt(&flag);
+        decoder.ReadString(&filePath);
+    }
+};
+
+struct PIDMessage : public Message
+{
+    float kp;
+    float ki;
+    float kd;
+    int type; //Roll (1), pitch (2), yaw (3) or thrust (4) pid values
+
+    virtual void encode(Encoder& encoder) override
+    {
+        encoder.WriteByte(ARM_MESSAGE_ID);
+        encoder.WriteFloat(kp);
+        encoder.WriteFloat(ki);
+        encoder.WriteFloat(kd);
+        encoder.WriteInt(type);
+    }
+
+    virtual void decode(Decoder& decoder) override
+    {
+        decoder.ReadFloat(&kp);
+        decoder.ReadFloat(&ki);
+        decoder.ReadFloat(&kd);
+        decoder.ReadInt(&type);
+    }
+};
+
+struct UpdateMessage : public Message
+{
+    float roll;
+    float pitch;
+    float yaw;
+    float thrust;
+    float lat;
+    float lon;
+    float alt;
+
+    virtual void encode(Encoder& encoder) override
+    {
+        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteFloat(roll);
+        encoder.WriteFloat(pitch);
+        encoder.WriteFloat(yaw);
+        encoder.WriteFloat(thrust);
+        encoder.WriteFloat(lat);
+        encoder.WriteFloat(lon);
+        encoder.WriteFloat(alt);
+    }
+
+    virtual void decode(Decoder& decoder) override
+    {
+        decoder.ReadFloat(&roll);
+        decoder.ReadFloat(&pitch);
+        decoder.ReadFloat(&yaw);
+        decoder.ReadFloat(&thrust);
+        decoder.ReadFloat(&lat);
+        decoder.ReadFloat(&lon);
+        decoder.ReadFloat(&alt);
+    }
+};
+
+struct AbortTestMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(STOP_TEST_MESSAGE_ID);
+    }
+};
+
+struct TakeOffMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(TAKEOFF_MESSAGE_ID);
+    }
+};
+
+struct LandMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(LAND_MESSAGE_ID);
+    }
+};
+
+struct SetFlightPathMessage : public Message
+{
+    std::string xmlContent;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(FLIGHT_PATH_MESSAGE_ID);
+        encoder.WriteString(xmlContent);
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadString(&xmlContent);
+    }
+};
+
+struct StopFlightPathMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(STOP_FLIGHT_PATH_MESSAGE_ID);
+    }
+};
+
+struct GetAuthorityMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(AUTHORITY_MESSAGE_ID);
     }
 };
 
