@@ -47,6 +47,7 @@ bool _manualInput = false;
 bool _hasAuthority = false;
 bool _takeOffStarted = false;
 bool _landingStarted = false;
+bool _testStopped = false;
 
 // Textfields
 char addrBuffer[255]{};
@@ -355,6 +356,27 @@ void makeCmdPanel() {
 
         if (ImGui::Button("Manual Input")) {
             _manualInput = !_manualInput;
+        }
+
+        if (!_testStopped)
+        {
+            if (ImGui::Button("Stop Test")) {
+                StopTestMessage msg;
+                _socket->Send(msg);
+                log("Test Stopped");
+                _testStopped = true;
+            }
+        }
+        else {
+            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
+            ImGui::Button("Stop Test");
+            ImGui::PopStyleVar();
+        }
+
+        if (ImGui::Button("Stop Flight Path")) {
+            StopFlightPathMessage msg;
+            _socket->Send(msg);
+            log("Flight path navigation stopped");
         }
 
         if (ImGui::Button("Test Message")) {
