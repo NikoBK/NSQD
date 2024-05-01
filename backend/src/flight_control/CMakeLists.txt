@@ -6,6 +6,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
+	OpenCV
 )
 
 catkin_package(
@@ -15,8 +16,12 @@ catkin_package(
 
 include_directories(
 	${catkin_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
 	/usr/include
 )
 
 add_executable(flight_control src/Main.cpp src/Message.hpp src/Server.cpp src/Server.h src/Matrice100.cpp)
 target_link_libraries(flight_control ${catkin_LIBRARIES})
+
+add_executable(camera_test src/Vision.cpp)
+target_link_libraries(camera_test ${catkin_LIBRARIES} ${OpenCV_INCLUDE_DIRS})
