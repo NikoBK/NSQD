@@ -2,7 +2,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import cv2
 
-stepsize = 0.0003
+stepsize = 0.00034365 # 13.746 meters in latitude and longitude
 
 
 def read_coordinates_from_xml(xml_file, target_block, target_field):
@@ -114,10 +114,9 @@ def main():
     path = from_pointcloud_to_path(points)
     from_path_to_xml(path)
 
-    """"" - Debugging, for use on Mi Map Tools: GeoPlotter
+    
     for lon, lat in path:
         print(f"{lat},{lon},")    
-    """""
 
 
 if __name__ == "__main__":
