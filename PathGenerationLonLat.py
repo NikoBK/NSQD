@@ -2,7 +2,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import cv2
 
-stepsize = 0.00034365 # 13.746 meters in latitude and longitude
+stepsize = 0.0003015 # 13.746 meters in latitude and longitude
 
 
 def read_coordinates_from_xml(xml_file, target_block, target_field):
