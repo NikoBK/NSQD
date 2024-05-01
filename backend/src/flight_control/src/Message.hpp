@@ -405,8 +405,6 @@ struct ImageMessage : public Message
 	int len;
 
 	virtual void encode(Encoder& encoder) override {
-		const unsigned char* imgBytesArr = imgBytes.data;
-
 		encoder.WriteByte(IMAGE_MESSAGE_ID);
 		encoder.WriteInt(len);
 		for (int i = 0; i < (int)len; i++) {
@@ -415,7 +413,7 @@ struct ImageMessage : public Message
 	}
 
 	virtual void decode(Decoder& decoder) override {
-		len = decoder.ReadShort();
+		decoder.ReadInt(&len);
 		for (int i = 0; i < (int)len; i++) {
 			decoder.ReadByte(&imgBytes[i]);
 		}
