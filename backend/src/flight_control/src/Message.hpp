@@ -261,7 +261,7 @@ struct StartTestMessage : public Message
 
     virtual void encode(Encoder& encoder) override
     {
-        encoder.WriteByte(START_TEST_MESSAGE);
+        encoder.WriteByte(START_TEST_MESSAGE_ID);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
