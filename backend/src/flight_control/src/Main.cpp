@@ -83,7 +83,14 @@ int main(int argc, char **argv)
 
     //Main loop running at given frequency until ROS is closed
     while (ros::ok()) 
-    {		
+    {			
+	if (_captureDeviceReady) {
+		// Grab the latest frame from a VideoCapture device.
+		cap >> frame;
+		if (frame.empty()) {
+			std::cerr << "Error: Unable to capture frame" << std::endl;
+		}
+	}
 	if (_captureDeviceReady) {
 		// Grab the latest frame from a VideoCapture device.
 		cap >> frame;
