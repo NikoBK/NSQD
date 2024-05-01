@@ -147,10 +147,6 @@ int main(int argc, char **argv)
         }
         case RUNNING_TEST_STATE:
         {
-            drone->getRPY(&rpy);
-		    drone->getGPSData(&gps_data);
-            thrust = drone->getTargetThrust();
-
             //Write to csvfile
             csvWrite(begin, 3);
 
