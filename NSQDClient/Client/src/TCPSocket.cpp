@@ -173,6 +173,11 @@ void TCPSocket::HandleReceive()
 			log(message, "INFO");
 			break;
 		}
+		/*case UPDATE_MESSAGE_ID:
+		{
+			UpdateMessage msg;
+			msg.decode(decoder);
+		}*/
 	}
 
 	_currentSize = 0;

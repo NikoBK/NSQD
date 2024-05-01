@@ -40,13 +40,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Networking
 bool _connecting = false;
 bool _connected = false;
+bool _droneArmed = false;
 
 // Debug
 std::vector<std::string> logs;
 bool _manualInput = false;
 bool _hasAuthority = false;
-bool _takeOffStarted = false;
-bool _landingStarted = false;
 bool _testStopped = false;
 
 // Textfields
@@ -220,13 +219,16 @@ void makeManualInputWindow()
     ImGui::SameLine();
     if (ImGui::Button("Send RPYFT")) {
         try {
+            std::string fileName{ "ignore_null" };
+            fileName = rpytFilenameBuffer;
+
             StartTestMessage m;
-            std::string filePathName(rpytFilenameBuffer);
+            //std::string filePathName(rpytFilenameBuffer);
             m.roll = std::stof(rpytRollBuffer);
-            m.pitch = std::stof(rpytRollBuffer);
-            m.yaw = std::stof(rpytRollBuffer);
+            m.pitch = std::stof(rpytPitchBuffer);
+            m.yaw = std::stof(rpytYawBuffer);
             m.flag = std::stoi(rpytFlagBuffer);
-            m.fileName = filePathName;
+            m.fileName = fileName;//filePathName;
             _socket->Send(m);
             log("StartTestMessage sent");
         }
@@ -365,34 +367,24 @@ void makeCmdPanel() {
             ImGui::Button("Set Control Authority");
             ImGui::PopStyleVar();
 
-            if (!_takeOffStarted)
-            {
-                if (ImGui::Button("Take off")) {
-                    TakeOffMessage msg;
-                    _socket->Send(msg);
-                    log("Takeoff Initialized\n", prefix);
-                    _takeOffStarted = true;
-                }
-            }
-            else {
-                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
-                ImGui::Button("Take off");
-                ImGui::PopStyleVar();
+            if (ImGui::Button("Arm Drone")) {
+                _droneArmed = !_droneArmed;
+                ArmMessage msg;
+                msg.arm = _droneArmed;
+                _socket->Send(msg);
+                log("Drone armed");
             }
 
-            if (!_landingStarted)
-            {
-                if (ImGui::Button("Land")) {
-                    LandMessage msg;
-                    _socket->Send(msg);
-                    log("Landing Initialized\n", prefix);
-                    _landingStarted = true;
-                }
+            if (ImGui::Button("Take off")) {
+                TakeOffMessage msg;
+                _socket->Send(msg);
+                log("Takeoff Initialized\n", prefix);
             }
-            else {
-                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
-                ImGui::Button("Land");
-                ImGui::PopStyleVar();
+
+            if (ImGui::Button("Land")) {
+                LandMessage msg;
+                _socket->Send(msg);
+                log("Landing Initialized\n", prefix);
             }
         }
 
