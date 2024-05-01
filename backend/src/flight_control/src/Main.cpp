@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 
 	// Update drone position and orientation on client.
 	drone->getRPY(&rpy);
-        drone->getGPSData(&gps_data);
+    drone->getGPSData(&gps_data);
 
 	UpdateMessage msg;
 	msg.roll = rpy.roll;
@@ -80,6 +80,8 @@ int main(int argc, char **argv)
 	msg.lat = (float)gps_data.latitude;
 	msg.lon = (float)gps_data.longitude;
 	msg.alt = (float)gps_data.altitude;
+    msg.state = state;
+    
 	server->send(msg);
 
         //Update all topics and services
