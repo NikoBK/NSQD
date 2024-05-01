@@ -226,7 +226,7 @@ void Server::HandleConnection(int * state)
         _csvFile->open(m.fileName);
 
         //Set target values
-        _drone->setTargetValues(m.roll, m.pitch, m.thrust, m.yaw, m.flag);
+        _drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, m.flag);
 
         //Update current state
         *state = START_TEST_STATE;
