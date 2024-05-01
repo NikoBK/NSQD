@@ -111,13 +111,12 @@ void Matrice100::setPIDValues(float kp, float ki, float kd, int type) {
 }
 
 // Calculate PID control signal
-float calculateError() {
+void Matrice100::calculateError() {
     errorLat = targetLat - latitude;
 	errorLon = targetLon - longitude;
 	errorAlt = targetAlt - altitude;
 	errorYaw = targetYaw - imuYaw;
 
-	// REMEMBER TO SET TO 0!!!
 	integralLat += errorLat; 
 	integralLon += errorLon;
 	integralAlt += errorAlt;
@@ -171,15 +170,19 @@ void Matrice100::updateTargetPoints() {
 }
 
 void Matrice100::updateTargetYaw() {
-	lat1 = track[linestep][0][0];
-	lon1 = track[linestep][0][1];
-	lat2 = track[linestep][track[lineStep].size() - 1][0];
-	lon2 = track[linestep][track[lineStep].size() - 1][1];
-	targetVector = {lat2 - lat1, lon2 - lon1};
-	refVector = {0, 1};
-	dotProduct = targetVector[0] * refVector[0] + targetVector[1] * refVector[1];
-	magTarget = sqrt(pow(targetVector[0], 2) + pow(targetVector[1], 2));
-	magRef = sqrt(pow(refVector[0], 2) + pow(refVector[1], 2));
+	float lat1 = track[lineStep][0][0];
+	float lon1 = track[lineStep][0][1];
+	float lat2 = track[lineStep][track[lineStep].size() - 1][0];
+	float lon2 = track[lineStep][track[lineStep].size() - 1][1];
+
+	std::vector<float> targetVector = {lat2 - lat1, lon2 - lon1};
+	std::vector<float> refVector = {0, 1};
+
+	// targetVector = {lat2 - lat1, lon2 - lon1};
+	// refVector = {0, 1};
+	float dotProduct = targetVector[0] * refVector[0] + targetVector[1] * refVector[1];
+	float magTarget = sqrt(pow(targetVector[0], 2) + pow(targetVector[1], 2));
+	float magRef = sqrt(pow(refVector[0], 2) + pow(refVector[1], 2));
 	targetYaw = acos(dotProduct / (magTarget * magRef));
 }
 

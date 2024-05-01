@@ -56,7 +56,7 @@ struct Error {
 class Matrice100 {
 	private:
 		float imuRoll, imuPitch, imuYaw;
-		int pidParamsArray[4][3] = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_yaw, ki_yaw, kd_yaw}, {kp_alt, ki_alt, kd_alt}};
+		int pidParamsArray[4][3];    // = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_yaw, ki_yaw, kd_yaw}, {kp_alt, ki_alt, kd_alt}};
 		float targetLat, targetLon, targetAlt, targetYaw;
 		float errorLat, errorLon, errorAlt, errorYaw;
 		float integralLat, integralLon, integralAlt, integralYaw;
@@ -74,6 +74,8 @@ class Matrice100 {
 		int flightStatus;
 		int lineStep;
 		int pointStep; //aka time step
+
+		std::vector<std::vector<std::vector<double>>> track;
 		
 
 		//Nodehandler
@@ -115,13 +117,14 @@ class Matrice100 {
 		void getRPY(RPY* rpy_struct, bool fusion_data = true);
 		void getTargetRPY(TargetRPY* targetRPY_struct);
 		void getGPSData(GPS_Data* gps_struct);
-		void getTargetGPS(TargetGPS* targetGPS_struct)
+		void getTargetGPS(TargetGPS* targetGPS_struct);
 		void getVel(VEL* vel_struct);
 		void getError(Error* error_struct);
 		void runPIDController();
 		void updateTargetYaw();	
 		void updateTargetPoints();
 		void startMission();
+		void calculateError();
 
 		float getBatteryVoltage();
 		float getTargetYaw();

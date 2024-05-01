@@ -36,6 +36,7 @@ ros::Time begin;
 
 //Used for storing target thrust to be written to csv file
 float thrust = 0;
+float targetThrust = 0;
 
 // Used to capture images
 bool _captureDeviceReady = false;
@@ -61,7 +62,7 @@ void csvWritePathLog(ros::Time begin, int sampleRate)
 		ros::Duration timeDiff = ros::Time::now() - begin;
   		csvFile << timeDiff << " , "<< rpy.roll << " , " << rpy.pitch << " , " << rpy.yaw << " , " << gps_data.latitude << " , " << gps_data.longitude << " , " << gps_data.altitude << " , " << thrust
                             << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust
-                            << " , "<< errorData.errorLat << " , " << errorData.errorLon  << " , " << errorData.errorAlt << "\n";
+                            << " , " << errorData.errorLat << " , " << errorData.errorLon << " , " << errorData.errorAlt << " , " << errorData.errorYaw << "\n";
 	}
 
 	imuSample += 1;
@@ -141,10 +142,11 @@ int main(int argc, char **argv)
 	    
 	    // Convert frame to byte array and populate image message
 	    if (_captureDeviceReady && !frame.empty()) {
-		std::vector<unsigned char> imgBytes;
-		cv::imencode(".jpg", frame, imgBytes);
+		std::vector<unsigned char> imgBytesVec;
+		cv::imencode(".jpg", frame, imgBytesVec);
+		unsigned char* imgBytes = imgBytesVec.data();
 		imgMsg.imgBytes = imgBytes;
-		imgMsg.len = imgBytes.size();
+		imgMsg.len = imgBytesVec.size();
 		server.Send(imgMsg);
 	    }
 	    else {
@@ -238,12 +240,11 @@ int main(int argc, char **argv)
             /*
             case INITIALISE_ENROUTE_STATE:
                 begin = ros::Time::now();
-                csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust"
-                                        << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust"
-                
-                csvFile << timeDiff << " , "<< rpy.roll << " , " << rpy.pitch << " , " << rpy.yaw << " , " << gps_data.latitude << " , " << gps_data.longitude << " , " << gps_data.altitude << " , " << thrust
-                            << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust
-                            << " , "<< errorData.errorLat << " , " << errorData.errorLon  << " , " << errorData.errorAlt << "\n";
+
+                csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust , "
+                                        << "TargetRoll , " << "targetPitch , " << "targetYaw , " << "targetLatitude , " << "targetLongitude , " << "targetAltitude , " << "targetThrust , "
+					<< "errorLatitude , " << "errorLongitude , " << "errorAltitude , " << "errorYaw" << "\n";
+
                 
                 drone->loadRouteFromGPX(filePath)
                 drone->calculateInterpolations(desired_vel, update_frequency)
@@ -252,7 +253,7 @@ int main(int argc, char **argv)
                 state = ENROUTE_STATE
 
             case ENROUTE_STATE:
-                drone->updateTargetValues() 
+                drone->updateTargetValues(); 
                 drone->calculateError()
                 error = drone->getError()
                 csvFile.write(error)

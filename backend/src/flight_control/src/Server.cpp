@@ -245,7 +245,7 @@ void Server::HandleConnection(int * state)
         PIDMessage m;
         m.decode(decoder);
 
-        _drone->setPIDValues(m.kp, m.ki, m.kd);
+        _drone->setPIDValues(m.kp, m.ki, m.kd, m.type);
 
         break;
     }
