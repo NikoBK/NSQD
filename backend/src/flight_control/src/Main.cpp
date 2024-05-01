@@ -4,6 +4,7 @@
 #include "../include/Matrice100.hpp"
 #include "../include/Main.hpp"
 #include "Message.hpp"
+#include <opencv2/opencv.hpp>
 
 
 #define REFRESH_RATE_HZ 50
@@ -30,6 +31,9 @@ ros::Time begin;
 
 //Used for storing target thrust to be written to csv file
 float thrust = 0;
+
+// Used to capture images
+bool _captureDeviceReady = false;
 
 
 // Write imu data to csv file
@@ -64,6 +68,18 @@ int main(int argc, char **argv)
 
     ros::Rate rate(REFRESH_RATE_HZ);
 
+    std::cout << "Starting drone camera initialization..." << std::endl;
+    int id = 2;
+    cv::VideoCapture cap(id);
+
+    if (!cap.isOpened()) {
+	std::cerr << "Error: Unable to open camera (" << std::to_string(id) << ")" << std::endl;
+	_captureDeviceReady = false;
+    } else {
+	std::cout << "Capture device is open" << std::endl;
+	_captureDeviceReady = true;
+    }
+    cv::Mat frame;
 
     //Main loop running at given frequency until ROS is closed
     while (ros::ok()) 
@@ -71,7 +87,7 @@ int main(int argc, char **argv)
 
 	// Update drone position and orientation on client.
 	drone->getRPY(&rpy);
-    drone->getGPSData(&gps_data);
+    	drone->getGPSData(&gps_data);
 
 	UpdateMessage msg;
 	msg.roll = rpy.roll;
@@ -81,9 +97,14 @@ int main(int argc, char **argv)
 	msg.lat = (float)gps_data.latitude;
 	msg.lon = (float)gps_data.longitude;
 	msg.alt = (float)gps_data.altitude;
-    msg.state = state;
-
+    	msg.state = state;
 	
+	cap >> frame;
+	if (frame.empty()) {
+		std::cerr << "Error: Unable to capture frame" << std::endl;
+	}
+
+	cv::imshow("Frame", frame);	
 
         //Update all topics and services
 	    ros::spinOnce();
@@ -108,7 +129,7 @@ int main(int argc, char **argv)
         case GROUNDED_STATE: 
         {
             //message = "Waiting for command from client";
-
+	    
             //std::cout << message << std::endl;
             break;
         }
@@ -205,7 +226,9 @@ int main(int argc, char **argv)
             break;
         }
         }
-
-	    rate.sleep();
+    	rate.sleep();
     }
+	cap.release();
+	cv::waitKey(0);
+	cv::destroyAllWindows();
 }

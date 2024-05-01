@@ -147,6 +147,7 @@ private:
 #define FLIGHT_PATH_MESSAGE_ID 10
 #define STOP_FLIGHT_PATH_MESSAGE_ID 11
 #define AUTHORITY_MESSAGE_ID 12
+#define IMAGE_MESSAGE_ID 13
 
 struct Message
 {
@@ -396,6 +397,27 @@ struct GetAuthorityMessage : public Message
 		encoder.WriteByte(AUTHORITY_MESSAGE_ID);
 	}
 	virtual void decode(Decoder& decoder) override { }
+};
+
+struct ImageMessage : public Message
+{
+	short len;
+	byte[] btsImg;
+
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(IMAGE_MESSAGE_ID);
+		encoder.WriteShort(len);
+		for (int i = 0; i < (int)len; i++) {
+			btsImg[i] = encoder.WriteByte();
+		}
+	}
+
+	virtual void decode(Decoder& decoder) override {
+		len = decoder.ReadShort();
+		for (int i = 0; i < (int)len; i++) {
+			byte[i] = decoder.ReadByte();
+		}
+	}
 };
 
 #endif // !MESSAGE_H
