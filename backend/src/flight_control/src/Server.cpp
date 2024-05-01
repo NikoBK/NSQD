@@ -32,8 +32,9 @@ Server::Server(int port, Matrice100* drone, std::ofstream *csvFile)
     }
 
     // enable non blocking flag
-    flags |= O_NONBLOCK;
-    if (fcntl(_serverSocket, F_SETFL, flags) == -1) {
+    //flags |= O_NONBLOCK;
+    //if (fcntl(_serverSocket, F_SETFL, flags) == -1) {
+    if (fcntl(_serverSocket, F_SETFL, fcntl(_serverSocket, F_GETFL) | O_NONBLOCK) == -1) {
         std::cerr << "Failed to set non-blocking: " << errno << std::endl;
         close(_serverSocket);
         exit(-1);
@@ -77,10 +78,28 @@ void Server::AcceptConnection()
         }
         return;
     }
+
+    // get current flags
+    int flags = fcntl(socket, F_GETFL, 0);
+    if (flags == -1) {
+        std::cerr << "Failed to get current flags: " << errno << std::endl;
+        close(socket);
+        return;
+    }
+
+    // enable non blocking flag
+    flags |= O_NONBLOCK;
+    if (fcntl(socket, F_SETFL, flags) == -1) {
+        std::cerr << "Failed to set non-blocking: " << errno << std::endl;
+        close(socket);
+        return;
+    }
+
     std::cout << "Client Connection Established" << std::endl;
  
     _connected = true;
     _socket = socket;
+
 }
 
 void Server::HandleConnection(int * state) 

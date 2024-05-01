@@ -37,6 +37,7 @@ ros::Time begin;
 //Used for storing target thrust to be written to csv file
 float thrust = 0;
 float targetThrust = 0;
+float targetYaw = 0;
 
 // Used to capture images
 bool _captureDeviceReady = false;
@@ -102,7 +103,8 @@ int main(int argc, char **argv)
 
     //Main loop running at given frequency until ROS is closed
     while (ros::ok()) 
-    {			
+    {
+	std::cout << "tick!" << std::endl;
 	if (_captureDeviceReady) {
 		// Grab the latest frame from a VideoCapture device.
 		cap >> frame;
@@ -121,40 +123,43 @@ int main(int argc, char **argv)
 	// Update drone position and orientation on client.
 	drone->getRPY(&rpy);
     	drone->getGPSData(&gps_data);
-
+	std::cout << "pre message instantiation" << std::endl;
 	// Instantiate tick messages.
 	UpdateMessage updMsg;
 	ImageMessage imgMsg;	
 
-        //Update all topics and services
-	ros::spinOnce();
+	std::cout << "pre connection check" << std::endl;
 
         // if not connected
         if (!server.connected()) 
         {
+	    std::cout << "waiting for connection..." << std::endl;
             // see if theres a connection
             server.AcceptConnection();
         }
         else 
         {
+	    std::cout << "server is connected" << std::endl;
 	    // handle the current connection and update state
             server.HandleConnection(&state);
+	    std::cout << "just handled" << std::endl;
 	    
 	    // Convert frame to byte array and populate image message
-	    if (_captureDeviceReady && !frame.empty()) {
+	    /*if (!frame.empty()) {
+		std::cout << "pre-yoink!" << std::endl;
 		std::vector<unsigned char> imgBytesVec;
 		cv::imencode(".jpg", frame, imgBytesVec);
 		unsigned char* imgBytes = imgBytesVec.data();
 		imgMsg.imgBytes = imgBytes;
 		imgMsg.len = imgBytesVec.size();
 		server.Send(imgMsg);
+		std::cout << "yoink!" << std::endl;
 	    }
 	    else {
 		std::cerr << "Error: Unable to capture frame" << std::endl;
-	    }
+	    }*/
 
-            // handle the current connection and update state
-            server.HandleConnection(&state);
+	    std::cout << "pre update message" << std::endl;
 
     	    // Populate update message
 	    updMsg.roll = rpy.roll;
@@ -165,10 +170,10 @@ int main(int argc, char **argv)
 	    updMsg.lon = (float)gps_data.longitude;
 	    updMsg.alt = (float)gps_data.altitude;
     	    updMsg.state = state;
-	    server.Send(updMsg);
+	    //server.Send(updMsg);
         }
 
-
+	std::cout << "if statement done - pre switch" << std::endl;
         //Act based on current state of operation
         switch (state) 
         {
@@ -233,74 +238,84 @@ int main(int argc, char **argv)
             state = HOVER_STATE;
             break;
         }
-        case ENROUTE_STATE:
-        {
-            //The code that will try to follow the uploaded route
-            //Something like (pseudocode)
-            /*
-            case INITIALISE_ENROUTE_STATE:
-                begin = ros::Time::now();
 
-                csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust , "
-                                        << "TargetRoll , " << "targetPitch , " << "targetYaw , " << "targetLatitude , " << "targetLongitude , " << "targetAltitude , " << "targetThrust , "
+	    case INITIALISE_ENROUTE_STATE:
+	{
+		begin = ros::Time::now();
+
+		csvFile << "Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust , "
+			                << "TargetRoll , " << "targetPitch , " << "targetYaw , " << "targetLatitude , " << "targetLongitude , " << "targetAltitude , " << "targetThrust , "
 					<< "errorLatitude , " << "errorLongitude , " << "errorAltitude , " << "errorYaw" << "\n";
 
-                
-                drone->loadRouteFromGPX(filePath)
-                drone->calculateInterpolations(desired_vel, update_frequency)
-                drone->startMission()
-                
-                state = ENROUTE_STATE
+	
+		//drone->loadRouteFromGPX(filePath)
+		//drone->calculateInterpolations(desired_vel, update_frequency)
+		drone->startMission();
+	
+		state = ENROUTE_STATE;
 
-            case ENROUTE_STATE:
-                drone->updateTargetValues(); 
-                drone->calculateError()
-                error = drone->getError()
-                csvFile.write(error)
+		break;
+	}
 
-                drone->updateTargetValues() 
+	    case ENROUTE_STATE:
+	{
+		drone->updateTargetPoints(); 
+		drone->calculateError();
 
-                drone->runPIDController() //function that has PID implemented and updates controlData struct
+		drone->getError(&errorData);
 
-                //Publish new data
-                drone->pubTargetValues()
-                
-                if (drone->getTrackState() == 1) {
-                    state = ENROUTE_TURN_STATE
-                } 
-                else if (drone->getTrackState() == 2) {
-                    state = ENROUTE_STOPPED_STATE
-                }
+		drone->runPIDController(); //function that has PID implemented and updates controlData struct
 
-                //Somewhere we must take pictures as well...
+		//Publish new data
+		drone->pubTargetValues();
+	
+		if (drone->getTrackState() == 1) {
+		    state = ENROUTE_TURN_STATE;
+		} 
+		else if (drone->getTrackState() == 2) {
+		    state = ENROUTE_STOPPED_STATE;
+		}
 
-            case ENROUTE_TURN_STATE:
-                drone->calculateError()
-                error = drone->getError()
-                csvFile.write(error)
+		csvWritePathLog(begin, 1);
+		
+		break;
+	}
 
-                drone->runPIDController()
+	    case ENROUTE_TURN_STATE:
+	{
+		drone->calculateError();
+		drone->getError(&errorData);
 
-                targetYaw = drone->getTargetYaw()
+		drone->runPIDController();
 
-                if (targetYaw == rpy.yaw) {
-                    state = ENROUTE_STATE;
-                }
-            
-            
-            case ENROUTE_STOPPED_STATE:
-                csvFile.close();
-                state = HOVER_STATE;
-                csvFile.close()
-            
-            */
+		targetYaw = drone->getTargetYaw();
 
+		if (rpy.yaw-0.052 < targetYaw && targetYaw < rpy.yaw+0.052) {
+		    state = ENROUTE_STATE;
+		}
 
-            break;
+		csvWritePathLog(begin, 1);
+		
+		break;
+	}
+	    case ENROUTE_STOPPED_STATE:
+	{
+		csvFile.close();
+		state = HOVER_STATE;
+
+            	break;
+	}
+        //}
         }
-        }
+
+	//Update all topics and services
+	ros::spinOnce();
+	
     	rate.sleep();
+
+	
     }
+
 	cap.release();
 	std::cout << "Press any key to stop the computer vision capture" << std::endl;
 	cv::waitKey(0);

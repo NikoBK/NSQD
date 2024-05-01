@@ -161,9 +161,9 @@ void Matrice100::updateTargetPoints() {
 	}
 	else {
 		// Update target values
-		targetLat = 0; //track[lineStep][pointStep][0];
-		targetLon = 0; //track[lineStep][pointStep][1];
-		targetAlt = 0; //track[lineStep][pointStep][2];
+		targetLat = track[lineStep][pointStep][0];
+		targetLon = track[lineStep][pointStep][1];
+		targetAlt = track[lineStep][pointStep][2];
 		pointStep++;
 		trackState = 0; //0 = new point
 	}
