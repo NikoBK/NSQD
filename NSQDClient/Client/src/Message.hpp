@@ -245,18 +245,18 @@ struct StartTestMessage : public Message
     float yaw;
     float thrust;
     int flag;
-    std::string filePath;
+    std::string fileName;
 
 
     virtual void encode(Encoder& encoder) override
     {
-        encoder.WriteByte(RPY_MESSAGE_ID);
+        encoder.WriteByte(START_TEST_MESSAGE_ID);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
         encoder.WriteFloat(thrust);
         encoder.WriteInt(flag);
-        encoder.WriteString(filePath);
+        encoder.WriteString(fileName);
 
     }
 
@@ -267,7 +267,7 @@ struct StartTestMessage : public Message
         decoder.ReadFloat(&yaw);
         decoder.ReadFloat(&thrust);
         decoder.ReadInt(&flag);
-        decoder.ReadString(&filePath);
+        decoder.ReadString(&fileName);
     }
 };
 

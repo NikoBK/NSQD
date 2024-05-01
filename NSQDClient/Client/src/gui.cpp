@@ -50,16 +50,28 @@ bool _landingStarted = false;
 bool _testStopped = false;
 
 // Textfields
+// CONNECTION
 char addrBuffer[255]{};
 char portBuffer[255]{};
-char rollBuffer[255]{}; // roll
-char pitchBuffer[255]{}; // pitch
-char yawBuffer[255]{}; // yaw
-char thrustBuffer[255]{}; // type
+
+// SEND RPY (MANUAL INPUT)
+char rollBuffer[255]{};
+char pitchBuffer[255]{};
+char yawBuffer[255]{};
+
+// SEND PID (MANUAL INPUT)
 char propBuffer[255]{};
 char integBuffer[255]{};
 char diffBuffer[255]{};
 char typeBuffer[255]{};
+
+// SEND RPYT (MANUAL INPUT)
+char rpytRollBuffer[255]{};
+char rpytPitchBuffer[255]{};
+char rpytYawBuffer[255]{};
+char rpytThrustBuffer[255]{};
+char rpytFlagBuffer[255]{};
+char rpytFilenameBuffer[255]{};
 
 // Function to save data to a file
 bool SaveDataToFile(const std::wstring& filePath) {
@@ -138,6 +150,7 @@ void makeManualInputWindow()
 {
     ImGui::Begin("Send Manual Inputs");
 
+    ImGui::Text("Send RPY Message:");
     ImGui::PushItemWidth(50);
     ImGui::InputText("Roll", rollBuffer, sizeof(rollBuffer));
     ImGui::SameLine();
@@ -147,9 +160,6 @@ void makeManualInputWindow()
     ImGui::PushItemWidth(50);
     ImGui::InputText("Yaw", yawBuffer, sizeof(yawBuffer));
     ImGui::SameLine();
-    //ImGui::PushItemWidth(50);
-    //ImGui::InputText("Thrust", tBuffer, sizeof(tBuffer));
-    //ImGui::SameLine();
     if (ImGui::Button("Send RPY")) {
         try {
             RPYMessage m;
@@ -162,6 +172,7 @@ void makeManualInputWindow()
         }
     }
 
+    ImGui::Text("Send PID Message:");
     ImGui::PushItemWidth(50);
     ImGui::InputText("kp", propBuffer, sizeof(propBuffer));
     ImGui::SameLine();
@@ -171,6 +182,7 @@ void makeManualInputWindow()
     ImGui::PushItemWidth(50);
     ImGui::InputText("kd", diffBuffer, sizeof(diffBuffer));
     ImGui::SameLine();
+    ImGui::PushItemWidth(50);
     ImGui::InputText("type", typeBuffer, sizeof(typeBuffer));
     ImGui::SameLine();
     if (ImGui::Button("Send PID")) {
@@ -183,17 +195,47 @@ void makeManualInputWindow()
             _socket->Send(m);
         }
         catch (const std::invalid_argument& e) {
-            log("Send RPY: Invalid argument!", "ERROR");
+            log("Send PID: Invalid argument!", "ERROR");
         }
     }
-    
-    if (ImGui::Button("Send to Drone")) {
-        log("TODO: Send values to drone");
-        std::cout << "Updating values\n Roll: " << rollBuffer << ", Pitch: " << pitchBuffer << ", Yaw: " << yawBuffer << ", Thrust: " << thrustBuffer << std::endl;
-        _manualInput = false;
+
+    ImGui::Text("Send RPYFT Message:");
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("roll", rpytRollBuffer, sizeof(rpytRollBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("pitch", rpytPitchBuffer, sizeof(rpytPitchBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("yaw", rpytYawBuffer, sizeof(rpytYawBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("thrust", rpytThrustBuffer, sizeof(rpytThrustBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("flag", rpytFlagBuffer, sizeof(rpytFlagBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(100);
+    ImGui::InputText("csv filename", rpytFilenameBuffer, sizeof(rpytFilenameBuffer));
+    ImGui::SameLine();
+    if (ImGui::Button("Send RPYFT")) {
+        try {
+            StartTestMessage m;
+            std::string filePathName(rpytFilenameBuffer);
+            m.roll = std::stof(rpytRollBuffer);
+            m.pitch = std::stof(rpytRollBuffer);
+            m.yaw = std::stof(rpytRollBuffer);
+            m.flag = std::stoi(rpytFlagBuffer);
+            m.fileName = filePathName;
+            _socket->Send(m);
+            log("StartTestMessage sent");
+        }
+        catch (const std::invalid_argument& e) {
+            log("Send RPYFT: Invalid arguments!", "ERROR");
+        }
     }
 
-    if (ImGui::Button("Cancel")) {
+    if (ImGui::Button("Close")) {
         _manualInput = false;
     }
 
