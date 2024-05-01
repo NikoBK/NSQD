@@ -207,8 +207,8 @@ void TCPSocket::Send(Message& message)
 		return;
 	}
 
-	std::string m = "Sent: " + std::to_string(result) + " bytes";
-	log(m, "WARNING");
+	// std::string m = "Sent: " + std::to_string(result) + " bytes";
+	// log(m, "WARNING");
 }
 
 void TCPSocket::Disconnect(const std::string& reason)
