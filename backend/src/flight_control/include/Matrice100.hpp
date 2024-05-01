@@ -21,8 +21,19 @@ struct RPY {
 	float yaw;
 };
 
+struct TargetRPY {
+	float roll;
+	float pitch;
+	float yaw;
+};
 
 struct GPS_Data {
+	double latitude;
+	double longitude;
+	double altitude;
+};
+
+struct TargetGPS {
 	double latitude;
 	double longitude;
 	double altitude;
@@ -104,14 +115,14 @@ class Matrice100 {
 		void setTargetValues(float roll,float pitch, float thrust, float yaw,int flag);
 		void pubTargetValues();
 		void getRPY(RPY* rpy_struct, bool fusion_data = true);
+		void getTargetRPY(TargetRPY* targetRPY_struct);
 		void getGPSData(GPS_Data* gps_struct);
+		void getTargetGPS(TargetGPS* targetGPS_struct)
 		void getVel(VEL* vel_struct);
 		void getError(Error* error_struct);
 		void runPIDController();
 		void updateTargetYaw();	
 		void updateTargetPoints();
-
-		bool turnToNextLine();
 
 		float getBatteryVoltage();
 		float getTargetYaw();

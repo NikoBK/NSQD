@@ -164,9 +164,6 @@ void Matrice100::updateTargetYaw() {
 	targetYaw = acos(dotProduct / (magTarget * magRef));
 }
 
-bool Matrice100::turnToNextLine() {
-
-}
 // Publish message of type sensor::Joy drone orientation/angles (roll,pitch, thrust and yaw) with a given flag.
 void Matrice100::pubTargetValues() {
 
@@ -191,6 +188,19 @@ void Matrice100::setTargetValues(float roll,float pitch, float thrust, float yaw
 	controlData.axes[3] = yaw; 		
 	controlData.axes[4] = flag; 	
 }
+
+void Matrice100::getTargetGPS(TargetGPS* targetGPS_struct) {
+	targetGPS_struct->latitude = targetLat;
+	targetGPS_struct->longitude = targetLon;
+	targetGPS_struct->altitude = targetAlt;
+}
+
+void Matrice100::getTargetRPY(TargetRPY* targetRPY_struct) {
+	targetRPY_struct->roll = controlData.axes[0];
+	targetRPY_struct->pitch = controlData.axes[1];
+	targetRPY_struct->yaw = controlData.axes[3];
+}
+
 
 
 void Matrice100::getError(Error* error_struct) {

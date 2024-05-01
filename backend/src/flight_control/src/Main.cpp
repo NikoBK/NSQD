@@ -11,7 +11,10 @@
 // Data structs to save roll pitch adn yaw as well as gps data
 // Declared in Matrice100.hpp
 RPY rpy;
+TargetRPY targetRPY;
 GPS_Data gps_data;
+TargetGPS targetGPSData;
+
 
 // Make the matrice100 object globally available by making a pointer to the object
 // Notice that the object is first initialised in the main function using the "new" command
@@ -19,6 +22,7 @@ Matrice100* drone;
 
 // Used to write imu data to csv file.
 int imuSample = 0;
+float target = 0;
 
 // FileHandler.
 std::ofstream csvFile;
@@ -43,6 +47,18 @@ void csvWrite(ros::Time begin, int sampleRate)
 	imuSample += 1;
 }
 
+// Write imu data to csv file
+void csvWritePathLog(ros::Time begin, int sampleRate)
+{	
+	if (imuSample % sampleRate == 0)
+	{
+		ros::Duration timeDiff = ros::Time::now() - begin;
+  		csvFile << timeDiff << " , "<< rpy.roll << " , " << rpy.pitch << " , " << rpy.yaw << " , " << gps_data.latitude << " , " << gps_data.longitude << " , " << gps_data.altitude << " , " << thrust
+                            << " , "<< targetRPY.roll << " , " << targetRPY.pitch << " , " << targetRPY.yaw << " , " << targetGPSData.latitude << " , " << targetGPSData.longitude << " , " << targetGPSData.altitude << " , " << targetThrust << "\n";
+	}
+  
+	imuSample += 1;
+}
 
 //Inspired from finite statemachines in PLC workshop the code runs in states
 int state = GROUNDED_STATE;
