@@ -1,6 +1,8 @@
 #include "../include/TCPSocket.h"
 #include "../include/gui.h"
 #include "Message.hpp"
+#include <iostream>
+
 
 TCPSocket::TCPSocket() : _connected(false), _socket(-1), _currentSize(0)
 { }
@@ -103,16 +105,22 @@ void TCPSocket::HandleReceive()
 			return;
 		}
 
+		log("First result: "+std::to_string(result), "INFO");
+
 		_currentSize = ntohl(bytesReadable);
-		if (_currentSize <= 0 || _currentSize > 8192) {
-			std::string message = "Size under or overflow: " + _currentSize;
+
+		if (_currentSize <= 0 || _currentSize > 30000000) { // 8192) {
+			std::string message = "Size under or overflow: " + std::to_string(_currentSize);
 			Disconnect(message);
 			return;
 		}
 	}
 
 	std::vector<char> b(_currentSize);
-	int result = recv(_socket, b.data(), _currentSize, 0);
+	//int result = recv(_socket, b.data(), _currentSize, 0);
+	int result = recv(_socket, b.data(), _currentSize, MSG_PEEK);
+
+	log("Second result: " + std::to_string(result), "INFO");
 
 	if (result <= 0) {
 		int err = WSAGetLastError();
@@ -136,10 +144,14 @@ void TCPSocket::HandleReceive()
 	// + 4 as thats offset to what we already read
 	Decoder decoder(b.data() + 4, _currentSize);
 
+
+	//Debug
+	log("Current Size: " + std::to_string(_currentSize), "INFO");
+
 	unsigned char messageId;
 	decoder.ReadByte(&messageId);
 
-	std::string message = "Message: " + std::to_string(messageId) + " bytes";
+	std::string message = "Message ID: " + std::to_string(messageId); // + " bytes";
 	log(message, "INFO");
 
 	switch ((int)messageId)
@@ -170,14 +182,25 @@ void TCPSocket::HandleReceive()
 			message += "Pitch: " + std::to_string(m.pitch) + "\n";
 			message += "Yaw: " + std::to_string(m.yaw);
 
+			log("RPY", "INFO");
 			log(message, "INFO");
 			break;
 		}
-		/*case UPDATE_MESSAGE_ID:
+		case IMAGE_MESSAGE_ID:
+		{
+			ImageMessage m;
+			m.decode(decoder);
+			updateCameraFrame(m.imgBytes);
+			break;
+		}
+		case UPDATE_MESSAGE_ID:
 		{
 			UpdateMessage msg;
 			msg.decode(decoder);
-		}*/
+
+			int result = recv(_socket, b.data(), 37, 0);
+			break;
+		}
 	}
 
 	_currentSize = 0;

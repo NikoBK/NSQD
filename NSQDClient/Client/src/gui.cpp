@@ -145,6 +145,41 @@ std::string OpenFileDialog(HWND hWnd, LPWSTR filePath, LPCWSTR defaultExtension,
     }
 }
 
+IDirect3DTexture9* createTextureFromImage(IDirect3DDevice9* device, const unsigned char* imageData, int width, int height) {
+    IDirect3DTexture9* texture = nullptr;
+    //D3DXCreateTextureFromFileInMemoryEx(device, imageData, width * height * 4, width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &texture);
+    device->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
+    D3DLOCKED_RECT lockedRect;
+    texture->LockRect(0, &lockedRect, NULL, 0);
+    unsigned char* dstPtr = static_cast<unsigned char*>(lockedRect.pBits);
+    const unsigned char* srcPtr = imageData;
+    int bytesPerPixel = 4; // RGBA format
+    for (int y = 0; y < height; y++) {
+        memcpy(dstPtr, srcPtr, width * bytesPerPixel);
+        dstPtr += lockedRect.Pitch;
+        srcPtr += width * bytesPerPixel;
+    }
+    texture->UnlockRect(0);
+    return texture;
+}
+
+void updateCameraFrame(unsigned char byteArray[])
+{
+    int width = 640;
+    int height = 480;
+
+    IDirect3DDevice9* pDevice = nullptr;
+    if (FAILED(Direct3DCreate9(D3D_SDK_VERSION))) {
+        std::cerr << "Nope." << std::endl;
+        return;
+    }
+
+    IDirect3DTexture9* texture = createTextureFromImage(pDevice, byteArray, width, height);
+    ImGui::Begin("Image Window");
+    ImGui::Image(texture, ImVec2(width, height));
+    ImGui::End;
+}
+
 void makeManualInputWindow()
 {
     ImGui::Begin("Send Manual Inputs");
@@ -391,19 +426,11 @@ void makeCmdPanel() {
             _manualInput = !_manualInput;
         }
 
-        if (!_testStopped)
-        {
-            if (ImGui::Button("Stop Test")) {
-                StopTestMessage msg;
-                _socket->Send(msg);
-                log("Test Stopped");
-                _testStopped = true;
-            }
-        }
-        else {
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
-            ImGui::Button("Stop Test");
-            ImGui::PopStyleVar();
+        if (ImGui::Button("Stop Test")) {
+            StopTestMessage msg;
+            _socket->Send(msg);
+            log("Test Stopped");
+            _testStopped = true;
         }
 
         if (ImGui::Button("Stop Flight Path")) {

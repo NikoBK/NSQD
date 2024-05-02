@@ -124,7 +124,7 @@ private:
 
 // define a message id here
 
-#define TEST_MESSAGE_ID 0
+#define TEST_MESSAGE_ID 99
 #define RPY_MESSAGE_ID 1
 #define RPYT_MESSAGE_ID 2 //RPY and Thrust
 #define ARM_MESSAGE_ID 3
@@ -137,6 +137,7 @@ private:
 #define FLIGHT_PATH_MESSAGE_ID 10
 #define STOP_FLIGHT_PATH_MESSAGE_ID 11
 #define AUTHORITY_MESSAGE_ID 12
+#define IMAGE_MESSAGE_ID 13
 
 struct Message {
     virtual void encode(Encoder& encoder) = 0;
@@ -385,6 +386,27 @@ struct GetAuthorityMessage : public Message
         encoder.WriteByte(AUTHORITY_MESSAGE_ID);
     }
     virtual void decode(Decoder& decoder) override {}
+};
+
+struct ImageMessage : public Message
+{
+    unsigned char* imgBytes;
+    int len;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(IMAGE_MESSAGE_ID);
+        encoder.WriteInt(len);
+        for (int i = 0; i < len; i++) {
+            encoder.WriteByte(imgBytes[i]);
+        }
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadInt(&len);
+        for (int i = 0; i < len; i++) {
+            decoder.ReadByte(&imgBytes[i]);
+        }
+    }
 };
 
 #endif // !MESSAGE_HP
