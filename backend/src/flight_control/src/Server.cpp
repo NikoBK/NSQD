@@ -346,7 +346,7 @@ void Server::Send(Message& message)
         }
         return;
     }
-    std::cout << "Sent: " << result << " bytes";
+    //std::cout << "Sent: " << result << " bytes";
 }
 
 void Server::Disconnect(const std::string& reason)

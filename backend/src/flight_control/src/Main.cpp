@@ -104,7 +104,6 @@ int main(int argc, char **argv)
     //Main loop running at given frequency until ROS is closed
     while (ros::ok()) 
     {
-	std::cout << "tick!" << std::endl;
 	if (_captureDeviceReady) {
 		// Grab the latest frame from a VideoCapture device.
 		cap >> frame;
@@ -123,12 +122,10 @@ int main(int argc, char **argv)
 	// Update drone position and orientation on client.
 	drone->getRPY(&rpy);
     	drone->getGPSData(&gps_data);
-	std::cout << "pre message instantiation" << std::endl;
 	// Instantiate tick messages.
 	UpdateMessage updMsg;
-	ImageMessage imgMsg;	
-
-	std::cout << "pre connection check" << std::endl;
+	ImageMessage imgMsg;
+	
 
         // if not connected
         if (!server.connected()) 
@@ -139,10 +136,8 @@ int main(int argc, char **argv)
         }
         else 
         {
-	    std::cout << "server is connected" << std::endl;
 	    // handle the current connection and update state
             server.HandleConnection(&state);
-	    std::cout << "just handled" << std::endl;
 	    
 	    // Convert frame to byte array and populate image message
 	    /*if (!frame.empty()) {
@@ -158,8 +153,10 @@ int main(int argc, char **argv)
 	    else {
 		std::cerr << "Error: Unable to capture frame" << std::endl;
 	    }*/
-
-	    std::cout << "pre update message" << std::endl;
+		
+	    
+	if (imuSample % 5 == 0)
+	{
 
     	    // Populate update message
 	    updMsg.roll = rpy.roll;
@@ -170,10 +167,10 @@ int main(int argc, char **argv)
 	    updMsg.lon = (float)gps_data.longitude;
 	    updMsg.alt = (float)gps_data.altitude;
     	    updMsg.state = state;
-	    //server.Send(updMsg);
+	    server.Send(updMsg);
+	}
         }
 
-	std::cout << "if statement done - pre switch" << std::endl;
         //Act based on current state of operation
         switch (state) 
         {
@@ -211,7 +208,7 @@ int main(int argc, char **argv)
 
             // Time at start, used for csv logging of imu data
             begin = ros::Time::now();
-            csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust" << "\n";
+            csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw , " << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust" << "\n";
 
             //Publish target values at each loop iteration
             //Targets values are set using drone->setTargetValues(...)
@@ -307,6 +304,8 @@ int main(int argc, char **argv)
 	}
         //}
         }
+	
+	imuSample++;
 
 	//Update all topics and services
 	ros::spinOnce();
