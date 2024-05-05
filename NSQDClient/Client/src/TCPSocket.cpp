@@ -109,7 +109,7 @@ void TCPSocket::HandleReceive()
 
 		_currentSize = ntohl(bytesReadable);
 
-		if (_currentSize <= 0 || _currentSize > 30000000) { // 8192) {
+		if (_currentSize <= 0 || _currentSize > 8192) { // 8192) {
 			std::string message = "Size under or overflow: " + std::to_string(_currentSize);
 			Disconnect(message);
 			return;
@@ -118,7 +118,7 @@ void TCPSocket::HandleReceive()
 
 	std::vector<char> b(_currentSize);
 	//int result = recv(_socket, b.data(), _currentSize, 0);
-	int result = recv(_socket, b.data(), _currentSize, MSG_PEEK);
+	int result = recv(_socket, b.data(), _currentSize, 0);
 
 	log("Second result: " + std::to_string(result), "INFO");
 
@@ -156,49 +156,29 @@ void TCPSocket::HandleReceive()
 
 	switch ((int)messageId)
 	{
-		case TEST_MESSAGE_ID:
+		case UPDATE_MSG_ID:
 		{
-			TestMessage m;
+			UpdateMessage m;
 			m.decode(decoder);
 
-			std::string a = (m.a == true) ? "true\n" : "false\n";
-			message += "a: " + a;
-			message += "b: " + std::to_string(m.b) + "\n";
-			message += "c: " + std::to_string(m.c) + "\n";
-			message += "d: " + std::to_string(m.d) + "\n";
-			message += "e: " + std::to_string(m.e) + "\n";
-			message += "f: " + m.f;
+			std::cout << "roll: " << (float)m.roll << std::endl;
+			std::cout << "pitc: " << (float)m.pitch << std::endl;
+			std::cout << "yaw: " << (float)m.yaw << std::endl;
+			std::cout << "thrust: " << (float)m.thrust << std::endl;
+			std::cout << "lat: " << (float)m.lat << std::endl;
+			std::cout << "lon: " << (float)m.lon << std::endl;
+			std::cout << "alt: " << (float)m.alt << std::endl;
+			std::cout << "state: " << (float)m.state << std::endl;
+			/*message += "roll: " + std::to_string((int)m.roll) + "\n";
+			message += "pitch: " + std::to_string((int)m.pitch) + "\n";
+			message += "yaw: " + std::to_string((int)m.yaw) + "\n";
+			message += "thrust: " + std::to_string((int)m.thrust) + "\n";
+			message += "x (lat): " + std::to_string((int)m.lat) + "\n";
+			message += "y (lon): " + std::to_string((int)m.lon) + "\n";
+			message += "z (alt): " + std::to_string((int)m.alt) + "\n";
+			message += "state: " + std::to_string(m.state) + "\n";*/
 
-			log(message, "INFO");
-			break;
-		}
-		case RPY_MESSAGE_ID:
-		{
-			RPYMessage m;
-			m.decode(decoder);
-
-			std::string message = "RPYMessage: \n";
-			message += "Roll: " + std::to_string(m.roll) + "\n";
-			message += "Pitch: " + std::to_string(m.pitch) + "\n";
-			message += "Yaw: " + std::to_string(m.yaw);
-
-			log("RPY", "INFO");
-			log(message, "INFO");
-			break;
-		}
-		case IMAGE_MESSAGE_ID:
-		{
-			ImageMessage m;
-			m.decode(decoder);
-			updateCameraFrame(m.imgBytes);
-			break;
-		}
-		case UPDATE_MESSAGE_ID:
-		{
-			UpdateMessage msg;
-			msg.decode(decoder);
-
-			int result = recv(_socket, b.data(), 37, 0);
+			//log(message, "INFO");
 			break;
 		}
 	}

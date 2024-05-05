@@ -195,15 +195,7 @@ void makeManualInputWindow()
     ImGui::InputText("Yaw", yawBuffer, sizeof(yawBuffer));
     ImGui::SameLine();
     if (ImGui::Button("Send RPY")) {
-        try {
-            RPYMessage m;
-            m.roll = std::stof(rollBuffer);
-            m.pitch = std::stof(pitchBuffer);
-            m.yaw = std::stof(yawBuffer);
-            _socket->Send(m);
-        } catch (const std::invalid_argument& e) {
-            log("Send RPY: Invalid argument!", "ERROR");
-        }
+        log("to be added...");
     }
 
     ImGui::Text("Send PID Message:");
@@ -220,17 +212,7 @@ void makeManualInputWindow()
     ImGui::InputText("type", typeBuffer, sizeof(typeBuffer));
     ImGui::SameLine();
     if (ImGui::Button("Send PID")) {
-        try {
-            PIDMessage m;
-            m.kp = std::stof(propBuffer);
-            m.ki = std::stof(integBuffer);
-            m.kd = std::stof(diffBuffer);
-            m.type = std::stoi(typeBuffer);
-            _socket->Send(m);
-        }
-        catch (const std::invalid_argument& e) {
-            log("Send PID: Invalid argument!", "ERROR");
-        }
+        log("to be added...");
     }
 
     ImGui::Text("Send RPYFT Message:");
@@ -253,22 +235,7 @@ void makeManualInputWindow()
     ImGui::InputText("csv filename", rpytFilenameBuffer, sizeof(rpytFilenameBuffer));
     ImGui::SameLine();
     if (ImGui::Button("Send RPYFT")) {
-        try {
-            std::string fileName{ "ignore_null" };
-            fileName = rpytFilenameBuffer;
-
-            StartTestMessage m;
-            m.roll = std::stof(rpytRollBuffer);
-            m.pitch = std::stof(rpytPitchBuffer);
-            m.yaw = std::stof(rpytYawBuffer);
-            m.flag = std::stoi(rpytFlagBuffer);
-            m.fileName = fileName;
-            _socket->Send(m);
-            log("StartTestMessage sent");
-        }
-        catch (const std::invalid_argument& e) {
-            log("Send RPYFT: Invalid arguments!", "ERROR");
-        }
+        log("to be added...");
     }
 
     if (ImGui::Button("Close")) {
@@ -384,10 +351,7 @@ void makeCmdPanel() {
         if (!_hasAuthority) 
         {
             if (ImGui::Button("Set Control Authority")) {
-                GetAuthorityMessage msg;
-                _socket->Send(msg);
-                _hasAuthority = true;
-                log("Authority Set\n", prefix);
+                log("to be added...");
             }
 
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
@@ -402,23 +366,15 @@ void makeCmdPanel() {
             ImGui::PopStyleVar();
 
             if (ImGui::Button("Arm Drone")) {
-                _droneArmed = !_droneArmed;
-                ArmMessage msg;
-                msg.arm = _droneArmed;
-                _socket->Send(msg);
-                log("Drone armed");
+                log("to be added...");
             }
 
             if (ImGui::Button("Take off")) {
-                TakeOffMessage msg;
-                _socket->Send(msg);
-                log("Takeoff Initialized\n", prefix);
+                log("to be added...");
             }
 
             if (ImGui::Button("Land")) {
-                LandMessage msg;
-                _socket->Send(msg);
-                log("Landing Initialized\n", prefix);
+                log("to be added...");
             }
         }
 
@@ -427,36 +383,23 @@ void makeCmdPanel() {
         }
 
         if (ImGui::Button("Stop Test")) {
-            StopTestMessage msg;
-            _socket->Send(msg);
-            log("Test Stopped");
-            _testStopped = true;
+            log("to be added...");
         }
 
         if (ImGui::Button("Stop Flight Path")) {
-            StopFlightPathMessage msg;
-            _socket->Send(msg);
+            log("to be added...");
             log("Flight path navigation stopped");
         }
 
         if (ImGui::Button("Test Message")) {
-            {
-                // TODO: Should send some init message or something.
-                RPYMessage m;
-                m.roll = 1.0f;
-                m.pitch = 2.0f;
-                m.yaw = 3.0f;
-                _socket->Send(m);
-            } {
-                TestMessage m;
-                m.a = true;
-                m.b = 222;
-                m.c = 4568;
-                m.d = -24573;
-                m.e = 12512.52323;
-                m.f = "Test";
-                _socket->Send(m);
-            }
+            TestMessage m;
+            m.a = true;
+            m.b = 222;
+            m.c = 4568;
+            m.d = -24573;
+            m.e = 12512.52323;
+            m.f = "Test";
+            _socket->Send(m);
         }
     }
 
