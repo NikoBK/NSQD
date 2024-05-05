@@ -204,7 +204,7 @@ void Server::HandleConnection(int *state)
         case TAKEOFF_MSG: {
             int result = _drone->takeOff();
             if (result == 0) {
-                SendError("<drone::takeOff>: Failed to call flight control")
+                SendError("<drone::takeOff>: Failed to call flight control");
             }
             else {
                 *state = HOVER_STATE;
@@ -214,7 +214,7 @@ void Server::HandleConnection(int *state)
         case LAND_MSG: {
             int result = _drone->land();
             if (result == 0) {
-                SendError("<drone::land>: Failed to call flight control")
+                SendError("<drone::land>: Failed to call flight control");
             }
             else {
                 *state = GROUNDED_STATE;
