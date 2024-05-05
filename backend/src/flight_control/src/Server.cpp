@@ -101,7 +101,7 @@ void Server::AcceptConnection()
 
 void Server::HandleConnection(int *state) 
 {
-	std::cout << "[DEBUG] Enter HandleConnection" << std::endl;
+	// std::cout << "[DEBUG] Enter HandleConnection" << std::endl;
     if (_currentSize == 0)
     {
         int bytesReadable = 0;
@@ -171,7 +171,7 @@ void Server::HandleConnection(int *state)
     // Handle the message
     switch ((int)messageId) 
     {
-		case TEST_MESSAGE_ID: {
+		case TEST_MSG_ID: {
 		    TestMessage m;
 		    m.decode(decoder);
 		    std::string message = "TestMessage: \n";

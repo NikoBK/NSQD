@@ -29,8 +29,10 @@ Matrice100 *drone;
 // ROS
 ros::Time begin;
 
-// DATA
+// OPENCV
+cv::VideoCapture cap;
 
+// DATA
 //Used for storing target thrust to be written to csv file
 float thrust = 0;
 float targetThrust = 0;
@@ -123,7 +125,7 @@ bool initCV() {
 	int id = 2;
 
 	// Create a capture instance and set the device id.
-	cv::VideoCapture cap(id);
+	cap = cv::VideoCapture(id);
 	
 	// Check if the capture device is accessible.
 	if (!cap.isOpened()) {
@@ -145,9 +147,6 @@ bool initROS(int argc, char **argv) {
 	
 	// Initialise the Matrice100 object (calling its constructor)
     drone = new Matrice100(&nh);
-    
-    // Set ROS refresh rate
-    ros::Rate rate(REFRESH_RATE_HZ);
 	
 	std::cout << "ROS succesfully initialized" << std::endl;
 	return true;
@@ -171,6 +170,10 @@ int main(int argc, char **argv)
 	// Start the TCP socketserver.
     Server server(8888, drone, &csvFile);
 
+    // Set ROS refresh rate.
+    // TODO: Would be nice to have this in initROS()
+    ros::Rate rate(REFRESH_RATE_HZ);
+
 	// Superloop - runs at 50Hz (ROS)
     while (ros::ok()) {
     	// TODO: Capture a frame here when the networking works.
@@ -181,7 +184,7 @@ int main(int argc, char **argv)
     	// drone->getGPSData(&gps_data);
     	
 		// Instantiate tick messages.
-		// TODO: Instantiate update message here when the networking works.
+		UpdateMessage updMsg;
 		// TODO: Instantiate image message here when the networking works.
 	
 
@@ -192,7 +195,7 @@ int main(int argc, char **argv)
         }
         else 
         {
-        	std::cout << "handling a connection..." << std::endl;
+        	// std::cout << "handling a connection..." << std::endl;
 	    	// handle the current connection and update state
         	server.HandleConnection(&state);
         	
@@ -202,16 +205,16 @@ int main(int argc, char **argv)
         		// TODO: Set the update message content
         		// here and send the message through the server.
         		// The contents should be the following:
-        		//updMsg.roll = rpy.roll;
-	    		//updMsg.pitch = rpy.pitch;
-				//updMsg.yaw = rpy.yaw;
-				//updMsg.thrust = drone->getTargetThrust();
-				//updMsg.lat = (float)gps_data.latitude;
-				//updMsg.lon = (float)gps_data.longitude;
-				//updMsg.alt = (float)gps_data.altitude;
-			    //updMsg.state = state;
-				//server.Send(updMsg);
-				std::cout << "TODO: Send message" << std::endl;
+        		updMsg.roll = 1;	//rpy.roll;
+	    		updMsg.pitch = 2;	//rpy.pitch;
+				updMsg.yaw = 3;	//rpy.yaw;
+				updMsg.thrust = 4;	//drone->getTargetThrust();
+				updMsg.lat = 5;	//(float)gps_data.latitude;
+				updMsg.lon = 6;	//(float)gps_data.longitude;
+				updMsg.alt = 10; 	//(float)gps_data.altitude;
+			    updMsg.state = 11;	//state;
+				server.Send(updMsg);
+				std::cout << "Message sent!" << std::endl;
         	}
     	}
 		// TODO: Implement finite state machine here.
