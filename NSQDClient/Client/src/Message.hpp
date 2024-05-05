@@ -34,7 +34,7 @@ public:
     }
 
     void WriteFloat(float value) {
-        unsigned int val = htonf(value);
+        unsigned int val = htonl(value);
         Write((char*)&val, sizeof(float));
     }
 
