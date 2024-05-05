@@ -169,7 +169,7 @@ struct SetAuthorityMessage : public Message
     }
 
     virtual void decode(Decoder& decoder) override { }
-}
+};
 
 struct ArmMessage : public Message 
 {
@@ -184,7 +184,7 @@ struct ArmMessage : public Message
     virtual void decode(Decoder& decoder) override { 
         decoder.ReadBoolean(&status);
     }
-}
+};
 
 struct TakeoffMessage : public Message 
 {
@@ -193,7 +193,7 @@ struct TakeoffMessage : public Message
     }
 
     virtual void decode(Decoder& decoder) override { }
-}
+};
 
 struct LandMessage : public Message 
 {
@@ -202,7 +202,7 @@ struct LandMessage : public Message
     }
 
     virtual void decode(Decoder& decoder) override { }
-}
+};
 
 struct PIDMessage : public Message 
 {
@@ -227,7 +227,7 @@ struct PIDMessage : public Message
         decoder.ReadFloat(&kd);
         decoder.ReadInt(&flag);
     }
-}
+};
 
 struct RPYTFFMessage : public Message
 {

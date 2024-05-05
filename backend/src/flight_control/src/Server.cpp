@@ -171,45 +171,73 @@ void Server::HandleConnection(int *state)
     // Handle the message
     switch ((int)messageId) 
     {
-		/*case TEST_MSG_ID: {
-		    TestMessage m;
-		    m.decode(decoder);
-		    std::string message = "TestMessage: \n";
-
-		    std::string a = (m.a == true) ? "true\n" : "false\n";
-		    message += "a: " + a;
-		    message += "b: " + std::to_string(m.b) + "\n";
-		    message += "c: " + std::to_string(m.c) + "\n";
-		    message += "d: " + std::to_string(m.d) + "\n";
-		    message += "e: " + std::to_string(m.e) + "\n";
-		    message += "f: " + m.f;
-
-		    std::cout << message << std::endl;
-		    break;
-		}*/
         case SET_AUTH_MSG: {
-            std::cout << "Received Set Authentication Message!" << std::endl;
+            int result = drone->request_permission();
+            if (result == 0) {
+                // TODO: send error msg.
+            }
+            break;
         }
         case ARM_MSG: {
-            std::cout << "Received Arm Message!" << std::endl;
+            ArmMessage msg;
+            msg.decode(decoder);
+
+            int result = _drone->arm();
+            if (result == 0) {
+                // TODO: send error msg.
+            }
+            break;
         }
         case TAKEOFF_MSG: {
-            std::cout << "Received Takeoff Message!" << std::endl;
+            int result = _drone->takeOff();
+            if (result == 0) {
+                // TODO: send error msg.
+            }
+            else {
+                *state = HOVER_STATE;
+            }
+            break;
         }
         case LAND_MSG: {
-            std::cout << "Received Land Message!" << std::endl;
+            int result = _drone->land();
+            if (result == 0) {
+                // TODO: send error msg.
+            }
+            else {
+                *state = GROUNDED_STATE;
+            }
+            break;
         }
         case SET_PID_MSG: {
-            std::cout << "Received Set PID Message!" << std::endl;
+            SetPIDMessage msg;
+            msg.decode(decoder);
+
+            _drone->setPIDValues(msg.kp, msg.ki, msg.kd, msg.flag);
+            // TODO: Should'nt we change state here in order to
+            // prevent continously setting PID values?
+            break;
         }
         case SET_RPYTFF_MSG: {
-            std::cout << "Received RPYTFF Message!" << std::endl;
+            SetRPYTFFMessage msg;
+            msg.decode(decoder);
+
+            // Open or create file at ~/. (linux)
+            _csvFile->open(msg.fileName);
+
+            // Set target values
+            _drone->setTargetValues(msg.roll, msg.pitch, msg.thrust, msg.yaw, msg.flag);
+
+            // Update state
+            *state = START_TEST_STATE;
+            break;
         }
         case STOP_TEST_MSG: {
-            std::cout << "Received Stop Test Message!" << std::endl;
+            *state = STOP_TEST_STATE;
+            break;
         }
 		default: {
 			std::cerr << "Unrecognized message id: " << (int)messageId << std::endl;
+            // TODO: Hover state?
 			break;
 		}
     }
