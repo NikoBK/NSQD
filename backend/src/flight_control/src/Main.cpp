@@ -21,7 +21,7 @@ float target = 0;
 bool _captureDeviceReady = false;
 
 // REFERENCES & POINTERS
-Matrice100 *drone;
+Matrice100* drone;
 
 // ROS
 ros::Time begin;
@@ -56,7 +56,7 @@ void csvWrite(ros::Time begin, int sampleRate)
 		
 		// write to file
   		csvFile << timeDiff 
-  		<< " , "<< rpy.roll 
+  		<< " , " << rpy.roll 
   		<< " , " << rpy.pitch 
   		<< " , " << rpy.yaw 
   		<< " , " << gps_data.latitude 
@@ -136,7 +136,7 @@ bool initCV() {
 
 /** Initialize ROS components.
 */
-bool initROS(int argc, char **argv) {
+bool initROS(int argc, char** argv) {
 	std::cout << "Initializing ROS..." << std::endl;
 	
 	ros::init(argc, argv, "flight_control_node");
@@ -149,7 +149,130 @@ bool initROS(int argc, char **argv) {
 	return true;
 }
 
-int main(int argc, char **argv)
+void updateState() {
+	switch(state)
+	{
+		case GROUNDED_STATE: {
+			std::cout << "Grounded State currently does nothing..." << std::endl;
+			break;
+		}
+		case ARMED_STATE: {
+			std::cout << "Armed State currently does nothing..." << std::endl;
+			break;
+		}
+		case HOVER_STATE: {
+			std::cout << "Hover State currently does nothing..." << std::endl;
+			break;
+		}
+		case PUBLISH_ANGLE_STATE: {
+			drone->pubTargetValues();
+			break;
+		}
+		case START_TEST_STATE: {
+			// Timestamp beginning
+			begin = ros::Time::now();
+
+			// Write imu data to csv file
+			csvFile << "    Time , " 
+				<< "ImuRoll , " 
+				<< "ImuPitch , " 
+				<< "ImuYaw , " 
+				<< "Latitude , " 
+				<< "Longitude , " 
+				<< "Altitude , " 
+				<< "Thrust" 
+				<< "\n";
+
+			// Publish target values
+			drone->pubTargetValues();
+			state = RUNNING_TEST_STATE;
+			break;
+		}
+		case RUNNING_TEST_STATE: {
+			// Log the test
+			csvWrite(begin, 3);
+
+			// update target values
+			drone->pubTargetValues();
+			break;
+		}
+		case STOP_TEST_STATE: {
+			csvFile.close();
+			state = HOVER_STATE;
+			break;
+		}
+		case INITIALISE_ENROUTE_STATE: {
+			// Timestmap the beginning of the state
+			begin = ros::Time::now();
+
+			// Log to csv file
+			csv << "Time , " 
+				<< "ImuRoll , " 
+				<< "ImuPitch , " 
+				<< "ImuYaw" 
+				<< "Latitude , " 
+				<< "Longitude , " 
+				<< "Altitude , " 
+				<< "Thrust , "
+			    << "TargetRoll , " 
+				<< "targetPitch , " 
+				<< "targetYaw , " 
+				<< "targetLatitude , " 
+				<< "targetLongitude , " 
+				<< "targetAltitude , " 
+				<< "targetThrust , "
+				<< "errorLatitude , " 
+				<< "errorLongitude , " 
+				<< "errorAltitude , " 
+				<< "errorYaw" 
+				<< "\n";
+
+			// drone->loadRouteFromGPX(filePath)
+			// drone->calculateInterpolations(desired_vel, update_frequency)
+			drone->startMission();
+			state = ENROUTE_STATE;
+			break;
+		}
+		case ENROUTE_STATE: {
+			drone->updateTargetPoints();
+			drone->calculateError();
+			drone->getError(&errorData);
+			drone->runPIDController(); // Function that has PID implemented and updates a controlData structure.
+			drone->pubTargetValues();
+
+			if (drone->getTrackState() == 1) {
+				state = ENROUTE_TURN_STATE;
+			}
+			else if (drone->getTrackSate() == 2) {
+				state = ENROUTE_STOPPED_STATE;
+			}
+			csvWritePathLog(begin, 1);
+			break;
+		}
+		case ENROUTE_TURN_STATE: {
+			drone->calculateError();
+			drone->getError(&errorData);
+			drone->runPIDController();
+
+			targetYaw = drone->getTargetYaw();
+
+			float magicNumber = 0.052; // TODO: Get a name on this.
+			if (rpy.yaw - magicNumber < targetYaw && targetYaw < rpy.yaw + magicNumber) {
+				state = ENROUTE_STATE;
+			}
+
+			csvWritePathLog(begin, 1);
+			break;
+		}
+		case ENROUTE_STOPPED_STATE: {
+			csvFile.close();
+			state = HOVER_STATE;
+			break;
+		}
+	}
+}
+
+int main(int argc, char** argv)
 {
 	// ROS must be ready, otherwise we won't run the program.
 	if (!initROS(argc, argv)) {
@@ -165,7 +288,7 @@ int main(int argc, char **argv)
 	}
 
 	// Start the TCP socketserver.
-    Server server(8888, drone, &csvFile);
+    Server server(SERVER_PORT, drone, &csvFile);
 
     // Set ROS refresh rate.
     // TODO: Would be nice to have this in initROS()
