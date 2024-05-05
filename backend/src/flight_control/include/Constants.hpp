@@ -1,6 +1,7 @@
-#ifndef MAIN_HPP
-#define MAIN_HPP
+#ifndef CONSTANTS_HPP
+#define CONSTANTS_HPP
 
+// Client logic states (Finite State Machine)
 #define GROUNDED_STATE 0
 #define ARMED_STATE 1
 #define HOVER_STATE 2
@@ -13,4 +14,12 @@
 #define RUNNING_TEST_STATE 9
 #define STOP_TEST_STATE 10
 
+// Message IDs
+#define TEST_MSG_ID 1
+#define UPDATE_MSG_ID 2
+
+// MISC
+#define REFRESH_RATE_HZ 50
+
+// constants.hpp
 #endif

@@ -2,12 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include "../include/Matrice100.hpp"
-#include "../include/Main.hpp"
+#include "../include/Constants.hpp"
 #include "Message.hpp"
 #include <opencv2/opencv.hpp>
-
-// DEFINITIONS
-#define REFRESH_RATE_HZ 50
 
 // ORIENTATION & POSITIONS
 // Data structs to save roll pitch adn yaw as well as gps data (declared in Matrice100.hpp)
@@ -175,18 +172,11 @@ int main(int argc, char **argv)
     ros::Rate rate(REFRESH_RATE_HZ);
 
 	// Superloop - runs at 50Hz (ROS)
-    while (ros::ok()) {
-    	// TODO: Capture a frame here when the networking works.
-
+    while (ros::ok()) 
+	{
 		// Update drone position and orientation on client.
-		// TODO: Bring this in when tested.
-		// drone->getRPY(&rpy);
-    	// drone->getGPSData(&gps_data);
-    	
-		// Instantiate tick messages.
-		UpdateMessage updMsg;
-		// TODO: Instantiate image message here when the networking works.
-	
+		drone->getRPY(&rpy);
+    	drone->getGPSData(&gps_data);
 
         // if not connected
         if (!server.connected()) {
@@ -199,22 +189,19 @@ int main(int argc, char **argv)
 	    	// handle the current connection and update state
         	server.HandleConnection(&state);
         	
+			// Instantiate and send the update message.
         	// TODO: Why 5??
-        	if (imuReady(imuSample, 5)) 
-        	{
-        		// TODO: Set the update message content
-        		// here and send the message through the server.
-        		// The contents should be the following:
-        		updMsg.roll = 1;	//rpy.roll;
-	    		updMsg.pitch = 2;	//rpy.pitch;
-				updMsg.yaw = 3;	//rpy.yaw;
-				updMsg.thrust = 4;	//drone->getTargetThrust();
-				updMsg.lat = 5;	//(float)gps_data.latitude;
-				updMsg.lon = 6;	//(float)gps_data.longitude;
-				updMsg.alt = 10; 	//(float)gps_data.altitude;
-			    updMsg.state = 11;	//state;
+        	if (imuReady(imuSample, 5)) {
+				UpdateMessage updMsg;
+        		updMsg.roll = 1;	//TODO: rpy.roll;
+	    		updMsg.pitch = 2;	//TODO: rpy.pitch;
+				updMsg.yaw = 3;		//TODO: rpy.yaw;
+				updMsg.thrust = 4;	//TODO: drone->getTargetThrust();
+				updMsg.lat = 5;		//TODO: (float)gps_data.latitude;
+				updMsg.lon = 6;		//TODO: (float)gps_data.longitude;
+				updMsg.alt = 10; 	//TODO: (float)gps_data.altitude;
+			    updMsg.state = 11;	//TODO: state;
 				server.Send(updMsg);
-				std::cout << "Message sent!" << std::endl;
         	}
     	}
 		// TODO: Implement finite state machine here.
