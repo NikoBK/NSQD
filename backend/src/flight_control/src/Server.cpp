@@ -171,7 +171,7 @@ void Server::HandleConnection(int *state)
     // Handle the message
     switch ((int)messageId) 
     {
-		case TEST_MSG_ID: {
+		/*case TEST_MSG_ID: {
 		    TestMessage m;
 		    m.decode(decoder);
 		    std::string message = "TestMessage: \n";
@@ -186,7 +186,28 @@ void Server::HandleConnection(int *state)
 
 		    std::cout << message << std::endl;
 		    break;
-		}
+		}*/
+        case SET_AUTH_MSG: {
+            std::cout << "Received Set Authentication Message!" << std::endl;
+        }
+        case ARM_MSG: {
+            std::cout << "Received Arm Message!" << std::endl;
+        }
+        case TAKEOFF_MSG: {
+            std::cout << "Received Takeoff Message!" << std::endl;
+        }
+        case LAND_MSG: {
+            std::cout << "Received Land Message!" << std::endl;
+        }
+        case SET_PID_MSG: {
+            std::cout << "Received Set PID Message!" << std::endl;
+        }
+        case SET_RPYTFF_MSG: {
+            std::cout << "Received RPYTFF Message!" << std::endl;
+        }
+        case STOP_TEST_MSG: {
+            std::cout << "Received Stop Test Message!" << std::endl;
+        }
 		default: {
 			std::cerr << "Unrecognized message id: " << (int)messageId << std::endl;
 			break;
