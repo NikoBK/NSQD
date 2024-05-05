@@ -164,160 +164,33 @@ void Server::HandleConnection(int * state)
     // + 4 as thats offset to what we already read
     Decoder decoder(b.data() + 4, _currentSize);
 
+	// Check the first byte (identifier)
     unsigned char messageId;
     decoder.ReadByte(&messageId);
-
-    std::cout << "Message: " << (int)messageId << '\n';
-
+    std::cout << "Received message (ID): " << (int)messageId << '\n';
     
+    // Handle the message
     switch ((int)messageId) 
     {
-    case TEST_MESSAGE_ID: 
-    {
-        TestMessage m;
-        m.decode(decoder);
-        std::string message = "TestMessage: \n";
+		case TEST_MESSAGE_ID: {
+		    TestMessage m;
+		    m.decode(decoder);
+		    std::string message = "TestMessage: \n";
 
-        std::string a = (m.a == true) ? "true\n" : "false\n";
-        message += "a: " + a;
-        message += "b: " + std::to_string(m.b) + "\n";
-        message += "c: " + std::to_string(m.c) + "\n";
-        message += "d: " + std::to_string(m.d) + "\n";
-        message += "e: " + std::to_string(m.e) + "\n";
-        message += "f: " + m.f;
+		    std::string a = (m.a == true) ? "true\n" : "false\n";
+		    message += "a: " + a;
+		    message += "b: " + std::to_string(m.b) + "\n";
+		    message += "c: " + std::to_string(m.c) + "\n";
+		    message += "d: " + std::to_string(m.d) + "\n";
+		    message += "e: " + std::to_string(m.e) + "\n";
+		    message += "f: " + m.f;
 
-        std::cout << message << std::endl;
-        break;
+		    std::cout << message << std::endl;
+		    break;
+		}
     }
-    case RPY_MESSAGE_ID:
-    {
-        RPYMessage m;
-        m.decode(decoder);
-         //pubAngle(m.roll,m.pitch, 20, m.yaw, 35);
-
-        std::string message = "RPYMessage: \n";
-        message += "Roll: " + std::to_string(m.roll) + "\n";
-        message += "Pitch: " + std::to_string(m.pitch) + "\n";
-        message += "Yaw: " + std::to_string(m.yaw);
-
-        std::cout << message << std::endl;
-        break;
-    }
-    case RPYT_MESSAGE_ID:
-    {
-        RPYTMessage m;
-        m.decode(decoder);
-
-        //update target angles and target thrust so main loop can publish given values
-        _drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, 35);
-
-        //Update current state
-        *state = PUBLISH_ANGLE_STATE;
-
-        std::string message = "RPYMessage: \n";
-        message += "Roll: " + std::to_string(m.roll) + "\n";
-        message += "Pitch: " + std::to_string(m.pitch) + "\n";
-        message += "Yaw: " + std::to_string(m.yaw) + "\n";
-        message += "Thrust: " + std::to_string(m.thrust);
-
-        std::cout << message << std::endl;
-        break;
-    }
-    case ARM_MESSAGE_ID:
-    {
-        ArmMessage m;
-        m.decode(decoder);
-
-        //Send request to arm client
-        _drone->arm(m.arm);
-
-        //Update current state
-        *state = ARMED_STATE;
-
-        break;
-    }
-    case START_TEST_MESSAGE_ID:
-    {
-        StartTestMessage m;
-        m.decode(decoder);
-
-        //Open or create file at given location
-        _csvFile->open(m.fileName);
-
-        //Set target values
-        _drone->setTargetValues(m.roll,m.pitch, m.thrust, m.yaw, m.flag);
-
-        //Update current state
-        *state = START_TEST_STATE;
-
-        break;
-    }
-    case STOP_TEST_MESSAGE_ID:
-    {
-         //Update current state
-        *state = STOP_TEST_STATE;
-
-        break;
-    }
-    case PID_MESSAGE_ID:
-    {
-        PIDMessage m;
-        m.decode(decoder);
-
-        _drone->setPIDValues(m.kp, m.ki, m.kd, m.type);
-
-        break;
-    }
-    case AUTHORITY_MESSAGE_ID:
-    {
-        _drone->request_permission();
-
-        break;
-    }
-    case TAKEOFF_MESSAGE_ID:
-    {
-        _drone->takeOff();
-
-        *state = HOVER_STATE;
-        break;
-    }
-    case LAND_MESSAGE_ID:
-    {
-        _drone->land();
-
-        *state = GROUNDED_STATE;
-        break;
-    }
-    case FLIGHT_PATH_MESSAGE_ID:
-    {
-        // Initialise path following
-        SetFlightPathMessage m;
-        m.decode(decoder);
-
-        //_drone->loadPathFromString(m.xmlContent)
-        //_drone->startMission();
-
-        *state = ENROUTE_STATE;
-
-        break;
-    }
-    case STOP_FLIGHT_PATH_MESSAGE_ID:
-    {
-        // Stop drone from following path
-        //_drone->stopMission();
-
-        *state = ENROUTE_STOPPED_STATE;
-
-        break;
-    }
-    
-    }
-
     _currentSize = 0;
 }
-
-
-
 
 void Server::Send(Message& message)
 {
