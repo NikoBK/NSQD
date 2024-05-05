@@ -76,14 +76,12 @@ int main(int argc, char **argv)
    	sigaction(SIGINT, &sigIntHandler, NULL);
 
 	// Sanity check	
-	if (argc != 5) 
-	{	
+	if (argc != 5) {	
 	    std::cout << "Error : test needs 4 arguments : Roll/Pitch angle Thrust fileName\n";
 	}
 	else
 	{
 	    csvFile.open(argv[4]);
-
 		
 	    //Set desired orientation value
 	    if (std::string(argv[1]) == "roll") {
@@ -91,23 +89,29 @@ int main(int argc, char **argv)
 	        ROS_INFO("roll set to [%f]", roll);
 	    } else if (std::string(argv[1]) == "pitch") {
 	        pitch = std::stof(argv[2]) * 3.14/180; 
-		ROS_INFO("pitch set to [%f]", pitch);
+			ROS_INFO("pitch set to [%f]", pitch);
 	    } else if (std::string(argv[1]) == "yaw") {
 	        yaw = std::stof(argv[2]) * 3.14/180; 
-		ROS_INFO("yaw set to [%f]", yaw);
+			ROS_INFO("yaw set to [%f]", yaw);
 	    }
-            
+           
 	    thrust = std::stof(argv[3]);
-        }
+	}
 
 	// Connect to ground client and initialise server thread
 	//startserver();
 
-
 	// Time at start, used for csv logging of imu data
 	ros::Time begin = ros::Time::now();
-	csvFile << "    Time , " << "ImuRoll , " << "ImuPitch , " << "ImuYaw" << "Latitude , " << "Longitude , " << "Altitude , " << "Thrust" << "\n";
-
+	csvFile << "    Time , " 
+		<< "ImuRoll , " 
+		<< "ImuPitch , " 
+		<< "ImuYaw" 
+		<< "Latitude , " 
+		<< "Longitude , " 
+		<< "Altitude , " 
+		<< "Thrust" 
+		<< "\n";
 
 	// Tick loop time 20 ms (50 hz)
 	while(ros::ok())
@@ -130,14 +134,16 @@ int main(int argc, char **argv)
 
 		// Depending on axis set the other to be the same as what the IMU reads
 		// In the test bench it can only correct its orientation in one axis
-        	if (std::string(argv[1])=="roll"){
-            		pitch = rpy.pitch;
+		if (std::string(argv[1])=="roll"){
+			pitch = rpy.pitch;
 			yaw = rpy.yaw; 
-        	} else if (std::string(argv[1])=="pitch"){
-            		roll = rpy.roll;
+		} 
+		else if (std::string(argv[1])=="pitch") {
+			roll = rpy.roll;
 			yaw = rpy.yaw; 
-		} else if (std::string(argv[1])=="yaw"){
-            		roll = rpy.roll;
+		} 
+		else if (std::string(argv[1])=="yaw") {
+			roll = rpy.roll;
 			pitch = rpy.pitch;
 		}
 
@@ -149,6 +155,3 @@ int main(int argc, char **argv)
 		rate.sleep();
   	}
 }
-
-
-
