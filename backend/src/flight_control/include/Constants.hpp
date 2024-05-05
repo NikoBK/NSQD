@@ -15,8 +15,14 @@
 #define STOP_TEST_STATE 10
 
 // Message IDs
-#define TEST_MSG_ID 1
-#define UPDATE_MSG_ID 2
+#define UPDATE_MSG 1
+#define SET_AUTH_MSG 2
+#define ARM_MSG 3
+#define TAKEOFF_MSG 4
+#define LAND_MSG 5
+#define SET_PID_MSG 6
+#define SET_RPYTFF_MSG 7
+#define STOP_TEST_MSG 8
 
 // MISC
 #define REFRESH_RATE_HZ 50
