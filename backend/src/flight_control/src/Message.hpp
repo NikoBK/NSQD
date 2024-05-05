@@ -6,8 +6,7 @@
 #include <iterator>
 #include <stdexcept>
 
-class Encoder
-{
+class Encoder {
 public:
     Encoder() {
         // Reserve enough space for the size of this buffer
@@ -121,8 +120,7 @@ private:
     int _position;
 };
 
-struct Message
-{
+struct Message {
     virtual void encode(Encoder& encoder) = 0;
     virtual void decode(Decoder& decoder) = 0;
 };

@@ -20,6 +20,7 @@
 
 // MISC
 #define REFRESH_RATE_HZ 50
+#define SERVER_PORT 8888
 
 // constants.hpp
 #endif
