@@ -4,9 +4,7 @@
 #include "../include/Matrice100.hpp"
 #include "../include/Main.hpp"
 
-
-Server::Server(int port, Matrice100* drone, std::ofstream *csvFile)
-    : _socket(0), _connected(false), _currentSize(0), _drone(drone), _csvFile(csvFile)
+Server::Server(int port, Matrice100 *drone, std::ofstream *csvFile) : _socket(0), _connected(false), _currentSize(0), _drone(drone), _csvFile(csvFile)
 {
     // define TCP socket
     _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -96,22 +94,24 @@ void Server::AcceptConnection()
     }
 
     std::cout << "Client Connection Established" << std::endl;
- 
     _connected = true;
     _socket = socket;
 
 }
 
-void Server::HandleConnection(int * state) 
+void Server::HandleConnection(int *state) 
 {
+	std::cout << "[DEBUG] Enter HandleConnection" << std::endl;
     if (_currentSize == 0)
     {
         int bytesReadable = 0;
         int result = recv(_socket, reinterpret_cast<char*>(&bytesReadable), sizeof(int), MSG_PEEK);
 
-        if (result <= 0) {
+        if (result <= 0) 
+        {
             int err = errno;
             if (err == EWOULDBLOCK) {
+            	std::cout << "[DEBUG] No content - non blocking return" << std::endl;
                 return;
             }
 
@@ -152,8 +152,7 @@ void Server::HandleConnection(int * state)
         if (result == 0 || err == ECONNRESET) {
             Disconnect("");
         }
-        else
-        {
+        else {
             // everything else is error
             std::string message = "FATAL ERROR: Recv Error: " + std::to_string(err);
             Disconnect(message);
@@ -187,6 +186,10 @@ void Server::HandleConnection(int * state)
 
 		    std::cout << message << std::endl;
 		    break;
+		}
+		default: {
+			std::cerr << "Unrecognized message id: " << (int)messageId << std::endl;
+			break;
 		}
     }
     _currentSize = 0;

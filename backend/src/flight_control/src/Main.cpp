@@ -24,7 +24,7 @@ float target = 0;
 bool _captureDeviceReady = false;
 
 // REFERENCES & POINTERS
-Matrice100* drone;
+Matrice100 *drone;
 
 // ROS
 ros::Time begin;
@@ -52,7 +52,10 @@ bool imuReady(int sample, int rate) {
 void csvWrite(ros::Time begin, int sampleRate)
 {	
 	if (imuReady(imuSample, sampleRate)) {
+		// Get the time difference between now and begin.
 		ros::Duration timeDiff = ros::Time::now() - begin;
+		
+		// write to file
   		csvFile << timeDiff 
   		<< " , "<< rpy.roll 
   		<< " , " << rpy.pitch 
@@ -69,7 +72,10 @@ void csvWrite(ros::Time begin, int sampleRate)
 void csvWritePathLog(ros::Time begin, int sampleRate)
 {	
 	if (imuReady(imuSample, sampleRate)) {
+		// Get the time difference between now and begin
 		ros::Duration timeDiff = ros::Time::now() - begin;
+		
+		// write to file
   		csvFile << timeDiff 
   		<< " , " << rpy.roll 
   		<< " , " << rpy.pitch 
@@ -186,10 +192,13 @@ int main(int argc, char **argv)
         }
         else 
         {
+        	std::cout << "handling a connection..." << std::endl;
 	    	// handle the current connection and update state
         	server.HandleConnection(&state);
         	
-        	if (imuReady(imuSample, 5)) {
+        	// TODO: Why 5??
+        	if (imuReady(imuSample, 5)) 
+        	{
         		// TODO: Set the update message content
         		// here and send the message through the server.
         		// The contents should be the following:
