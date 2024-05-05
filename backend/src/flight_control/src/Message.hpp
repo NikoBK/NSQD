@@ -125,6 +125,20 @@ struct Message {
     virtual void decode(Decoder& decoder) = 0;
 };
 
+struct ErrorMessage : public Message
+{
+    std::string text;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(ERROR_MSG);
+        encoder.WriteString(text);
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadString(&text);
+    }
+}
+
 struct UpdateMessage : public Message
 {
     float roll;
@@ -204,7 +218,7 @@ struct LandMessage : public Message
     virtual void decode(Decoder& decoder) override { }
 };
 
-struct PIDMessage : public Message 
+struct SetPIDMessage : public Message 
 {
     float kp; // Proportional
     float ki; // Integral
@@ -229,7 +243,7 @@ struct PIDMessage : public Message
     }
 };
 
-struct RPYTFFMessage : public Message
+struct SetRPYTFFMessage : public Message
 {
     float roll;
     float pitch;

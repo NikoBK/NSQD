@@ -15,6 +15,7 @@
 #define STOP_TEST_STATE 10
 
 // Message IDs
+#define ERROR_MSG 0
 #define UPDATE_MSG 1
 #define SET_AUTH_MSG 2
 #define ARM_MSG 3

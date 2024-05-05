@@ -99,6 +99,14 @@ void Server::AcceptConnection()
 
 }
 
+/** Send a error message to the client
+    for backend errors. */
+void SendError(std::string text) {
+    ErrorMessage msg;
+    msg.text = text;
+    send(msg);
+}
+
 void Server::HandleConnection(int *state) 
 {
 	// std::cout << "[DEBUG] Enter HandleConnection" << std::endl;
@@ -171,10 +179,15 @@ void Server::HandleConnection(int *state)
     // Handle the message
     switch ((int)messageId) 
     {
+        case ERROR_MSG {
+            ErrorMessage msg;
+            msg.decode(decoder);
+            std::cerr << "[CLIENT_ERROR] " << msg.text << std::endl;
+        }
         case SET_AUTH_MSG: {
             int result = drone->request_permission();
             if (result == 0) {
-                // TODO: send error msg.
+                SendError("<drone::request_permission>: Failed to call sdk authority service");
             }
             break;
         }
@@ -184,14 +197,14 @@ void Server::HandleConnection(int *state)
 
             int result = _drone->arm();
             if (result == 0) {
-                // TODO: send error msg.
+                SendError("<drone::arm>: Failed to call service arm");
             }
             break;
         }
         case TAKEOFF_MSG: {
             int result = _drone->takeOff();
             if (result == 0) {
-                // TODO: send error msg.
+                SendError("<drone::takeOff>: Failed to call flight control")
             }
             else {
                 *state = HOVER_STATE;
@@ -201,7 +214,7 @@ void Server::HandleConnection(int *state)
         case LAND_MSG: {
             int result = _drone->land();
             if (result == 0) {
-                // TODO: send error msg.
+                SendError("<drone::land>: Failed to call flight control")
             }
             else {
                 *state = GROUNDED_STATE;
@@ -237,6 +250,12 @@ void Server::HandleConnection(int *state)
         }
 		default: {
 			std::cerr << "Unrecognized message id: " << (int)messageId << std::endl;
+            
+            // Send error to frontend.
+            std::string errText = "Drone received unrecognized message with id: ";
+            errText += std::to_string((int)messageId);
+            SendError(errText);
+
             // TODO: Hover state?
 			break;
 		}
