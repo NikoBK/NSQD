@@ -157,19 +157,27 @@ void TCPSocket::HandleReceive()
 
 	switch ((int)messageId)
 	{
+		case ERROR_MSG: {
+			ErrorMessage msg;
+			msg.decode(decoder);
+
+			// Use the gui log function.
+			log(msg.text, "ERROR");
+		}
+
 		case UPDATE_MSG:
 		{
-			UpdateMessage m;
-			m.decode(decoder);
+			UpdateMessage msg;
+			msg.decode(decoder);
 
-			std::cout << "roll: " << (float)m.roll << std::endl;
-			std::cout << "pitc: " << (float)m.pitch << std::endl;
-			std::cout << "yaw: " << (float)m.yaw << std::endl;
-			std::cout << "thrust: " << (float)m.thrust << std::endl;
-			std::cout << "lat: " << (float)m.lat << std::endl;
-			std::cout << "lon: " << (float)m.lon << std::endl;
-			std::cout << "alt: " << (float)m.alt << std::endl;
-			std::cout << "state: " << (float)m.state << std::endl;
+			std::cout << "roll: " << (float)msg.roll << std::endl;
+			std::cout << "pitc: " << (float)msg.pitch << std::endl;
+			std::cout << "yaw: " << (float)msg.yaw << std::endl;
+			std::cout << "thrust: " << (float)msg.thrust << std::endl;
+			std::cout << "lat: " << (float)msg.lat << std::endl;
+			std::cout << "lon: " << (float)msg.lon << std::endl;
+			std::cout << "alt: " << (float)msg.alt << std::endl;
+			std::cout << "state: " << (float)msg.state << std::endl;
 			break;
 		}
 	}
