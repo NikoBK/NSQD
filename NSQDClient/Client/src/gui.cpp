@@ -306,6 +306,10 @@ void makeLogPanel() {
     ImGui::EndChild();
 }
 
+float getRoll() {
+    return roll_;
+}
+
 void updateProps(float roll, float pitch, float yaw, float thrust, float lat, float lon, float alt, int state) {
     roll_ = roll;
     pitch_ = pitch;
@@ -357,68 +361,72 @@ void makeCmdPanel(HWND hwnd) {
     // will notice if were connected to server or not and adjust UI accordingly
     _connected = _socket->connected();
 
-    if (!_connected) 
-    {
+    if (!_connected) {
         if (ImGui::Button("Connect to Drone")) {
             _connecting = true;
         }
     }
-    else 
-    {
+    else {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
         ImGui::Button("Connect to Manifold");
         ImGui::PopStyleVar();
+    }
 
-        if (ImGui::Button("Set Control Authority")) {
-            SetAuthorityMessage msg;
-            _socket->Send(msg);
-            log("Authority Set\n", prefix);
-        }
+    if (ImGui::Button("Set Control Authority")) {
+        SetAuthorityMessage msg;
+        _socket->Send(msg);
+        log("Authority Set\n", prefix);
+    }
 
-        if (ImGui::Button("Arm Drone")) {
-            ArmMessage msg;
-            _droneArmed = !_droneArmed;
-            msg.status = _droneArmed;
-            _socket->Send(msg);
-            log("Drone armed");
-        }
+    if (ImGui::Button("Arm Drone")) {
+        ArmMessage msg;
+        _droneArmed = !_droneArmed;
+        msg.status = _droneArmed;
+        _socket->Send(msg);
+        log("Drone armed");
+    }
 
-        if (ImGui::Button("Take off")) {
-            TakeoffMessage msg;
-            _socket->Send(msg);
-            log("Takeoff Initialized\n", prefix);
-        }
+    if (ImGui::Button("Take off")) {
+        TakeoffMessage msg;
+        _socket->Send(msg);
+        log("Takeoff Initialized\n", prefix);
+    }
 
-        if (ImGui::Button("Land")) {
-            LandMessage msg;
-            _socket->Send(msg);
-            log("Landing Initialized\n", prefix);
-        }
+    if (ImGui::Button("Land")) {
+        LandMessage msg;
+        _socket->Send(msg);
+        log("Landing Initialized\n", prefix);
+    }
 
-        if (ImGui::Button("Manual Input")) {
-            _manualInput = !_manualInput;
-        }
+    if (ImGui::Button("Manual Input")) {
+        _manualInput = !_manualInput;
+    }
 
-        if (ImGui::Button("Stop Test")) {
-            StopTestMessage msg;
-            _socket->Send(msg);
-            log("Test Stopped");
-        }
+    if (ImGui::Button("Stop Test")) {
+        StopTestMessage msg;
+        _socket->Send(msg);
+        log("Test Stopped");
+    }
 
-        if (ImGui::Button("Upload Flight Path Data")) {
-            std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
+    if (ImGui::Button("Test Line Path")) {
+        FollowLineMessage msg;
+        _socket->Send(msg);
+        log("Follow line test initiated!");
+    }
 
-            std::ifstream file(gpxPath);
-            if (file.is_open()) {
-                std::string line;
-                while (std::getline(file, line)) {
-                    log(line);
-                }
-                file.close();
+    if (ImGui::Button("Upload Flight Path Data")) {
+        std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
+
+        std::ifstream file(gpxPath);
+        if (file.is_open()) {
+            std::string line;
+            while (std::getline(file, line)) {
+                log(line);
             }
-            else {
-                log("Failed to open file GPX data file.", "ERROR");
-            }
+            file.close();
+        }
+        else {
+            log("Failed to open file GPX data file.", "ERROR");
         }
     }
 

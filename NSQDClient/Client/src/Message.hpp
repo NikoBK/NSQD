@@ -301,4 +301,12 @@ struct SetHoverHeightMessage : public Message
     }
 };
 
+struct FollowLineMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(FOLLOW_LINE_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
 #endif // !MESSAGE_HP

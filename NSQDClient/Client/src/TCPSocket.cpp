@@ -178,6 +178,11 @@ void TCPSocket::HandleReceive()
 
 void TCPSocket::Send(Message& message)
 {
+	if (_connected) {
+		log("Socket not ready to send");
+		return;
+	}
+
 	Encoder encoder;
 	message.encode(encoder);
 

@@ -13,5 +13,6 @@
 #define SET_RPYTFF_MSG 7
 #define STOP_TEST_MSG 8
 #define SET_HOVERHEIGHT_MSG 9
+#define FOLLOW_LINE_MSG 10
 
 #endif
