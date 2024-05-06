@@ -282,4 +282,25 @@ struct StopTestMessage : public Message
 	virtual void decode(Decoder& decoder) override { }
 };
 
+struct SetHoverHeightMessage : public Message
+{
+	float height;
+
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(SET_HOVERHEIGHT_MSG);
+		encoder.WriteFloat(height);
+	}
+	virtual void decode(Decoder& decoder) override { 
+		decoder.ReadFloat(&height);
+	}
+};
+
+struct FollowLineMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(FOLLOW_LINE_MSG);
+	}
+	virtual void decode(Decoder& decoder) override { }
+};
+
 #endif // !MESSAGE_H

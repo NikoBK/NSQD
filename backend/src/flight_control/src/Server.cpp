@@ -247,6 +247,16 @@ void Server::HandleConnection(int *state)
             *state = STOP_TEST_STATE;
             break;
         }
+        case SET_HOVERHEIGHT_MSG: {
+        	// TODO: Thor do some magic :)
+        	std::cout << "Hover set" << "\n";
+        	break;
+    	}
+    	case FOLLOW_LINE_MSG: {
+        	// TODO: Thor do some magic :)
+        	std::cout << "Follow line started" << "\n";
+        	break;
+    	}
 		default: {
 			std::cerr << "Unrecognized message id: " << (int)messageId << std::endl;
             
@@ -255,7 +265,7 @@ void Server::HandleConnection(int *state)
             errText += std::to_string((int)messageId);
             SendError(errText);
 
-            // TODO: Hover state?
+            *state = HOVER_STATE;
 			break;
 		}
     }
