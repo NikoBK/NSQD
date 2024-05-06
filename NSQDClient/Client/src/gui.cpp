@@ -40,13 +40,10 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Networking
 bool _connecting = false;
 bool _connected = false;
-bool _droneArmed = false;
 
 // Debug
 std::vector<std::string> logs;
 bool _manualInput = false;
-bool _hasAuthority = false;
-bool _testStopped = false;
 
 // Textfields
 // CONNECTION
@@ -331,34 +328,20 @@ void makeCmdPanel() {
         ImGui::Button("Connect to Manifold");
         ImGui::PopStyleVar();
 
-        if (!_hasAuthority) 
-        {
-            if (ImGui::Button("Set Control Authority")) {
-                log("to be added...");
-            }
-
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
-            ImGui::Button("Take off");
-            ImGui::Button("Land");
-            ImGui::PopStyleVar();
+        if (ImGui::Button("Set Control Authority")) {
+            log("to be added...");
         }
-        else 
-        {
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
-            ImGui::Button("Set Control Authority");
-            ImGui::PopStyleVar();
 
-            if (ImGui::Button("Arm Drone")) {
-                log("to be added...");
-            }
+        if (ImGui::Button("Arm Drone")) {
+            log("to be added...");
+        }
 
-            if (ImGui::Button("Take off")) {
-                log("to be added...");
-            }
+        if (ImGui::Button("Take off")) {
+            log("to be added...");
+        }
 
-            if (ImGui::Button("Land")) {
-                log("to be added...");
-            }
+        if (ImGui::Button("Land")) {
+            log("to be added...");
         }
 
         if (ImGui::Button("Manual Input")) {
