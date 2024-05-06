@@ -153,15 +153,15 @@ void updateState() {
 	switch(state)
 	{
 		case GROUNDED_STATE: {
-			std::cout << "Grounded State currently does nothing..." << std::endl;
+			//std::cout << "Grounded State currently does nothing..." << std::endl;
 			break;
 		}
 		case ARMED_STATE: {
-			std::cout << "Armed State currently does nothing..." << std::endl;
+			//std::cout << "Armed State currently does nothing..." << std::endl;
 			break;
 		}
 		case HOVER_STATE: {
-			std::cout << "Hover State currently does nothing..." << std::endl;
+			//std::cout << "Hover State currently does nothing..." << std::endl;
 			break;
 		}
 		case PUBLISH_ANGLE_STATE: {
@@ -171,6 +171,7 @@ void updateState() {
 		case START_TEST_STATE: {
 			// Timestamp beginning
 			begin = ros::Time::now();
+			std::cout << "Writing headers to csv" << "\n";
 
 			// Write imu data to csv file
 			csvFile << "    Time , " 
@@ -197,6 +198,7 @@ void updateState() {
 			break;
 		}
 		case STOP_TEST_STATE: {
+			std::cout << "closing csv file" << "\n";
 			csvFile.close();
 			state = HOVER_STATE;
 			break;
@@ -256,8 +258,8 @@ void updateState() {
 
 			targetYaw = drone->getTargetYaw();
 
-			float magicNumber = 0.052; // TODO: Get a name on this.
-			if (rpy.yaw - magicNumber < targetYaw && targetYaw < rpy.yaw + magicNumber) {
+			float precision = 0.052; 
+			if (rpy.yaw - precision < targetYaw && targetYaw < rpy.yaw + precision) {
 				state = ENROUTE_STATE;
 			}
 
@@ -303,7 +305,7 @@ int main(int argc, char** argv)
 
         // if not connected
         if (!server.connected()) {
-	    	std::cout << "waiting for connection..." << std::endl;
+	    	//std::cout << "waiting for connection..." << std::endl;
         	server.AcceptConnection(); // Accept any incoming connection.
         }
         else 
@@ -314,20 +316,22 @@ int main(int argc, char** argv)
         	
 			// Instantiate and send the update message.
         	// TODO: Why 5??
-        	if (imuReady(imuSample, 5)) {
+        	if (imuReady(imuSample, 20)) {
 				UpdateMessage updMsg;
-        		updMsg.roll = 1;	//TODO: rpy.roll;
-	    		updMsg.pitch = 2;	//TODO: rpy.pitch;
-				updMsg.yaw = 3;		//TODO: rpy.yaw;
-				updMsg.thrust = 4;	//TODO: drone->getTargetThrust();
-				updMsg.lat = 5;		//TODO: (float)gps_data.latitude;
-				updMsg.lon = 6;		//TODO: (float)gps_data.longitude;
-				updMsg.alt = 10; 	//TODO: (float)gps_data.altitude;
-			    updMsg.state = 11;	//TODO: state;
+        		updMsg.roll = rpy.roll;
+	    		updMsg.pitch = rpy.pitch;
+				updMsg.yaw = rpy.yaw;
+				updMsg.thrust = drone->getTargetThrust();
+				updMsg.lat = (float)gps_data.latitude;
+				updMsg.lon = (float)gps_data.longitude;
+				updMsg.alt = (float)gps_data.altitude;
+			    updMsg.state = state;
 				server.Send(updMsg);
+				
         	}
     	}
 		// TODO: Implement finite state machine here.
+		updateState();
 		
 		// Update properties and restart the loop.
 		imuSample++;

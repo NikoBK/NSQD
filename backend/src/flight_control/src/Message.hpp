@@ -9,7 +9,7 @@
 
 class Encoder {
 public:
-    Encoder() {
+    Encoder() : _position(0) {
         // Reserve enough space for the size of this buffer
         WriteInt(0);
     }
@@ -46,6 +46,7 @@ public:
     const char* buffer() const {
         // get the position and then copy to the front of the _buffer
         int length = htonl(_position);
+        //std::cout << "length is: " << length << std::endl;
         memcpy((char*)_buffer.data(), &length, sizeof(int));
         return _buffer.data();
     }

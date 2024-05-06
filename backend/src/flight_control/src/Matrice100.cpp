@@ -260,8 +260,8 @@ int Matrice100::getFlightStatus() {
 	return flightStatus;
 }
 
-int Matrice100::getTargetThrust() {
-	return controlData.axes[2];
+float Matrice100::getTargetThrust() {
+	return (float)controlData.axes[2];
 }
 
 float Matrice100::getBatteryVoltage() {

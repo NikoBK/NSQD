@@ -119,7 +119,7 @@ void Server::HandleConnection(int *state)
         {
             int err = errno;
             if (err == EWOULDBLOCK) {
-            	std::cout << "[DEBUG] No content - non blocking return" << std::endl;
+            	//std::cout << "[DEBUG] No content - non blocking return" << std::endl;
                 return;
             }
 
@@ -226,8 +226,6 @@ void Server::HandleConnection(int *state)
             msg.decode(decoder);
 
             _drone->setPIDValues(msg.kp, msg.ki, msg.kd, msg.flag);
-            // TODO: Should'nt we change state here in order to
-            // prevent continously setting PID values?
             break;
         }
         case SET_RPYTFF_MSG: {
@@ -237,9 +235,10 @@ void Server::HandleConnection(int *state)
             // Open or create file at ~/. (linux)
             _csvFile->open(msg.fileName);
 
-            // Set target values
+            // Set target values in degrees
             _drone->setTargetValues(msg.roll, msg.pitch, msg.thrust, msg.yaw, msg.flag);
-
+			
+			std::cout << "Init csv" << "\n";
             // Update state
             *state = START_TEST_STATE;
             break;

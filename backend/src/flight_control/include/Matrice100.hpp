@@ -128,10 +128,10 @@ class Matrice100 {
 
 		float getBatteryVoltage();
 		float getTargetYaw();
+		float getTargetThrust();
 		
 		int getTrackState();
 		int getFlightStatus();
-		int getTargetThrust();
 		int arm(int arm_drone);
 		int request_permission(int permission = 1);
 		int takeOff();
