@@ -163,23 +163,6 @@ IDirect3DTexture9* createTextureFromImage(IDirect3DDevice9* device, const unsign
     return texture;
 }
 
-void updateCameraFrame(unsigned char byteArray[])
-{
-    int width = 640;
-    int height = 480;
-
-    IDirect3DDevice9* pDevice = nullptr;
-    if (FAILED(Direct3DCreate9(D3D_SDK_VERSION))) {
-        std::cerr << "Nope." << std::endl;
-        return;
-    }
-
-    IDirect3DTexture9* texture = createTextureFromImage(pDevice, byteArray, width, height);
-    ImGui::Begin("Image Window");
-    ImGui::Image(texture, ImVec2(width, height));
-    ImGui::End;
-}
-
 void makeManualInputWindow()
 {
     ImGui::Begin("Send Manual Inputs");
