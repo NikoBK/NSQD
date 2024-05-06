@@ -70,6 +70,9 @@ char rpytThrustBuffer[255]{};
 char rpytFlagBuffer[255]{};
 char rpytFilenameBuffer[255]{};
 
+// USERDEFINED HOVER HEIGHT (MANUAL INPUT)
+char hoverheightBuffer[255]{};
+
 // Update variables (sent on every server tick)
 float roll_, pitch_, yaw_, thrust_, lat_, lon_, alt_;
 int state_;
@@ -232,6 +235,17 @@ void makeManualInputWindow()
         catch (const std::invalid_argument& e) {
             log("Send RPYFT: Invalid arguments!", "ERROR");
         }
+    }
+
+    ImGui::Text("Userdefined Hover Height");
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("height", hoverheightBuffer, sizeof(hoverheightBuffer));
+    ImGui::SameLine();
+    if (ImGui::Button("Send Height")) {
+        SetHoverHeightMessage msg;
+        msg.height = std::stof(hoverheightBuffer);
+        _socket->Send(msg);
+        log("Hover height has been succesfully set!");
     }
 
     if (ImGui::Button("Close")) {
@@ -468,7 +482,7 @@ void renderUI(HWND hwnd)
 
     // Make the info panels
     makeCamPanel();
-    makeCmdPanel();
+    makeCmdPanel(hwnd);
     makePropsPanel();
     makeLogPanel();
     makeDebugPanel(hwnd);

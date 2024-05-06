@@ -12,5 +12,6 @@
 #define SET_PID_MSG 6
 #define SET_RPYTFF_MSG 7
 #define STOP_TEST_MSG 8
+#define SET_HOVERHEIGHT_MSG 9
 
 #endif

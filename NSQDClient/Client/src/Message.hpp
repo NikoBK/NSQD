@@ -285,4 +285,20 @@ struct StopTestMessage : public Message
     virtual void decode(Decoder& decoder) override { }
 };
 
+struct SetHoverHeightMessage : public Message 
+{
+    // The hover height above the takeoff
+    // height hardcoded by DJI.
+    float height;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(SET_HOVERHEIGHT_MSG);
+        encoder.WriteFloat(height);
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadFloat(&height);
+    }
+};
+
 #endif // !MESSAGE_HP
