@@ -72,6 +72,7 @@ char rpytFilenameBuffer[255]{};
 
 // USERDEFINED HOVER HEIGHT (MANUAL INPUT)
 char hoverheightBuffer[255]{};
+char hoverFileNameBuffer[255]{};
 
 // Update variables (sent on every server tick)
 float roll_, pitch_, yaw_, thrust_, lat_, lon_, alt_;
@@ -241,9 +242,16 @@ void makeManualInputWindow()
     ImGui::PushItemWidth(50);
     ImGui::InputText("height", hoverheightBuffer, sizeof(hoverheightBuffer));
     ImGui::SameLine();
+    ImGui::PushItemWidth(100);
+    ImGui::InputText("filename", hoverFileNameBuffer, sizeof(hoverFileNameBuffer));
+    ImGui::SameLine();
     if (ImGui::Button("Send Height")) {
+        std::string fileName{ "hover_test" };
+        fileName = hoverFileNameBuffer;
+
         SetHoverHeightMessage msg;
         msg.height = std::stof(hoverheightBuffer);
+        msg.fileName = fileName;
         _socket->Send(msg);
         log("Hover height has been succesfully set!");
     }

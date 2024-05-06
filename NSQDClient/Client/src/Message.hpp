@@ -290,14 +290,17 @@ struct SetHoverHeightMessage : public Message
     // The hover height above the takeoff
     // height hardcoded by DJI.
     float height;
+    std::string fileName;
 
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(SET_HOVERHEIGHT_MSG);
         encoder.WriteFloat(height);
+        encoder.WriteString(fileName);
     }
 
     virtual void decode(Decoder& decoder) override {
         decoder.ReadFloat(&height);
+        decoder.ReadString(&fileName);
     }
 };
 
