@@ -33,6 +33,7 @@ public:
     void HandleConnection(int *state);
     void Send(Message& message);
     void Disconnect(const std::string& reason);
+    void SendError(std::string text);
 
 private:
     int _socket;

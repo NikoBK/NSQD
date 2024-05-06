@@ -5,6 +5,7 @@
 #include <string.h>
 #include <iterator>
 #include <stdexcept>
+#include "../include/Constants.hpp"
 
 class Encoder {
 public:
@@ -137,7 +138,7 @@ struct ErrorMessage : public Message
     virtual void decode(Decoder& decoder) override {
         decoder.ReadString(&text);
     }
-}
+};
 
 struct UpdateMessage : public Message
 {
@@ -252,7 +253,7 @@ struct SetRPYTFFMessage : public Message
     int flag;
     std::string fileName;
 
-    virtual void encoder(Encoder& encoder) override {
+    virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(SET_RPYTFF_MSG);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
@@ -267,8 +268,8 @@ struct SetRPYTFFMessage : public Message
         decoder.ReadFloat(&pitch);
         decoder.ReadFloat(&yaw);
         decoder.ReadFloat(&thrust);
-        decoder.ReadFloat(&flag);
-        decoder.ReadFloat(&fileName);
+        decoder.ReadInt(&flag);
+        decoder.ReadString(&fileName);
     }
 };
 

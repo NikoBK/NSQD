@@ -206,7 +206,7 @@ void updateState() {
 			begin = ros::Time::now();
 
 			// Log to csv file
-			csv << "Time , " 
+			csvFile << "Time , " 
 				<< "ImuRoll , " 
 				<< "ImuPitch , " 
 				<< "ImuYaw" 
@@ -243,7 +243,7 @@ void updateState() {
 			if (drone->getTrackState() == 1) {
 				state = ENROUTE_TURN_STATE;
 			}
-			else if (drone->getTrackSate() == 2) {
+			else if (drone->getTrackState() == 2) {
 				state = ENROUTE_STOPPED_STATE;
 			}
 			csvWritePathLog(begin, 1);

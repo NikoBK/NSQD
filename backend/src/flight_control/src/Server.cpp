@@ -99,12 +99,12 @@ void Server::AcceptConnection()
 
 }
 
-/** Send a error message to the client
+/**  a error message to the client
     for backend errors. */
-void SendError(std::string text) {
+void Server::SendError(std::string text) {
     ErrorMessage msg;
     msg.text = text;
-    send(msg);
+    Send(msg);
 }
 
 void Server::HandleConnection(int *state) 
@@ -179,13 +179,13 @@ void Server::HandleConnection(int *state)
     // Handle the message
     switch ((int)messageId) 
     {
-        case ERROR_MSG {
+        case ERROR_MSG: {
             ErrorMessage msg;
             msg.decode(decoder);
             std::cerr << "[CLIENT_ERROR] " << msg.text << std::endl;
         }
         case SET_AUTH_MSG: {
-            int result = drone->request_permission();
+            int result = _drone->request_permission();
             if (result == 0) {
                 SendError("<drone::request_permission>: Failed to call sdk authority service");
             }
@@ -195,7 +195,7 @@ void Server::HandleConnection(int *state)
             ArmMessage msg;
             msg.decode(decoder);
 
-            int result = _drone->arm();
+            int result = _drone->arm(msg.status);
             if (result == 0) {
                 SendError("<drone::arm>: Failed to call service arm");
             }
