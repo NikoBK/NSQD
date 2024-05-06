@@ -206,12 +206,13 @@ void updateState() {
 		case INITIALISE_ENROUTE_STATE: {
 			// Timestmap the beginning of the state
 			begin = ros::Time::now();
+			imuSample = 0;
 
 			// Log to csv file
 			csvFile << "Time , " 
 				<< "ImuRoll , " 
 				<< "ImuPitch , " 
-				<< "ImuYaw" 
+				<< "ImuYaw , " 
 				<< "Latitude , " 
 				<< "Longitude , " 
 				<< "Altitude , " 
@@ -271,6 +272,65 @@ void updateState() {
 			state = HOVER_STATE;
 			break;
 		}
+		case START_HOVER_TEST_STATE: {
+			std::cout << "Initialise hover test log file" << std::endl;
+			imuSample = 0;
+			begin = ros::Time::now();
+
+			// Log to csv file
+			csvFile << "Time , " 
+				<< "ImuRoll , " 
+				<< "ImuPitch , " 
+				<< "ImuYaw , " 
+				<< "Latitude , " 
+				<< "Longitude , " 
+				<< "Altitude , " 
+				<< "Thrust , "
+			    << "TargetRoll , " 
+				<< "targetPitch , " 
+				<< "targetYaw , " 
+				<< "targetLatitude , " 
+				<< "targetLongitude , " 
+				<< "targetAltitude , " 
+				<< "targetThrust , "
+				<< "errorLatitude , " 
+				<< "errorLongitude , " 
+				<< "errorAltitude , " 
+				<< "errorYaw" 
+				<< "\n";
+		
+			drone->setTargetValues(0, 0, 45, rpy.yaw*180/3.14, 35);
+			
+			state = HOVER_LOGGING_STATE;
+			break;
+		}
+		case HOVER_LOGGING_STATE: {
+			drone->updateTargetLatLon();
+			drone->calculateError();
+			drone->getError(&errorData);
+			
+			drone->runPIDController();
+
+			//targetYaw = drone->getTargetYaw();
+			targetThrust = drone->getTargetThrust();
+			drone->getTargetGPS(&targetGPSData);
+			drone->getTargetRPY(&targetRPY);
+			
+			csvWritePathLog(begin, 1);
+			
+			drone->pubTargetValues();
+			
+			//if (imuReady(imuSample, 2000)) {
+				//state = STOP_HOVER_LOGGING_STATE;
+			//}
+			break;
+		}
+		case STOP_HOVER_LOGGING_STATE: {
+			std::cout << "Closing hover test log file" << std::endl;
+			csvFile.close();
+			state = HOVER_STATE;
+			break;
+		}
 	}
 }
 
@@ -295,6 +355,8 @@ int main(int argc, char** argv)
     // Set ROS refresh rate.
     // TODO: Would be nice to have this in initROS()
     ros::Rate rate(REFRESH_RATE_HZ);
+    
+    drone->initPIDValues();
 
 	// Superloop - runs at 50Hz (ROS)
     while (ros::ok()) 

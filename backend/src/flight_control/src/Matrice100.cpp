@@ -153,6 +153,15 @@ void Matrice100::startMission() {
 	}};
 }
 
+void Matrice100::initPIDValues() {
+	// Set PID values for a given axis
+	setPIDValues(0, 0, 0, 0);
+	setPIDValues(0, 0, 0, 1);
+	setPIDValues(0.2, 0, 0.2, 2);
+	setPIDValues(0, 0, 0, 3);
+	
+}
+
 void Matrice100::setPIDValues(float kp, float ki, float kd, int type) {
 	// Set PID values for a given axis
 	pidParamsArray[type][0] = kp;
@@ -189,10 +198,17 @@ float Matrice100::getTargetYaw() {
 
 void Matrice100::runPIDController() {    
     // Calculate control signal
-	controlData.axes[0] += pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat;
-	controlData.axes[1] += pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; 	
-	controlData.axes[2] += pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt;	
-	controlData.axes[3] += pidParamsArray[3][0] * errorYaw + pidParamsArray[3][1] * integralYaw + pidParamsArray[3][2] * derivativeYaw;
+	controlData.axes[0] = controlData.axes[0] + pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat;
+	controlData.axes[1] = controlData.axes[1] + pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; 	
+	controlData.axes[2] = controlData.axes[2] + pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt;	
+	controlData.axes[3] = controlData.axes[3] + pidParamsArray[3][0] * errorYaw + pidParamsArray[3][1] * integralYaw + pidParamsArray[3][2] * derivativeYaw;
+	
+	if (controlData.axes[2] > 70){
+		controlData.axes[2] = 70;
+	} else if (controlData.axes[2] < 0) {
+		controlData.axes[2] = 0;
+	}
+	
 }
 
 void Matrice100::updateTargetPoints() {
@@ -218,6 +234,21 @@ void Matrice100::updateTargetPoints() {
 		trackState = 0; //0 = new point
 	}
 }
+
+//For testing hover
+void Matrice100::setTargetAltitude(float new_altitude) {
+	// Update target values
+	targetAlt = new_altitude+altitude;
+}
+
+//For testing hover
+void Matrice100::updateTargetLatLon() {
+	// Update target values
+	targetLat = latitude;
+	targetLon = longitude;
+	targetYaw = imuYaw;
+}
+
 
 void Matrice100::updateTargetYaw() {
 	float lat1 = track[lineStep][0][0];

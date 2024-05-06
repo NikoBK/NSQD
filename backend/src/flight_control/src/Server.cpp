@@ -249,12 +249,29 @@ void Server::HandleConnection(int *state)
         }
         case SET_HOVERHEIGHT_MSG: {
         	// TODO: Thor do some magic :)
-        	std::cout << "Hover set" << "\n";
+        	
+        	SetHoverHeightMessage msg;
+            msg.decode(decoder);
+            
+            _drone->setTargetAltitude(msg.height);
+            
+            // Open or create file at ~/. (linux)
+            _csvFile->open(msg.fileName);
+            
+            *state = START_HOVER_TEST_STATE;
+            
+        	std::cout << msg.fileName << "\n";
         	break;
+    	}
+    	case STOP_HOVER_TEST_MSG: {
+    		std::cout << "received stop state" << "\n";
+        	*state = STOP_HOVER_LOGGING_STATE;
+            break;
     	}
     	case FOLLOW_LINE_MSG: {
         	// TODO: Thor do some magic :)
         	std::cout << "Follow line started" << "\n";
+        	
         	break;
     	}
 		default: {

@@ -226,7 +226,7 @@ struct SetPIDMessage : public Message
     float ki; // Integral
     float kd; // Derivative
 
-    // Flag for Roll (1), Pitch (2), Yaw (3), Thrust (4) PID regulator.
+    // Flag for Roll (0), Pitch (1), Thrust (2) and Yaw (3) PID regulator.
     int flag;
 
     virtual void encode(Encoder& encoder) override {
@@ -285,13 +285,16 @@ struct StopTestMessage : public Message
 struct SetHoverHeightMessage : public Message
 {
 	float height;
+	std::string fileName;
 
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(SET_HOVERHEIGHT_MSG);
 		encoder.WriteFloat(height);
+		encoder.WriteString(fileName);
 	}
 	virtual void decode(Decoder& decoder) override { 
 		decoder.ReadFloat(&height);
+		decoder.ReadString(&fileName);
 	}
 };
 
