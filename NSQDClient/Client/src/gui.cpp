@@ -373,17 +373,6 @@ void makeCmdPanel() {
             log("to be added...");
             log("Flight path navigation stopped");
         }
-
-        if (ImGui::Button("Test Message")) {
-            TestMessage m;
-            m.a = true;
-            m.b = 222;
-            m.c = 4568;
-            m.d = -24573;
-            m.e = 12512.52323;
-            m.f = "Test";
-            _socket->Send(m);
-        }
     }
 
     ImGui::EndChild();
