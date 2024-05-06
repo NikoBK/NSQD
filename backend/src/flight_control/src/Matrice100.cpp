@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <signal.h>
+#include "tinyxml.h"
 
 #include "../include/Matrice100.hpp"
 
@@ -60,6 +61,49 @@ void Matrice100::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
 }
 
 
+//TODO: Convert to tinyxml 1
+/*
+void Matrice100::loadPathFromString(const char* xmlContent) {
+	// Traget altitude 
+	int alti = 10; 
+
+	// Create xmldocument in memory
+	tinyxml2::XMLDocument doc;
+	// Parse string to xml
+    doc.Parse(xmlContent);
+
+	// Catch error
+	if(doc.Error()) {
+		std::cout << "Error parsing XML string: " << doc.GetErrorStr2() << '\n';
+	}
+
+	tinyxml2::XMLElement* gpx = doc.RootElement();
+
+	tinyxml2::XMLElement* trk = gpx->FirstChildElement("trk");
+
+	// Loop through tracks 
+	
+	
+	
+	for(const tinyxml2::XMLElement* trkpt = trk->FirstChildElement("trkpt"); trkpt != 0; trkpt = trkpt->NextSiblingElement("trkpt")) {
+		std::vector<double> latLonAltVec;
+		// Read trkpoint attribute
+		const tinyxml2::XMLAttribute* attr = trkpt->FirstAttribute();
+		
+		// Append Latitude 
+		latLonAltVec.push_back(std::stod(attr->Value()));
+		attr->Next();
+		// Append Longitude
+		latLonAltVec.push_back(std::stod(attr->Value()));
+		// Append altitude
+		latLonAltVec.push_back(alti);
+
+		photoPoints.push_back(latLonAltVec);
+	}
+
+}
+*/
+
 //Callback event for dji_sdk/gps_position subscription event.
 void Matrice100::gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) {
 	// Gps position.
@@ -101,6 +145,12 @@ void Matrice100::startMission() {
 	derivativeLon = 0;
 	derivativeAlt = 0;
 	derivativeYaw = 0;
+	
+	//TODO: Initialise 
+	track = {{
+			{29, 45, 2},
+			{56, 45, 3},
+	}};
 }
 
 void Matrice100::setPIDValues(float kp, float ki, float kd, int type) {

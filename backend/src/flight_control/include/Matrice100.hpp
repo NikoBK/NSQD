@@ -76,6 +76,7 @@ class Matrice100 {
 		int pointStep; //aka time step
 
 		std::vector<std::vector<std::vector<double>>> track;
+		std::vector<std::vector<double>> photoPoints;
 		
 
 		//Nodehandler
@@ -125,6 +126,9 @@ class Matrice100 {
 		void updateTargetPoints();
 		void startMission();
 		void calculateError();
+		
+		//TODO: Implement with tinyxml1
+		//void loadPathFromString(const char* xmlContent);
 
 		float getBatteryVoltage();
 		float getTargetYaw();

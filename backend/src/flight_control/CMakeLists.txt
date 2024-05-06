@@ -7,6 +7,16 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	OpenCV
+	#tinyxml2
+)
+
+#add_subdirectory(#
+#	external
+#)
+
+find_library(
+	TINYXML_LIBRARIES NAMES tinyxml PATHS /usr/local/lib
+	
 )
 
 catkin_package(
@@ -21,4 +31,4 @@ include_directories(
 )
 
 add_executable(flight_control src/Main.cpp src/Message.hpp src/Server.cpp src/Server.h src/Matrice100.cpp)
-target_link_libraries(flight_control ${catkin_LIBRARIES} ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(flight_control ${catkin_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${TINYXML_LIBRARIES})
