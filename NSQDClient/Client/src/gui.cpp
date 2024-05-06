@@ -70,6 +70,10 @@ char rpytThrustBuffer[255]{};
 char rpytFlagBuffer[255]{};
 char rpytFilenameBuffer[255]{};
 
+// Update variables (sent on every server tick)
+float roll_, pitch_, yaw_, thrust_, lat_, lon_, alt_;
+int state_;
+
 // Function to save data to a file
 bool SaveDataToFile(const std::wstring& filePath) {
     std::ofstream outputFile(filePath, std::ios::out | std::ios::binary);
@@ -302,6 +306,17 @@ void makeLogPanel() {
     ImGui::EndChild();
 }
 
+void updateProps(float roll, float pitch, float yaw, float thrust, float lat, float lon, float alt, int state) {
+    roll_ = roll;
+    pitch_ = pitch;
+    yaw_ = yaw;
+    thrust_ = thrust;
+    lat_ = lat;
+    lon_ = lon;
+    alt_ = alt;
+    state_ = state;
+}
+
 void makePropsPanel() {
     // Begin Properties Panel (Bottom Right)
     ImGui::SetNextWindowPos(ImVec2(1000, 319), ImGuiCond_Always);
@@ -317,13 +332,13 @@ void makePropsPanel() {
 
     ImGui::Text("Camera Feed FPS: %d", 0);
     ImGui::Text("Drone Current Time: %s", "0");
-    ImGui::Text("Drone X: %d", 0);
-    ImGui::Text("Drone Y: %d", 0);
-    ImGui::Text("Drone Z: %d", 0);
-    ImGui::Text("Drone Roll: %d", 0);
-    ImGui::Text("Drone Pitch: %d", 0);
-    ImGui::Text("Drone Yaw: %d", 0);
-    ImGui::Text("Drone Thrust: %d", 0);
+    ImGui::Text("Drone Roll: %d", roll);
+    ImGui::Text("Drone Pitch: %d", pitch);
+    ImGui::Text("Drone Yaw: %d", yaw);
+    ImGui::Text("Drone Thrust: %d", thrust);
+    ImGui::Text("Drone Latitude: %d", lat);
+    ImGui::Text("Drone Longitude: %d", lon);
+    ImGui::Text("Drone Altitude: %d", alt);
 
     ImGui::EndChild();
 }
@@ -362,6 +377,7 @@ void makeCmdPanel() {
 
         if (ImGui::Button("Arm Drone")) {
             ArmMessage msg;
+            _droneArmed = !_droneArmed;
             msg.status = _droneArmed;
             _socket->Send(msg);
             log("Drone armed");

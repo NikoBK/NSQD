@@ -14,4 +14,6 @@ void log(std::string text, std::string prefix = "INFO");
 
 void updateCameraFrame(unsigned char byteArray[]);
 
+void updateProps(float roll, float pitch, float yaw, float thrust, float lat, float lon, float alt, int state);
+
 #endif

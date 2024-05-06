@@ -106,11 +106,11 @@ void TCPSocket::HandleReceive()
 			return;
 		}
 
-		log("First result: "+std::to_string(result), "INFO");
+		//log("First result: "+std::to_string(result), "INFO");
 
 		_currentSize = ntohl(bytesReadable);
 
-		if (_currentSize <= 0 || _currentSize > 8192) { // 8192) {
+		if (_currentSize <= 0 || _currentSize > 8192) {
 			std::string message = "Size under or overflow: " + std::to_string(_currentSize);
 			Disconnect(message);
 			return;
@@ -118,10 +118,9 @@ void TCPSocket::HandleReceive()
 	}
 
 	std::vector<char> b(_currentSize);
-	//int result = recv(_socket, b.data(), _currentSize, 0);
 	int result = recv(_socket, b.data(), _currentSize, 0);
 
-	log("Second result: " + std::to_string(result), "INFO");
+	log("Entire message size is: " + std::to_string(result), "INFO");
 
 	if (result <= 0) {
 		int err = WSAGetLastError();
@@ -145,7 +144,6 @@ void TCPSocket::HandleReceive()
 	// + 4 as thats offset to what we already read
 	Decoder decoder(b.data() + 4, _currentSize);
 
-
 	//Debug
 	log("Current Size: " + std::to_string(_currentSize), "INFO");
 
@@ -153,7 +151,7 @@ void TCPSocket::HandleReceive()
 	decoder.ReadByte(&messageId);
 
 	std::string message = "Message ID: " + std::to_string(messageId); // + " bytes";
-	log(message, "INFO");
+	//log(message, "INFO");
 
 	switch ((int)messageId)
 	{
@@ -170,14 +168,7 @@ void TCPSocket::HandleReceive()
 			UpdateMessage msg;
 			msg.decode(decoder);
 
-			std::cout << "roll: " << (float)msg.roll << std::endl;
-			std::cout << "pitc: " << (float)msg.pitch << std::endl;
-			std::cout << "yaw: " << (float)msg.yaw << std::endl;
-			std::cout << "thrust: " << (float)msg.thrust << std::endl;
-			std::cout << "lat: " << (float)msg.lat << std::endl;
-			std::cout << "lon: " << (float)msg.lon << std::endl;
-			std::cout << "alt: " << (float)msg.alt << std::endl;
-			std::cout << "state: " << (float)msg.state << std::endl;
+			updateProps(msg.roll, msg.pitch, msg.yaw, msg.thrust, msg.lat, msg.lon, msg.alt, msg.state);
 			break;
 		}
 	}
