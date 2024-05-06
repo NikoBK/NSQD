@@ -44,6 +44,7 @@ bool _connected = false;
 // Debug
 std::vector<std::string> logs;
 bool _manualInput = false;
+bool _droneArmed = false;
 
 // Textfields
 // CONNECTION
@@ -214,8 +215,23 @@ void makeManualInputWindow()
     ImGui::PushItemWidth(100);
     ImGui::InputText("csv filename", rpytFilenameBuffer, sizeof(rpytFilenameBuffer));
     ImGui::SameLine();
-    if (ImGui::Button("Send RPYFT")) {
-        log("to be added...");
+    if (ImGui::Button("Send RPYTFF")) {
+        try {
+            std::string fileName{ "ignore_null" };
+            fileName = rpytFilenameBuffer;
+
+            SetRPYTFFMessage msg;
+            msg.roll = std::stof(rpytRollBuffer);
+            msg.pitch = std::stof(rpytPitchBuffer);
+            msg.yaw = std::stof(rpytYawBuffer);
+            msg.flag = std::stoi(rpytFlagBuffer);
+            msg.fileName = fileName;
+            _socket->Send(msg);
+            log("StartTestMessage sent");
+        }
+        catch (const std::invalid_argument& e) {
+            log("Send RPYFT: Invalid arguments!", "ERROR");
+        }
     }
 
     if (ImGui::Button("Close")) {
@@ -333,15 +349,22 @@ void makeCmdPanel() {
         }
 
         if (ImGui::Button("Arm Drone")) {
-            log("to be added...");
+            ArmMessage msg;
+            msg.status = _droneArmed;
+            _socket->Send(msg);
+            log("Drone armed");
         }
 
         if (ImGui::Button("Take off")) {
-            log("to be added...");
+            TakeoffMessage msg;
+            _socket->Send(msg);
+            log("Takeoff Initialized\n", prefix);
         }
 
         if (ImGui::Button("Land")) {
-            log("to be added...");
+            LandMessage msg;
+            _socket->Send(msg);
+            log("Landing Initialized\n", prefix);
         }
 
         if (ImGui::Button("Manual Input")) {
@@ -349,12 +372,9 @@ void makeCmdPanel() {
         }
 
         if (ImGui::Button("Stop Test")) {
-            log("to be added...");
-        }
-
-        if (ImGui::Button("Stop Flight Path")) {
-            log("to be added...");
-            log("Flight path navigation stopped");
+            StopTestMessage msg;
+            _socket->Send(msg);
+            log("Test Stopped");
         }
     }
 
