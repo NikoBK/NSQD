@@ -318,18 +318,18 @@ void makePropsPanel() {
 
     ImGui::Text("Camera Feed FPS: %d", 0);
     ImGui::Text("Drone Current Time: %s", "0");
-    ImGui::Text("Drone Roll: %d", roll);
-    ImGui::Text("Drone Pitch: %d", pitch);
-    ImGui::Text("Drone Yaw: %d", yaw);
-    ImGui::Text("Drone Thrust: %d", thrust);
-    ImGui::Text("Drone Latitude: %d", lat);
-    ImGui::Text("Drone Longitude: %d", lon);
-    ImGui::Text("Drone Altitude: %d", alt);
+    ImGui::Text("Drone Roll: %d", roll_);
+    ImGui::Text("Drone Pitch: %d", pitch_);
+    ImGui::Text("Drone Yaw: %d", yaw_);
+    ImGui::Text("Drone Thrust: %d", thrust_);
+    ImGui::Text("Drone Latitude: %d", lat_);
+    ImGui::Text("Drone Longitude: %d", lon_);
+    ImGui::Text("Drone Altitude: %d", alt_);
 
     ImGui::EndChild();
 }
 
-void makeCmdPanel() {
+void makeCmdPanel(HWND hwnd) {
     static WCHAR filePath[MAX_PATH] = L"";
 
     // Begin Hierachy Panel (Top Right)
@@ -390,6 +390,22 @@ void makeCmdPanel() {
             _socket->Send(msg);
             log("Test Stopped");
         }
+
+        if (ImGui::Button("Upload Flight Path Data")) {
+            std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
+
+            std::ifstream file(gpxPath);
+            if (file.is_open()) {
+                std::string line;
+                while (std::getline(file, line)) {
+                    log(line);
+                }
+                file.close();
+            }
+            else {
+                log("Failed to open file GPX data file.", "ERROR");
+            }
+        }
     }
 
     ImGui::EndChild();
@@ -436,21 +452,6 @@ void makeDebugPanel(HWND hwnd) {
         }
         else {
             log("Log export aborted", prefix);
-        }
-    }
-    if (ImGui::Button("Upload Flight Path Data")) {
-        std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
-        
-        std::ifstream file(gpxPath);
-        if (file.is_open()) {
-            std::string line;
-            while (std::getline(file, line)) {
-                log(line);
-            }
-            file.close();
-        }
-        else {
-            log("Failed to open file GPX data file.", "ERROR");
         }
     }
     ImGui::EndChild();
