@@ -169,20 +169,6 @@ void makeManualInputWindow()
 {
     ImGui::Begin("Send Manual Inputs");
 
-    ImGui::Text("Send RPY Message:");
-    ImGui::PushItemWidth(50);
-    ImGui::InputText("Roll", rollBuffer, sizeof(rollBuffer));
-    ImGui::SameLine();
-    ImGui::PushItemWidth(50);
-    ImGui::InputText("Pitch", pitchBuffer, sizeof(pitchBuffer));
-    ImGui::SameLine();
-    ImGui::PushItemWidth(50);
-    ImGui::InputText("Yaw", yawBuffer, sizeof(yawBuffer));
-    ImGui::SameLine();
-    if (ImGui::Button("Send RPY")) {
-        log("to be added...");
-    }
-
     ImGui::Text("Send PID Message:");
     ImGui::PushItemWidth(50);
     ImGui::InputText("kp", propBuffer, sizeof(propBuffer));
