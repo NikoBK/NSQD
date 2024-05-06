@@ -1,5 +1,6 @@
 #include "../include/TCPSocket.h"
 #include "../include/gui.h"
+#include "../include/Constants.h"
 #include "Message.hpp"
 #include <iostream>
 
@@ -156,7 +157,7 @@ void TCPSocket::HandleReceive()
 
 	switch ((int)messageId)
 	{
-		case UPDATE_MSG_ID:
+		case UPDATE_MSG:
 		{
 			UpdateMessage m;
 			m.decode(decoder);
@@ -169,16 +170,6 @@ void TCPSocket::HandleReceive()
 			std::cout << "lon: " << (float)m.lon << std::endl;
 			std::cout << "alt: " << (float)m.alt << std::endl;
 			std::cout << "state: " << (float)m.state << std::endl;
-			/*message += "roll: " + std::to_string((int)m.roll) + "\n";
-			message += "pitch: " + std::to_string((int)m.pitch) + "\n";
-			message += "yaw: " + std::to_string((int)m.yaw) + "\n";
-			message += "thrust: " + std::to_string((int)m.thrust) + "\n";
-			message += "x (lat): " + std::to_string((int)m.lat) + "\n";
-			message += "y (lon): " + std::to_string((int)m.lon) + "\n";
-			message += "z (alt): " + std::to_string((int)m.alt) + "\n";
-			message += "state: " + std::to_string(m.state) + "\n";*/
-
-			//log(message, "INFO");
 			break;
 		}
 	}

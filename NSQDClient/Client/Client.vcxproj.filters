@@ -77,5 +77,8 @@
     <ClInclude Include="src\Message.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

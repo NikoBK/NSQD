@@ -6,6 +6,7 @@
 #include <string>
 #include <iterator>
 #include <stdexcept>
+#include "../include/Constants.h"
 
 class Encoder
 {
@@ -124,42 +125,22 @@ private:
 
 // define a message id here
 
-#define TEST_MSG_ID 1
-#define UPDATE_MSG_ID 2
-
 struct Message {
     virtual void encode(Encoder& encoder) = 0;
     virtual void decode(Decoder& decoder) = 0;
 };
 
-struct TestMessage : public Message
+struct ErrorMessage : public Message
 {
-    bool a;
-    unsigned char b;
-    short c;
-    int d;
-    float e;
-    std::string f;
+    std::string text;
 
-    virtual void encode(Encoder& encoder) override
-    {
-        encoder.WriteByte(TEST_MSG_ID);
-        encoder.WriteBoolean(a);
-        encoder.WriteByte(b);
-        encoder.WriteShort(c);
-        encoder.WriteInt(d);
-        encoder.WriteFloat(e);
-        encoder.WriteString(f);
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(ERROR_MSG);
+        encoder.WriteString(text);
     }
 
-    virtual void decode(Decoder& decoder) override
-    {
-        decoder.ReadBoolean(&a);
-        decoder.ReadByte(&b);
-        decoder.ReadShort(&c);
-        decoder.ReadInt(&d);
-        decoder.ReadFloat(&e);
-        decoder.ReadString(&f);
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadString(&text);
     }
 };
 
@@ -176,7 +157,7 @@ struct UpdateMessage : public Message
 
     virtual void encode(Encoder& encoder) override
     {
-        encoder.WriteByte(UPDATE_MSG_ID);
+        encoder.WriteByte(UPDATE_MSG);
         encoder.WriteFloat(roll);
         encoder.WriteFloat(pitch);
         encoder.WriteFloat(yaw);
@@ -198,6 +179,110 @@ struct UpdateMessage : public Message
         decoder.ReadFloat(&alt);
         decoder.ReadInt(&state);
     }
+};
+
+struct SetAuthorityMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(SET_AUTH_MSG);
+    }
+
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct ArmMessage : public Message
+{
+    /* true: armed, false: disarmed*/
+    bool status;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(ARM_MSG);
+        encoder.WriteBoolean(status);
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadBoolean(&status);
+    }
+};
+
+struct TakeoffMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(TAKEOFF_MSG);
+    }
+
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct LandMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(LAND_MSG);
+    }
+
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct SetPIDMessage : public Message
+{
+    float kp; // Proportional
+    float ki; // Integral
+    float kd; // Derivative
+
+    // Flag for Roll (1), Pitch (2), Yaw (3), Thrust (4) PID regulator.
+    int flag;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(SET_PID_MSG);
+        encoder.WriteFloat(kp);
+        encoder.WriteFloat(ki);
+        encoder.WriteFloat(kd);
+        encoder.WriteInt(flag);
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadFloat(&kp);
+        decoder.ReadFloat(&ki);
+        decoder.ReadFloat(&kd);
+        decoder.ReadInt(&flag);
+    }
+};
+
+struct SetRPYTFFMessage : public Message
+{
+    float roll;
+    float pitch;
+    float yaw;
+    float thrust;
+    int flag;
+    std::string fileName;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(SET_RPYTFF_MSG);
+        encoder.WriteFloat(roll);
+        encoder.WriteFloat(pitch);
+        encoder.WriteFloat(yaw);
+        encoder.WriteFloat(thrust);
+        encoder.WriteInt(flag);
+        encoder.WriteString(fileName);
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadFloat(&roll);
+        decoder.ReadFloat(&pitch);
+        decoder.ReadFloat(&yaw);
+        decoder.ReadFloat(&thrust);
+        decoder.ReadInt(&flag);
+        decoder.ReadString(&fileName);
+    }
+};
+
+struct StopTestMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(STOP_TEST_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
 };
 
 #endif // !MESSAGE_HP

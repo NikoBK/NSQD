@@ -142,6 +142,7 @@
     <ClCompile Include="vendor\ImGui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Constants.h" />
     <ClInclude Include="include\TCPSocket.h" />
     <ClInclude Include="include\gui.h" />
     <ClInclude Include="src\Message.hpp" />
