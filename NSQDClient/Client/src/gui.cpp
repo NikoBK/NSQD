@@ -355,7 +355,9 @@ void makeCmdPanel() {
         ImGui::PopStyleVar();
 
         if (ImGui::Button("Set Control Authority")) {
-            log("to be added...");
+            SetAuthorityMessage msg;
+            _socket->Send(msg);
+            log("Authority Set\n", prefix);
         }
 
         if (ImGui::Button("Arm Drone")) {
