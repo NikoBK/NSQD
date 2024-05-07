@@ -285,6 +285,14 @@ struct StopTestMessage : public Message
     virtual void decode(Decoder& decoder) override { }
 };
 
+struct StopHoverTestMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(STOP_HOVER_TEST_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
 struct SetHoverHeightMessage : public Message 
 {
     // The hover height above the takeoff

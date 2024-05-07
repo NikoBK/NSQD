@@ -228,6 +228,7 @@ void makeManualInputWindow()
             msg.roll = std::stof(rpytRollBuffer);
             msg.pitch = std::stof(rpytPitchBuffer);
             msg.yaw = std::stof(rpytYawBuffer);
+            msg.thrust = std::stof(rpytThrustBuffer);
             msg.flag = std::stoi(rpytFlagBuffer);
             msg.fileName = fileName;
             _socket->Send(msg);
@@ -410,6 +411,11 @@ void makeCmdPanel(HWND hwnd) {
         _manualInput = !_manualInput;
     }
 
+    if (ImGui::Button("Stop Hover Test")) {
+        StopHoverTestMessage msg;
+        _socket->Send(msg);
+        log("Hover Test Stopped");
+    }
     if (ImGui::Button("Stop Test")) {
         StopTestMessage msg;
         _socket->Send(msg);
