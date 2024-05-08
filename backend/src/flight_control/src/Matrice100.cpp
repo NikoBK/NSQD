@@ -7,10 +7,10 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <signal.h>
-#include "tinyxml.h"
+//#include "tinyxml_catkin2/tinyxml2.h"
+#include "../include/tinyxml2.h"
 
 #include "../include/Matrice100.hpp"
-
 
 
 //Constructor
@@ -61,20 +61,21 @@ void Matrice100::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
 }
 
 
-//TODO: Convert to tinyxml 1
-/*
 void Matrice100::loadPathFromString(const char* xmlContent) {
+	
 	// Traget altitude 
 	int alti = 10; 
 
 	// Create xmldocument in memory
+	//tinyxml2::
 	tinyxml2::XMLDocument doc;
+	
 	// Parse string to xml
     doc.Parse(xmlContent);
-
+    
 	// Catch error
 	if(doc.Error()) {
-		std::cout << "Error parsing XML string: " << doc.GetErrorStr2() << '\n';
+		std::cout << "Error parsing XML string: " << doc.ErrorStr() << '\n';
 	}
 
 	tinyxml2::XMLElement* gpx = doc.RootElement();
@@ -82,11 +83,8 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 	tinyxml2::XMLElement* trk = gpx->FirstChildElement("trk");
 
 	// Loop through tracks 
-	
-	
-	
+	std::vector<double> latLonAltVec;
 	for(const tinyxml2::XMLElement* trkpt = trk->FirstChildElement("trkpt"); trkpt != 0; trkpt = trkpt->NextSiblingElement("trkpt")) {
-		std::vector<double> latLonAltVec;
 		// Read trkpoint attribute
 		const tinyxml2::XMLAttribute* attr = trkpt->FirstAttribute();
 		
@@ -99,10 +97,13 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 		latLonAltVec.push_back(alti);
 
 		photoPoints.push_back(latLonAltVec);
+		latLonAltVec.clear();
 	}
-
 }
-*/
+
+//void Matrice100::interpolatePath(float desired_vel, int update_frequency){
+
+
 
 //Callback event for dji_sdk/gps_position subscription event.
 void Matrice100::gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) {
@@ -198,10 +199,10 @@ float Matrice100::getTargetYaw() {
 
 void Matrice100::runPIDController() {    
     // Calculate control signal
-	controlData.axes[0] = controlData.axes[0] + pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat;
-	controlData.axes[1] = controlData.axes[1] + pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; 	
-	controlData.axes[2] = controlData.axes[2] + pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt;	
-	controlData.axes[3] = controlData.axes[3] + pidParamsArray[3][0] * errorYaw + pidParamsArray[3][1] * integralYaw + pidParamsArray[3][2] * derivativeYaw;
+	controlData.axes[0] = controlData.axes[0] + pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat; //roll
+	controlData.axes[1] = controlData.axes[1] + pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; //pitch
+	controlData.axes[2] = controlData.axes[2] + pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt; //thrust
+	controlData.axes[3] = controlData.axes[3] + pidParamsArray[3][0] * errorYaw + pidParamsArray[3][1] * integralYaw + pidParamsArray[3][2] * derivativeYaw; //yaw
 	
 	if (controlData.axes[2] > 70){
 		controlData.axes[2] = 70;

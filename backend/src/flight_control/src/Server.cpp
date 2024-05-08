@@ -272,6 +272,15 @@ void Server::HandleConnection(int *state)
         	// TODO: Thor do some magic :)
         	std::cout << "Follow line started" << "\n";
         	
+        	// Temp variable holders
+        	const char* xmlContent; 
+        	float desired_vel = 0;
+        	int update_frequency = 0;
+        	
+        	_drone->loadPathFromString(xmlContent);
+        	//_drone->interpolatePath(desired_vel, update_frequency);
+        	
+        	*state = INITIALISE_ENROUTE_STATE;
         	break;
     	}
 		default: {

@@ -132,8 +132,8 @@ class Matrice100 {
 		void setTargetAltitude(float altitude);
 		void updateTargetLatLon();
 		
-		//TODO: Implement with tinyxml1
-		//void loadPathFromString(const char* xmlContent);
+		void loadPathFromString(const char* xmlContent);
+		//void interpolatePath(float desired_vel, int update_frequency);
 
 		float getBatteryVoltage();
 		float getTargetYaw();
