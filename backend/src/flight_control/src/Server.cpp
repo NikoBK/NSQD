@@ -274,11 +274,12 @@ void Server::HandleConnection(int *state)
         	
         	// Temp variable holders
         	const char* xmlContent; 
-        	float desired_vel = 0;
-        	int update_frequency = 0;
-        	
+        	float desiredVel = 0;
+            float altitude = 10;
+        	int updateHz = 0;
+
         	_drone->loadPathFromString(xmlContent);
-        	//_drone->interpolatePath(desired_vel, update_frequency);
+        	_drone->interpolatePath(desiredVel, updateHz, altitude);
         	
         	*state = INITIALISE_ENROUTE_STATE;
         	break;

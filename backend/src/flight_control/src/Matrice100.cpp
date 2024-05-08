@@ -63,11 +63,7 @@ void Matrice100::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
 
 void Matrice100::loadPathFromString(const char* xmlContent) {
 	
-	// Traget altitude 
-	int alti = 10; 
-
 	// Create xmldocument in memory
-	//tinyxml2::
 	tinyxml2::XMLDocument doc;
 	
 	// Parse string to xml
@@ -93,17 +89,202 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 		attr->Next();
 		// Append Longitude
 		latLonAltVec.push_back(std::stod(attr->Value()));
-		// Append altitude
-		latLonAltVec.push_back(alti);
 
 		photoPoints.push_back(latLonAltVec);
 		latLonAltVec.clear();
 	}
 }
 
-//void Matrice100::interpolatePath(float desired_vel, int update_frequency){
+void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
 
+	double stepTime = 1/updateHz; // ms
 
+	// Position and heading
+	double latDifC = 0;
+    double lonDifC = 0;
+    double latDifN = 0;
+    double lonDifN = 0;
+    double dotProduct = 0;
+    double magTarget = 0;
+    double magRef = 0;
+    double heading = 0;
+
+	// Distance between photopoints, in meters.
+    double latDifMeter = 0;
+    double lonDifMeter = 0;
+    float magMeters = 0;
+    
+    // Line travel time.
+    float tf = 0; // s
+    double step = 0; 
+
+    // Latitude parameters
+    double aLat = 0;
+    double tbLat = 0;
+    double thetaBLat = 0;
+
+    // Longitude parameters
+    double aLon = 0;
+    double tbLon = 0;
+    double thetaBLon = 0;
+
+    std::vector<std::vector<double>> line;
+    std::vector<double> point;
+
+	// Vector contaning photopoints reduced to endpoints.
+	std::vector<std::vector<double>> endPoints;
+
+	// Convert PhotoPoints to Endpoints 
+    for(int i = 0 ; i < photoPoints.size(); i++) {
+
+        // Append first point
+        if(i == 0) {
+            point.push_back(drone->photoPoints[i][0]);
+            point.push_back(drone->photoPoints[i][1]);
+            endPoints.push_back(point);
+            point.clear();
+        }
+
+        // If the end has been reached, append the last point.
+        if(i == (drone->photoPoints.size()-2)){
+            point.push_back(drone->photoPoints[i+1][0]);
+            point.push_back(drone->photoPoints[i+1][1]);
+            endPoints.push_back(point);
+            point.clear();
+            break;
+        }
+        
+        // Calculate heading between next to points. If heading is not 0, then we have reached a end point.
+        latDifC = drone->photoPoints[i][0]-drone->photoPoints[i+1][0];
+		lonDifC = drone->photoPoints[i][1]-drone->photoPoints[i+1][1]; 
+        latDifN = drone->photoPoints[i+1][0]-drone->photoPoints[i+2][0];
+		lonDifN = drone->photoPoints[i+1][1]-drone->photoPoints[i+2][1]; 
+
+        // Calculate heading between current photopoint and next photopoint
+        dotProduct = latDifC * latDifN + lonDifC * lonDifN;
+	    magTarget = sqrt(pow(latDifC, 2) + pow(lonDifC, 2));
+	    magRef = sqrt(pow(latDifN, 2) + pow(lonDifN, 2));
+	    heading = acos(dotProduct / (magTarget * magRef));
+
+        if(!heading == 0) {
+            //std::cout << "heading: " << heading << '\n';
+            point.push_back(drone->photoPoints[i+1][0]);
+            point.push_back(drone->photoPoints[i+1][1]);
+            endPoints.push_back(point);
+            point.clear();
+        }    
+    }
+
+    for(int i = 0; i < endPoints.size(); i++) {
+        std::cout << "Endpoints lat: " << endPoints[i][0] << " lon: " << endPoints[i][1] << '\n';
+    }
+
+	// Loop through end points.
+	for(int i = 0 ; i <= endPoints.size()-2; i++) {
+
+        // Calculate distance and convert to meters
+        latDifC = endPoints[i+1][0]-endPoints[i][0];
+		lonDifC = endPoints[i+1][1]-endPoints[i][1]; 
+        latDifMeter = latDifC * 111320;
+        lonDifMeter = lonDifC * ((40075000 * cos(latDifC) / 360));
+        magMeters = sqrt(pow(latDifMeter,2)+pow(lonDifMeter,2));
+
+        // Line travel time
+        tf = magMeters/targetVelocity;
+
+        // Latitude acceleration
+        aLat = ((4*latDifC)/(tf*tf))*1.2;
+        // Calculate time before shift to lineare piece, and latitude at that time
+        tbLat = tf / 2 - fabs((sqrt(fabs((aLat*aLat)*(tf*tf)-4*aLat*(latDifC)))) / (2 * aLat));
+        if(tbLat != tbLat) {
+            tbLat = 0;
+        }
+        thetaBLat = 0.5 * (aLat*tbLat*tbLat) + endPoints[i][0];
+
+        // Longitude acceleration
+        aLon = (4*(lonDifC)/(tf*tf)) * 1.2;
+        // Calculate time before shift to lineare piece, and longitude at that time.
+        tbLon = tf / 2 - fabs((sqrt(fabs((aLon*aLon)*(tf*tf)-4*aLon*lonDifC))) / (2 * aLon));
+        if(tbLon != tbLon) {
+            tbLon = 0;
+        }
+        thetaBLon = 0.5*(aLon*tbLon*tbLon) + endPoints[i][1];     
+
+        // Interpolate latitude
+        int s = 0;
+        // Acceleration
+        for(; s*stepTime <= tbLat; s++ ) {
+            // Calculate step and append 
+            step = endPoints[i][0] + 0.5 * aLat * pow(s*stepTime,2);
+            point.push_back(step);
+
+            // Longitude temp 0
+            point.push_back(0);
+
+            // Append altitude
+            point.push_back(altitude);
+            
+            line.push_back(point);
+            point.clear();
+        }
+
+        // Lineare piece
+        for(; (s*stepTime) <= (tf-tbLat); s++) {
+            step = thetaBLat + aLat * tbLat * (s*stepTime - tbLat);
+            point.push_back(step);
+
+            point.push_back(0);
+
+            point.push_back(altitude);
+            
+            line.push_back(point);
+            point.clear();
+        }
+
+        // Deacceleration
+        for(; (s*stepTime) <= tf; s++) {
+            step = endPoints[i+1][0] - 0.5 * aLat * pow((tf-s*stepTime),2);
+            point.push_back(step);
+
+            point.push_back(0);
+
+            point.push_back(altitude);
+            
+            line.push_back(point);
+            point.clear();
+        }
+
+        // Interpolate longitude
+        s = 0;
+        // Acceleration
+        for(; s*stepTime <= tbLon; s++ ) {
+            step = endPoints[i][1] + 0.5 * aLon * pow(s*stepTime,2);
+            line[s][1] = step;
+        }
+
+        // Lineare piece
+        for(; (s*stepTime) <= (tf-tbLon); s++) {
+            step = thetaBLon + aLon * tbLon * (s*stepTime - tbLon);
+            line[s][1] = step;
+        }
+
+        // Deacceleration
+        for(; (s*stepTime) <= tf; s++) {
+            step = endPoints[i+1][1] - 0.5 * aLon * pow((tf-s*stepTime),2);
+            line[s][1] = step;
+        }
+
+        // Print line for debugging     
+		/*
+        for(int l = 0; l < line.size(); l++) {
+            std::cout << std::setprecision(numeric_limits<double>::max_digits10) <<"{" << line[l][0] << "," << line[l][1] << "}," << '\n';
+        }
+		*/
+
+        drone->track.push_back(line);
+        line.clear();
+	}
+}
 
 //Callback event for dji_sdk/gps_position subscription event.
 void Matrice100::gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) {
