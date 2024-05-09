@@ -251,28 +251,29 @@ struct SetPIDMessage : public Message
 
 struct SetRPYTFFMessage : public Message
 {
-    float roll;
-    float pitch;
-    float yaw;
-    float thrust;
+    // TODO: Convert back to floats when float read/write works.
+    /*float*/std::string roll;
+    /*float*/std::string pitch;
+    /*float*/std::string yaw;
+    /*float*/std::string thrust;
     int flag;
     std::string fileName;
 
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(SET_RPYTFF_MSG);
-        encoder.WriteFloat(roll);
-        encoder.WriteFloat(pitch);
-        encoder.WriteFloat(yaw);
-        encoder.WriteFloat(thrust);
+        encoder./*WriteFloat*/WriteString(roll);
+        encoder./*WriteFloat*/WriteString(pitch);
+        encoder./*WriteFloat*/WriteString(yaw);
+        encoder./*WriteFloat*/WriteString(thrust);
         encoder.WriteInt(flag);
         encoder.WriteString(fileName);
     }
 
     virtual void decode(Decoder& decoder) override {
-        decoder.ReadFloat(&roll);
-        decoder.ReadFloat(&pitch);
-        decoder.ReadFloat(&yaw);
-        decoder.ReadFloat(&thrust);
+        decoder./*ReadFloat*/ReadString(&roll);
+        decoder./*ReadFloat*/ReadString(&pitch);
+        decoder./*ReadFloat*/ReadString(&yaw);
+        decoder./*ReadFloat*/ReadString(&thrust);
         decoder.ReadInt(&flag);
         decoder.ReadString(&fileName);
     }

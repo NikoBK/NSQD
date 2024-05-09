@@ -215,10 +215,10 @@ void makeManualInputWindow()
             fileName = rpytFilenameBuffer;
 
             SetRPYTFFMessage msg;
-            msg.roll = std::stof(rpytRollBuffer);
-            msg.pitch = std::stof(rpytPitchBuffer);
-            msg.yaw = std::stof(rpytYawBuffer);
-            msg.thrust = std::stof(rpytThrustBuffer);
+            msg.roll = rpytRollBuffer; //std::stof(rpytRollBuffer);
+            msg.pitch = rpytPitchBuffer; //std::stof(rpytPitchBuffer);
+            msg.yaw = rpytYawBuffer; //std::stof(rpytYawBuffer);
+            msg.thrust = rpytThrustBuffer; //std::stof(rpytThrustBuffer);
             msg.flag = std::stoi(rpytFlagBuffer);
             msg.fileName = fileName;
             _socket->Send(msg);
