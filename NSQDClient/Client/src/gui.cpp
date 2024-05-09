@@ -297,10 +297,6 @@ void makeLogPanel() {
     ImGui::EndChild();
 }
 
-float getRoll() {
-    return roll_;
-}
-
 void updateProps(float roll, float pitch, float yaw, float thrust, float lat, float lon, float alt, int state) {
     roll_ = roll;
     pitch_ = pitch;
