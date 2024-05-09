@@ -419,6 +419,9 @@ void makeCmdPanel(HWND hwnd) {
 			while (std::getline(file, line)) {
 					log(line);
 			}
+
+			log("file has been read.");
+			log(line);
 			file.close();
 		}
 		else {
