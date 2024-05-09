@@ -254,13 +254,11 @@ void updateState() {
 			drone->updateTargetYaw();
 			drone->updateTargetPoints();
 
-			//state = ENROUTE_TURN_STATE;
-			state = ENROUTE_STATE;
+			state = ENROUTE_TURN_STATE;
+			std::cout << "Turn state" << '\n';
 			break;
 		}
 		case ENROUTE_STATE: {
-			std::cout << "On route" << '\n';
-			
 			drone->updateTargetPoints();
 			drone->calculateError();
 			drone->getError(&errorData);
@@ -271,6 +269,7 @@ void updateState() {
 			if (drone->getTrackState() == 1) {
 				drone->updateTargetYaw();
 				state = ENROUTE_TURN_STATE;
+				std::cout << "Turn state" << '\n';
 			}
 			else if (drone->getTrackState() == 2) {
 				state = ENROUTE_STOPPED_STATE;
@@ -279,18 +278,26 @@ void updateState() {
 			break;
 		}
 		case ENROUTE_TURN_STATE: {
-			std::cout << "Turn state" << '\n';
-			
+		
 			drone->calculateError();
 			drone->getError(&errorData);
 			drone->runPIDController();
 
 			targetYaw = drone->getTargetYaw();
+			drone->getTargetGPS(&targetGPSData);
 
 			float precision = 0.052; //rad
-
-			if (rpy.yaw - precision < targetYaw && targetYaw < rpy.yaw + precision) {
+			float precisionAlt = 1; //m
+			
+			std::cout << "Target Yaw: " << targetYaw << '\n';
+			std::cout << "Imu Yaw: " << rpy.yaw << '\n';
+			std::cout << "Target Alt: " << targetGPSData.altitude << '\n';
+			std::cout << "GPS Alt: " << gps_data.altitude << '\n';
+			
+			if (rpy.yaw - precision < targetYaw && targetYaw < rpy.yaw + precision && 
+			    gps_data.altitude - precisionAlt < targetGPSData.altitude && targetGPSData.altitude < gps_data.altitude + precisionAlt) {
 				state = ENROUTE_STATE;
+				std::cout << "On route" << '\n';
 			}
 
 			csvWritePathLog(begin, 1);

@@ -133,7 +133,7 @@ class Matrice100 {
 		void updateTargetLatLon();
 		
 		void loadPathFromString(const char* xmlContent);
-		void interpolatePath(float desired_vel, float accGain, float update_frequency, float altitude);
+		void interpolatePath(float desired_vel, float accGain, float update_frequency, float alti);
 
 		float getBatteryVoltage();
 		float getTargetYaw();

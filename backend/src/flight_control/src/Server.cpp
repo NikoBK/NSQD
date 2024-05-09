@@ -189,6 +189,7 @@ void Server::HandleConnection(int *state)
             if (result == 0) {
                 SendError("<drone::request_permission>: Failed to call sdk authority service");
             }
+            //SendError("wut da fuk");
             break;
         }
         case ARM_MSG: {
@@ -197,14 +198,14 @@ void Server::HandleConnection(int *state)
 
             int result = _drone->arm(msg.status);
             if (result == 0) {
-                SendError("<drone::arm>: Failed to call service arm");
+                //SendError("<drone::arm>: Failed to call service arm");
             }
             break;
         }
         case TAKEOFF_MSG: {
             int result = _drone->takeOff();
             if (result == 0) {
-                SendError("<drone::takeOff>: Failed to call flight control");
+                //SendError("<drone::takeOff>: Failed to call flight control");
             }
             else {
                 *state = HOVER_STATE;
@@ -214,7 +215,7 @@ void Server::HandleConnection(int *state)
         case LAND_MSG: {
             int result = _drone->land();
             if (result == 0) {
-                SendError("<drone::land>: Failed to call flight control");
+                //SendError("<drone::land>: Failed to call flight control");
             }
             else {
                 *state = GROUNDED_STATE;
@@ -224,6 +225,11 @@ void Server::HandleConnection(int *state)
         case SET_PID_MSG: {
             SetPIDMessage msg;
             msg.decode(decoder);
+            
+            if (msg.flag < 0 || msg.flag > 2) {
+            	//SendError("wat");//("PID Flag must not exceed 2 and must be positive!");
+            	return;
+            }
 			
 			// TODO: Convert these values back to floats when float read/write works again.
 			float kp = std::stof(msg.kp);
@@ -247,6 +253,7 @@ void Server::HandleConnection(int *state)
             // Set target values in degrees
             _drone->setTargetValues(msg.roll, msg.pitch, msg.thrust, msg.yaw, msg.flag);
 			
+			std::cout << "filename: " << msg.fileName << std::endl;
 			std::cout << "Init csv" << "\n";
             // Update state
             *state = START_TEST_STATE;
@@ -295,14 +302,14 @@ void Server::HandleConnection(int *state)
         	const char* xmldata = xmlContent.c_str();  
         	float desiredVel = 5;
         	float accGain = 1.2;
-            float altitude = 10;
+            float alti = 1.5; //10;
         	float updateHz = 50;
         	
         	// Convert xml string to photoPoint vector.
         	_drone->loadPathFromString(xmldata);
         	
         	// Interpolate path from photoPoint vector
-        	_drone->interpolatePath(desiredVel, accGain, updateHz, altitude);
+        	_drone->interpolatePath(desiredVel, accGain, updateHz, alti);
         	
         	*state = INITIALISE_ENROUTE_STATE;
     		break;
@@ -323,7 +330,7 @@ void Server::HandleConnection(int *state)
             // Send error to frontend.
             std::string errText = "Drone received unrecognized message with id: ";
             errText += std::to_string((int)messageId);
-            SendError(errText);
+            //SendError(errText);
 
             *state = HOVER_STATE;
 			break;

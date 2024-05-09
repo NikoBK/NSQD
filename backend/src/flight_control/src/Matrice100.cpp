@@ -84,25 +84,28 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 	std::vector<double> point;
 	for(const tinyxml2::XMLElement* trkpt = trk->FirstChildElement("trkpt"); trkpt != 0; trkpt = trkpt->NextSiblingElement("trkpt")) {
 		// Read trkpoint attribute
-		const tinyxml2::XMLAttribute* attr = trkpt->FirstAttribute();
+		
+		const char* lat = trkpt->Attribute("lat");
+		const char* lon = trkpt->Attribute("lon");
 		
 		// Append Latitude 
-		point.push_back(std::stod(attr->Value()));
-		attr->Next();
+		point.push_back(std::stod(lat));
+		
 		// Append Longitude
-		point.push_back(std::stod(attr->Value()));
+		point.push_back(std::stod(lon));
 
 		photoPoints.push_back(point);
 		point.clear();
 	}
+	
+	std::cout << "Photopoint: " << photoPoints[0][0] << " lon: " << photoPoints[0][1] << '\n';
 }
 
-void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz,float altitude){
+void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz,float alti){
 	
+	// Clear former track
 	track.clear();
 		
-	float stepTime = 1/updateHz; // ms	
-
 	// Position and heading
 	double latDifC = 0;
     double lonDifC = 0;
@@ -137,7 +140,16 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
 
 	// Vector contaning photopoints reduced to endpoints.
 	std::vector<std::vector<double>> endPoints = {};
-
+	
+	// Add starting point to endpoints
+	point.push_back(longitude);
+	point.push_back(latitude);
+	endPoints.push_back(point);
+    point.clear();
+   
+    alti = altitude+alti; 
+    float stepTime = 1/updateHz; // ms	
+	
 	// Convert PhotoPoints to Endpoints 
     for(int i = 0 ; i < photoPoints.size(); i++) {
 
@@ -146,6 +158,7 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
             point.push_back(photoPoints[i][0]);
             point.push_back(photoPoints[i][1]);
             endPoints.push_back(point);
+            
             point.clear();
         }
 
@@ -228,7 +241,7 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
             point.push_back(0);
 
             // Append altitude
-            point.push_back(altitude);
+            point.push_back(alti);
             
             line.push_back(point);
             point.clear();
@@ -241,7 +254,7 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
 
             point.push_back(0);
 
-            point.push_back(altitude);
+            point.push_back(alti);
             
             line.push_back(point);
             point.clear();
@@ -254,7 +267,7 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
 
             point.push_back(0);
 
-            point.push_back(altitude);
+            point.push_back(alti);
             
             line.push_back(point);
             point.clear();
@@ -303,9 +316,9 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
             	std::cout <<"Point alt: " << track[l][t][2]  << '\n';
             }     
     }
-    */
-    std::cout <<"Track size: " << track.size()  << '\n';
     
+    std::cout <<"Track size: " << track.size()  << '\n';
+    */
 }
 
 //Callback event for dji_sdk/gps_position subscription event.
