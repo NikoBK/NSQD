@@ -151,24 +151,6 @@ std::string OpenFileDialog(HWND hWnd, LPWSTR filePath, LPCWSTR defaultExtension,
     }
 }
 
-IDirect3DTexture9* createTextureFromImage(IDirect3DDevice9* device, const unsigned char* imageData, int width, int height) {
-    IDirect3DTexture9* texture = nullptr;
-    //D3DXCreateTextureFromFileInMemoryEx(device, imageData, width * height * 4, width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &texture);
-    device->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
-    D3DLOCKED_RECT lockedRect;
-    texture->LockRect(0, &lockedRect, NULL, 0);
-    unsigned char* dstPtr = static_cast<unsigned char*>(lockedRect.pBits);
-    const unsigned char* srcPtr = imageData;
-    int bytesPerPixel = 4; // RGBA format
-    for (int y = 0; y < height; y++) {
-        memcpy(dstPtr, srcPtr, width * bytesPerPixel);
-        dstPtr += lockedRect.Pitch;
-        srcPtr += width * bytesPerPixel;
-    }
-    texture->UnlockRect(0);
-    return texture;
-}
-
 void makeManualInputWindow()
 {
     ImGui::Begin("Send Manual Inputs");
