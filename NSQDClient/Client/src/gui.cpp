@@ -410,6 +410,22 @@ void makeCmdPanel(HWND hwnd) {
         log("Follow line test initiated!");
     }
 
+	if (ImGui::Button("Upload Flight Path")) {
+		std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
+
+		std::ifstream file(gpxPath);
+		if (file.is_open()) {
+			std::string line;
+			while (std::getline(file, line)) {
+					log(line);
+			}
+			file.close();
+		}
+		else {
+				log("failed to open GPX data file.", "ERROR");
+		}
+	}
+
     ImGui::EndChild();
 }
 

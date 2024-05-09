@@ -320,4 +320,18 @@ struct FollowLineMessage : public Message
     virtual void decode(Decoder& decoder) override { }
 };
 
+struct UploadFlightPathMessage : public Message
+{
+		std::string data;
+
+		virtual void encode(Encoder& encoder) override {
+				encoder.WriteByte(UPLOAD_FLIGHTPATH_MSG);
+				encoder.WriteString(data);
+		}
+
+		virtual void decode(Decoder& decoder) override {
+				decoder.ReadString(&data);
+		}
+};
+
 #endif // !MESSAGE_HP
