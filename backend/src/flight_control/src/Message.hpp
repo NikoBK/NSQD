@@ -224,25 +224,26 @@ struct LandMessage : public Message
 
 struct SetPIDMessage : public Message 
 {
-    float kp; // Proportional
-    float ki; // Integral
-    float kd; // Derivative
+	// TODO: Convert back to floats when float read/write works.
+    /*float*/std::string kp; // Proportional
+    /*float*/std::string ki; // Integral
+    /*float*/std::string kd; // Derivative
 
     // Flag for Roll (0), Pitch (1), Thrust (2) and Yaw (3) PID regulator.
     int flag;
 
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(SET_PID_MSG);
-        encoder.WriteFloat(kp);
-        encoder.WriteFloat(ki);
-        encoder.WriteFloat(kd);
+        encoder./*WriteFloat*/WriteString(kp);
+        encoder./*WriteFloat*/WriteString(ki);
+        encoder./*WriteFloat*/WriteString(kd);
         encoder.WriteInt(flag);
     }
 
     virtual void decode(Decoder& decoder) override { 
-        decoder.ReadFloat(&kp);
-        decoder.ReadFloat(&ki);
-        decoder.ReadFloat(&kd);
+        decoder./*ReadFloat*/ReadString(&kp);
+        decoder./*ReadFloat*/ReadString(&ki);
+        decoder./*ReadFloat*/ReadString(&kd);
         decoder.ReadInt(&flag);
     }
 };

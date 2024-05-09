@@ -225,11 +225,16 @@ void Server::HandleConnection(int *state)
             SetPIDMessage msg;
             msg.decode(decoder);
 			
-			std::cout << "Net kp: " << std::to_string(msg.kp) << std::endl;
-			std::cout << "Net ki: " << std::to_string(msg.ki) << std::endl;
-			std::cout << "Net kd: " << std::to_string(msg.kd) << std::endl;
+			// TODO: Convert these values back to floats when float read/write works again.
+			float kp = std::stof(msg.kp);
+			float ki = std::stof(msg.ki);
+			float kd = std::stof(msg.kd);
+			
+			std::cout << "Net kp: " << std::to_string(/*msg.*/kp) << std::endl;
+			std::cout << "Net ki: " << std::to_string(/*msg.*/ki) << std::endl;
+			std::cout << "Net kd: " << std::to_string(/*msg.*/kd) << std::endl;
 	
-            _drone->setPIDValues(msg.kp, msg.ki, msg.kd, msg.flag);
+            _drone->setPIDValues(/*msg.*/kp, /*msg.*/ki, /*msg.*/kd, msg.flag);
             break;
         }
         case SET_RPYTFF_MSG: {

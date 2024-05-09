@@ -99,6 +99,8 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 
 void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz,float altitude){
 	
+	track.clear();
+		
 	float stepTime = 1/updateHz; // ms	
 
 	// Position and heading
@@ -129,10 +131,7 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
     double aLon = 0;
     double tbLon = 0;
     double thetaBLon = 0;
-	
-	
-	track.clear();
-	
+		
     std::vector<std::vector<double>> line = {};
     std::vector<double> point = {};
 
@@ -184,7 +183,6 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
     for(int i = 0; i < endPoints.size(); i++) {
         std::cout << "Endpoints lat: " << endPoints[i][0] << " lon: " << endPoints[i][1] << '\n';
     }
-	
 	
 	// Loop through end points.
 	for(int i = 0 ; i <= endPoints.size()-2; i++) {
