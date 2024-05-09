@@ -95,6 +95,8 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 	}
 }
 
+//TODO: 
+//Maybe change "drone->..." to "this->..."
 void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
 
 	double stepTime = 1/updateHz; // ms
@@ -327,12 +329,6 @@ void Matrice100::startMission() {
 	derivativeLon = 0;
 	derivativeAlt = 0;
 	derivativeYaw = 0;
-	
-	//TODO: Initialise 
-	track = {{
-			{29, 45, 2},
-			{56, 45, 3},
-	}};
 }
 
 void Matrice100::initPIDValues() {
@@ -378,13 +374,28 @@ float Matrice100::getTargetYaw() {
 	return targetYaw;
 }
 
-void Matrice100::runPIDController() {    
+void Matrice100::runPIDController() {
+	//Thrust input that is slightly below the gravitational pull
+	float gravityConst = 30; // % thrust   
+
     // Calculate control signal
-	controlData.axes[0] = controlData.axes[0] + pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat; //roll
-	controlData.axes[1] = controlData.axes[1] + pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; //pitch
-	controlData.axes[2] = controlData.axes[2] + pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt; //thrust
-	controlData.axes[3] = controlData.axes[3] + pidParamsArray[3][0] * errorYaw + pidParamsArray[3][1] * integralYaw + pidParamsArray[3][2] * derivativeYaw; //yaw
+	controlData.axes[0] = gravityConst + pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat; //roll
+	controlData.axes[1] = gravityConst + pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; //pitch
+	controlData.axes[2] = gravityConst + pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt; //thrust
 	
+	//Check for limits
+	if (controlData.axes[0] > 0.61){
+		controlData.axes[0] = 0.61;
+	} else if (controlData.axes[0] < -0.61) {
+		controlData.axes[0] = -0.61;
+	}
+
+	if (controlData.axes[1] > 0.61){
+		controlData.axes[1] = 0.61;
+	} else if (controlData.axes[1] < -0.61) {
+		controlData.axes[1] = -0.61;
+	}
+
 	if (controlData.axes[2] > 70){
 		controlData.axes[2] = 70;
 	} else if (controlData.axes[2] < 0) {
@@ -403,7 +414,6 @@ void Matrice100::updateTargetPoints() {
 		else {
 			pointStep = 0;
 			lineStep++;
-			updateTargetYaw();
 			trackState = 1; //1 = new line
 		}
 	}
@@ -451,27 +461,19 @@ void Matrice100::updateTargetYaw() {
 
 // Publish message of type sensor::Joy drone orientation/angles (roll,pitch, thrust and yaw) with a given flag.
 void Matrice100::pubTargetValues() {
-
-	// Push to struct if new values given
-	//controlData.axes.push_back(roll);
-	//controlData.axes.push_back(pitch);
-	//controlData.axes.push_back(thrust);
-	//controlData.axes.push_back(yaw);
-	//controlData.axes.push_back(flag);
-
 	// Publish to flight topic
 	move.publish(controlData);
 }
 
-// Publish message of type sensor::Joy drone orientation/angles (roll,pitch, thrust and yaw) with a given flag.
+// Update message of type sensor::Joy drone orientation/angles (roll,pitch, thrust and yaw) with a given flag.
 void Matrice100::setTargetValues(float roll,float pitch, float thrust, float yaw, int flag) {
 
 	//Update controlData if any parameters are given otherwise keep same values
-	controlData.axes[0] = roll * 3.14/180; 	//(roll != NULL) ? roll : controlData.axes[0];
-	controlData.axes[1] = pitch * 3.14/180; 	//(pitch != NULL) ? pitch : controlData.axes[1];
-	controlData.axes[2] = thrust;	//(thrust != NULL) ? thrust : controlData.axes[2];
-	controlData.axes[3] = yaw * 3.14/180; 		//(yaw != NULL) ? yaw : controlData.axes[3];
-	controlData.axes[4] = flag; 	//(flag != NULL) ? flag : controlData.axes[4]; 	
+	controlData.axes[0] = roll * 3.14/180; 
+	controlData.axes[1] = pitch * 3.14/180; 	
+	controlData.axes[2] = thrust;	
+	controlData.axes[3] = yaw * 3.14/180; 		
+	controlData.axes[4] = flag; 		
 }
 
 void Matrice100::getTargetGPS(TargetGPS* targetGPS_struct) {

@@ -230,10 +230,11 @@ void updateState() {
 				<< "errorYaw" 
 				<< "\n";
 
-			// drone->loadRouteFromGPX(filePath)
-			// drone->calculateInterpolations(desired_vel, update_frequency)
 			drone->startMission();
-			state = ENROUTE_STATE;
+			drone->updateTargetYaw();
+			drone->updateTargetPoints();
+
+			state = ENROUTE_TURN_STATE;
 			break;
 		}
 		case ENROUTE_STATE: {
@@ -244,6 +245,7 @@ void updateState() {
 			drone->pubTargetValues();
 
 			if (drone->getTrackState() == 1) {
+				drone->updateTargetYaw();
 				state = ENROUTE_TURN_STATE;
 			}
 			else if (drone->getTrackState() == 2) {
@@ -259,7 +261,8 @@ void updateState() {
 
 			targetYaw = drone->getTargetYaw();
 
-			float precision = 0.052; 
+			float precision = 0.052; //rad
+
 			if (rpy.yaw - precision < targetYaw && targetYaw < rpy.yaw + precision) {
 				state = ENROUTE_STATE;
 			}

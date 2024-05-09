@@ -56,7 +56,7 @@ struct Error {
 class Matrice100 {
 	private:
 		float imuRoll, imuPitch, imuYaw;
-		float pidParamsArray[4][3];    // = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_alt, ki_alt, kd_alt}, {kp_yaw, ki_yaw, kd_yaw}};
+		float pidParamsArray[3][3];    // = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_alt, ki_alt, kd_alt}, {kp_yaw, ki_yaw, kd_yaw}};
 		float targetLat, targetLon, targetAlt, targetYaw;
 		float errorLat, errorLon, errorAlt, errorYaw;
 		float integralLat, integralLon, integralAlt, integralYaw;
