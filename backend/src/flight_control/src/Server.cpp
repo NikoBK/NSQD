@@ -224,7 +224,11 @@ void Server::HandleConnection(int *state)
         case SET_PID_MSG: {
             SetPIDMessage msg;
             msg.decode(decoder);
-
+			
+			std::cout << "Net kp: " << std::to_string(msg.kp) << std::endl;
+			std::cout << "Net ki: " << std::to_string(msg.ki) << std::endl;
+			std::cout << "Net kd: " << std::to_string(msg.kd) << std::endl;
+	
             _drone->setPIDValues(msg.kp, msg.ki, msg.kd, msg.flag);
             break;
         }
@@ -269,26 +273,43 @@ void Server::HandleConnection(int *state)
             break;
     	}
     	case FOLLOW_LINE_MSG: {
-          	std::cout << "Follow line started" << "\n";
+          
+        	break;
+    	}
+    	case UPLOAD_FLIGHTPATH_MSG: {
+    	
+    		UploadFlightPathMessage msg;
+    		msg.decode(decoder);
+    		
+    		std::cout << "Follow route started" << "\n";
         	
         	// Temp variable holders
-        	const char* xmlContent; 
+        	std::string xmlContent = msg.data;
+        	std::cout << xmlContent << "\n";
+        	
+        	const char* xmldata = xmlContent.c_str();  
         	float desiredVel = 5;
         	float accGain = 1.2;
             float altitude = 10;
-        	int updateHz = 50;
+        	float updateHz = 50;
         	
         	// Convert xml string to photoPoint vector.
-        	_drone->loadPathFromString(xmlContent);
+        	_drone->loadPathFromString(xmldata);
+        	
         	// Interpolate path from photoPoint vector
         	_drone->interpolatePath(desiredVel, accGain, updateHz, altitude);
         	
         	*state = INITIALISE_ENROUTE_STATE;
-        	break;
+    		break;
     	}
-    	case UPLOAD_FLIGHTPATH_MSG: {
-    		std::cout << "Received Upload Flight Path Message!" << std::endl;
-    		std::cout << "TODO: Handle me (upload_flightpath_msg)" << std::endl;
+    	case CAPTURE_IMAGES_MSG: {
+    		std::cout << "INIT CAPTURE" << "\n";
+			*state = CAPTURE_IMAGES_STATE;
+    		break;
+    	}
+    	case STOP_CAPTURE_IMAGES_MSG: {
+    		std::cout << "CLOSE CAPTURE" << "\n";
+			*state = HOVER_STATE;
     		break;
     	}
 		default: {

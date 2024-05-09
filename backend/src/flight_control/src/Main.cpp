@@ -5,6 +5,7 @@
 #include "../include/Constants.hpp"
 #include "Message.hpp"
 #include <opencv2/opencv.hpp>
+//#include <opencv2/imgcodecs.hpp>
 
 // ORIENTATION & POSITIONS
 // Data structs to save roll pitch adn yaw as well as gps data (declared in Matrice100.hpp)
@@ -28,6 +29,7 @@ ros::Time begin;
 
 // OPENCV
 cv::VideoCapture cap;
+int imgNum = 0;
 
 // DATA
 //Used for storing target thrust to be written to csv file
@@ -112,6 +114,14 @@ void terminate() {
 */
 bool captureFrame() {
 	cv::Mat frame;
+	
+	cap >> frame;
+	
+	const std::string filename = "images/image_" + std::to_string(imgNum) + ".png"; 
+	
+	cv::imwrite(filename, frame); 
+	
+	imgNum++;
 	return true;
 }
 
@@ -154,6 +164,7 @@ void updateState() {
 	{
 		case GROUNDED_STATE: {
 			//std::cout << "Grounded State currently does nothing..." << std::endl;
+			
 			break;
 		}
 		case ARMED_STATE: {
@@ -162,6 +173,15 @@ void updateState() {
 		}
 		case HOVER_STATE: {
 			//std::cout << "Hover State currently does nothing..." << std::endl;
+			break;
+		}
+		case CAPTURE_IMAGES_STATE: {
+			
+			if (imuReady(imuSample, 100)) {     //imuReady(imuSample, 99)) {
+				std::cout << "Writing frame" << "\n";
+				captureFrame();
+			}
+			
 			break;
 		}
 		case PUBLISH_ANGLE_STATE: {
@@ -234,16 +254,20 @@ void updateState() {
 			drone->updateTargetYaw();
 			drone->updateTargetPoints();
 
-			state = ENROUTE_TURN_STATE;
+			//state = ENROUTE_TURN_STATE;
+			state = ENROUTE_STATE;
 			break;
 		}
 		case ENROUTE_STATE: {
+			std::cout << "On route" << '\n';
+			
 			drone->updateTargetPoints();
 			drone->calculateError();
 			drone->getError(&errorData);
 			drone->runPIDController(); // Function that has PID implemented and updates a controlData structure.
 			drone->pubTargetValues();
-
+			
+			
 			if (drone->getTrackState() == 1) {
 				drone->updateTargetYaw();
 				state = ENROUTE_TURN_STATE;
@@ -255,6 +279,8 @@ void updateState() {
 			break;
 		}
 		case ENROUTE_TURN_STATE: {
+			std::cout << "Turn state" << '\n';
+			
 			drone->calculateError();
 			drone->getError(&errorData);
 			drone->runPIDController();
@@ -271,8 +297,9 @@ void updateState() {
 			break;
 		}
 		case ENROUTE_STOPPED_STATE: {
+			std::cout << "stop" << '\n';
 			csvFile.close();
-			state = HOVER_STATE;
+			state = HOVER_STATE;		
 			break;
 		}
 		case START_HOVER_TEST_STATE: {
@@ -383,14 +410,15 @@ int main(int argc, char** argv)
         	// TODO: Why 5??
         	if (imuReady(imuSample, 20)) {
 				UpdateMessage updMsg;
-        		updMsg.roll = rpy.roll;
-	    		updMsg.pitch = rpy.pitch;
+        		updMsg.roll = 1.2; //rpy.roll;
+	    		updMsg.pitch = 1.5; //rpy.pitch;
 				updMsg.yaw = rpy.yaw;
 				updMsg.thrust = drone->getTargetThrust();
 				updMsg.lat = (float)gps_data.latitude;
 				updMsg.lon = (float)gps_data.longitude;
 				updMsg.alt = (float)gps_data.altitude;
 			    updMsg.state = state;
+			    
 				server.Send(updMsg);
 				
         	}

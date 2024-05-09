@@ -33,6 +33,8 @@ public:
     }
 
     void WriteFloat(float value) {
+    	//int temp;
+    	//memcpy(&temp, &value, sizeof(float))
         unsigned int val = htonl(value);
         Write((char*)&val, sizeof(float));
     }
@@ -278,6 +280,22 @@ struct StopTestMessage : public Message
 {
 	virtual void encode(Encoder& encoder) override {
 		encoder.WriteByte(STOP_TEST_MSG);
+	}
+	virtual void decode(Decoder& decoder) override { }
+};
+
+struct StartImageCaptureMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(CAPTURE_IMAGES_MSG);
+	}
+	virtual void decode(Decoder& decoder) override { }
+};
+
+struct StopImageCaptureMessage : public Message
+{
+	virtual void encode(Encoder& encoder) override {
+		encoder.WriteByte(STOP_CAPTURE_IMAGES_MSG);
 	}
 	virtual void decode(Decoder& decoder) override { }
 };

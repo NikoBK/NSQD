@@ -63,6 +63,8 @@ void Matrice100::imuCallback(const sensor_msgs::Imu::ConstPtr& msg) {
 
 void Matrice100::loadPathFromString(const char* xmlContent) {
 	
+	photoPoints.clear();
+	
 	// Create xmldocument in memory
 	tinyxml2::XMLDocument doc;
 	
@@ -95,9 +97,9 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 	}
 }
 
-void Matrice100::interpolatePath(float desiredVel, float accGain, int updateHz,float altitude){
-
-	double stepTime = 1/updateHz; // ms
+void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz,float altitude){
+	
+	float stepTime = 1/updateHz; // ms	
 
 	// Position and heading
 	double latDifC = 0;
@@ -127,12 +129,15 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, int updateHz,f
     double aLon = 0;
     double tbLon = 0;
     double thetaBLon = 0;
-
-    std::vector<std::vector<double>> line;
-    std::vector<double> point;
+	
+	
+	track.clear();
+	
+    std::vector<std::vector<double>> line = {};
+    std::vector<double> point = {};
 
 	// Vector contaning photopoints reduced to endpoints.
-	std::vector<std::vector<double>> endPoints;
+	std::vector<std::vector<double>> endPoints = {};
 
 	// Convert PhotoPoints to Endpoints 
     for(int i = 0 ; i < photoPoints.size(); i++) {
@@ -174,14 +179,16 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, int updateHz,f
             point.clear();
         }    
     }
-
+	
+	std::cout << "Path reduced to following endpoints" << '\n';
     for(int i = 0; i < endPoints.size(); i++) {
         std::cout << "Endpoints lat: " << endPoints[i][0] << " lon: " << endPoints[i][1] << '\n';
     }
-
+	
+	
 	// Loop through end points.
 	for(int i = 0 ; i <= endPoints.size()-2; i++) {
-
+		
         // Calculate distance and convert to meters
         latDifC = endPoints[i+1][0]-endPoints[i][0];
 		lonDifC = endPoints[i+1][1]-endPoints[i][1]; 
@@ -210,6 +217,7 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, int updateHz,f
         }
         thetaBLon = 0.5*(aLon*tbLon*tbLon) + endPoints[i][1];     
 
+		
         // Interpolate latitude
         int s = 0;
         // Acceleration
@@ -277,13 +285,29 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, int updateHz,f
         // Print line for debugging     
 		/*
         for(int l = 0; l < line.size(); l++) {
-            std::cout << std::setprecision(numeric_limits<double>::max_digits10) <<"{" << line[l][0] << "," << line[l][1] << "}," << '\n';
+            std::cout <<"{" << line[l][0] << "," << line[l][1] << "}," << '\n';
         }
-		*/
-
+        */
+		
         track.push_back(line);
         line.clear();
 	}
+	/*
+	std::cout <<"Track size: " << track.size()  << '\n';
+	for(int l = 0; l <= track.size()-1; l++) {
+                       
+            std::cout <<"Line size: " << track[l].size()  << '\n';
+            
+            for(int t= 0; t <= track[l].size()-1; t++) {
+            	
+            	std::cout <<"Point lat: " << track[l][t][0]  << '\n';
+            	std::cout <<"Point lon: " << track[l][t][1]  << '\n';
+            	std::cout <<"Point alt: " << track[l][t][2]  << '\n';
+            }     
+    }
+    */
+    std::cout <<"Track size: " << track.size()  << '\n';
+    
 }
 
 //Callback event for dji_sdk/gps_position subscription event.
@@ -343,6 +367,10 @@ void Matrice100::setPIDValues(float kp, float ki, float kd, int type) {
 	pidParamsArray[type][0] = kp;
 	pidParamsArray[type][1] = ki;
 	pidParamsArray[type][2] = kd;
+	
+	std::cout << "kp: " << std::to_string(kp) << std::endl;
+	std::cout << "ki: " << std::to_string(ki) << std::endl;
+	std::cout << "kd: " << std::to_string(kd) << std::endl;
 }
 
 // Calculate PID control signal
@@ -402,7 +430,7 @@ void Matrice100::runPIDController() {
 	
 }
 
-void Matrice100::updateTargetPoints() {
+void Matrice100::updateTargetPoints() {   
 	// Check if all points in line has been reached
 	if (pointStep == track[lineStep].size() - 1) {
 		if (lineStep == track.size() - 1) {
