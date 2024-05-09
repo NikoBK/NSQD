@@ -273,10 +273,10 @@ void Server::HandleConnection(int *state)
         	
         	// Temp variable holders
         	const char* xmlContent; 
-        	float desiredVel = 0;
+        	float desiredVel = 5;
         	float accGain = 1.2;
             float altitude = 10;
-        	int updateHz = 0;
+        	int updateHz = 50;
         	
         	// Convert xml string to photoPoint vector.
         	_drone->loadPathFromString(xmlContent);
@@ -285,6 +285,11 @@ void Server::HandleConnection(int *state)
         	
         	*state = INITIALISE_ENROUTE_STATE;
         	break;
+    	}
+    	case UPLOAD_FLIGHTPATH_MSG: {
+    		std::cout << "Received Upload Flight Path Message!" << std::endl;
+    		std::cout << "TODO: Handle me (upload_flightpath_msg)" << std::endl;
+    		break;
     	}
 		default: {
 			std::cerr << "Unrecognized message id: " << (int)messageId << std::endl;

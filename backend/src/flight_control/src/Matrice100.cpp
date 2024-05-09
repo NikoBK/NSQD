@@ -333,7 +333,7 @@ void Matrice100::initPIDValues() {
 	// Set PID values for a given axis
 	setPIDValues(0, 0, 0, 0);
 	setPIDValues(0, 0, 0, 1);
-	setPIDValues(0.2, 0, 0.2, 2);
+	setPIDValues(5, 0.001, 5.5, 2);
 	setPIDValues(0, 0, 0, 3);
 	
 }
@@ -397,7 +397,7 @@ void Matrice100::runPIDController() {
 	if (controlData.axes[2] > 70){
 		controlData.axes[2] = 70;
 	} else if (controlData.axes[2] < 0) {
-		controlData.axes[2] = 0;
+		controlData.axes[2] = 5;
 	}
 	
 }
