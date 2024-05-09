@@ -285,6 +285,22 @@ struct StopTestMessage : public Message
     virtual void decode(Decoder& decoder) override { }
 };
 
+struct StartImageCaptureMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(CAPTURE_IMAGES_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct StopImageCaptureMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(STOP_CAPTURE_IMAGES_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
 struct StopHoverTestMessage : public Message
 {
     virtual void encode(Encoder& encoder) override {

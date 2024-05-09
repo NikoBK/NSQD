@@ -404,10 +404,16 @@ void makeCmdPanel(HWND hwnd) {
         log("Test Stopped");
     }
 
-    if (ImGui::Button("Test Line Path")) {
-        FollowLineMessage msg;
+    if (ImGui::Button("Start Capturing imgs")) {
+        StartImageCaptureMessage msg;
         _socket->Send(msg);
-        log("Follow line test initiated!");
+        log("Image capture initiated!");
+    }
+
+    if (ImGui::Button("Stop Capturing imgs")) {
+        StopImageCaptureMessage msg;
+        _socket->Send(msg);
+        log("Image capture initiated!");
     }
 
 	if (ImGui::Button("Upload Flight Path")) {
@@ -415,13 +421,17 @@ void makeCmdPanel(HWND hwnd) {
 
 		std::ifstream file(gpxPath);
 		if (file.is_open()) {
+            std::string fileText;
 			std::string line;
 			while (std::getline(file, line)) {
 					log(line);
+                    fileText += line;
 			}
 
-			log("file has been read.");
-			log(line);
+            UploadFlightPathMessage msg;
+            msg.data = fileText;
+            _socket->Send(msg);
+
 			file.close();
 		}
 		else {
