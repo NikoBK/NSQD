@@ -250,8 +250,13 @@ void Server::HandleConnection(int *state)
             // Open or create file at ~/. (linux)
             _csvFile->open(msg.fileName);
 
+            // TODO: Convert these values back to floats when float read/write works again.
             // Set target values in degrees
-            _drone->setTargetValues(msg.roll, msg.pitch, msg.thrust, msg.yaw, msg.flag);
+            _drone->setTargetValues(std::stof(msg.roll), 
+                                    std::stof(msg.pitch), 
+                                    std::stof(msg.thrust), 
+                                    std::stof(msg.yaw), 
+                                    msg.flag);
 			
 			std::cout << "filename: " << msg.fileName << std::endl;
 			std::cout << "Init csv" << "\n";
@@ -294,7 +299,13 @@ void Server::HandleConnection(int *state)
     		msg.decode(decoder);
     		
     		std::cout << "Follow route started" << "\n";
+
+            //TODO: Implement filename in msg to route log file
+            static int test_num = 0;
+            std::string fileName = "log_file_number_" + std::to_string(test_num);
         	
+            _csvFile->open(fileName);
+
         	// Temp variable holders
         	std::string xmlContent = msg.data;
         	std::cout << xmlContent << "\n";
@@ -302,7 +313,7 @@ void Server::HandleConnection(int *state)
         	const char* xmldata = xmlContent.c_str();  
         	float desiredVel = 5;
         	float accGain = 1.2;
-            float alti = 1.5; //10;
+            float alti = 10;
         	float updateHz = 50;
         	
         	// Convert xml string to photoPoint vector.

@@ -415,9 +415,15 @@ void Matrice100::runPIDController() {
 	//Thrust input that is slightly below the gravitational pull
 	float gravityConst = 30; // % thrust   
 
+	//Constants to convert from latitude and longitude to meters
+	//Approximated for a local scenario
+	static const float lat_to_m = 111320;
+	static const float lon_to_m = 109617.422;
+
+
     // Calculate control signal
-	controlData.axes[0] = gravityConst + pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat; //roll
-	controlData.axes[1] = gravityConst + pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon; //pitch
+	controlData.axes[0] = lat_to_m * (pidParamsArray[0][0] * errorLat + pidParamsArray[0][1] * integralLat + pidParamsArray[0][2] * derivativeLat); //roll
+	controlData.axes[1] = lon_to_m * (pidParamsArray[1][0] * errorLon + pidParamsArray[1][1] * integralLon + pidParamsArray[1][2] * derivativeLon); //pitch
 	controlData.axes[2] = gravityConst + pidParamsArray[2][0] * errorAlt + pidParamsArray[2][1] * integralAlt + pidParamsArray[2][2] * derivativeAlt; //thrust
 	
 	//Check for limits
