@@ -269,17 +269,19 @@ void Server::HandleConnection(int *state)
             break;
     	}
     	case FOLLOW_LINE_MSG: {
-        	// TODO: Thor do some magic :)
-        	std::cout << "Follow line started" << "\n";
+          	std::cout << "Follow line started" << "\n";
         	
         	// Temp variable holders
         	const char* xmlContent; 
         	float desiredVel = 0;
+        	float accGain = 1.2;
             float altitude = 10;
         	int updateHz = 0;
-
+        	
+        	// Convert xml string to photoPoint vector.
         	_drone->loadPathFromString(xmlContent);
-        	_drone->interpolatePath(desiredVel, updateHz, altitude);
+        	// Interpolate path from photoPoint vector
+        	_drone->interpolatePath(desiredVel, accGain, updateHz, altitude);
         	
         	*state = INITIALISE_ENROUTE_STATE;
         	break;
