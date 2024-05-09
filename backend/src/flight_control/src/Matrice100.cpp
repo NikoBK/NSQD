@@ -79,23 +79,23 @@ void Matrice100::loadPathFromString(const char* xmlContent) {
 	tinyxml2::XMLElement* trk = gpx->FirstChildElement("trk");
 
 	// Loop through tracks 
-	std::vector<double> latLonAltVec;
+	std::vector<double> point;
 	for(const tinyxml2::XMLElement* trkpt = trk->FirstChildElement("trkpt"); trkpt != 0; trkpt = trkpt->NextSiblingElement("trkpt")) {
 		// Read trkpoint attribute
 		const tinyxml2::XMLAttribute* attr = trkpt->FirstAttribute();
 		
 		// Append Latitude 
-		latLonAltVec.push_back(std::stod(attr->Value()));
+		point.push_back(std::stod(attr->Value()));
 		attr->Next();
 		// Append Longitude
-		latLonAltVec.push_back(std::stod(attr->Value()));
+		point.push_back(std::stod(attr->Value()));
 
-		photoPoints.push_back(latLonAltVec);
-		latLonAltVec.clear();
+		photoPoints.push_back(point);
+		point.clear();
 	}
 }
 
-void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
+void Matrice100::interpolatePath(float desiredVel, float accGain, int updateHz,float altitude){
 
 	double stepTime = 1/updateHz; // ms
 
@@ -139,26 +139,26 @@ void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
 
         // Append first point
         if(i == 0) {
-            point.push_back(drone->photoPoints[i][0]);
-            point.push_back(drone->photoPoints[i][1]);
+            point.push_back(photoPoints[i][0]);
+            point.push_back(photoPoints[i][1]);
             endPoints.push_back(point);
             point.clear();
         }
 
         // If the end has been reached, append the last point.
-        if(i == (drone->photoPoints.size()-2)){
-            point.push_back(drone->photoPoints[i+1][0]);
-            point.push_back(drone->photoPoints[i+1][1]);
+        if(i == (photoPoints.size()-2)){
+            point.push_back(photoPoints[i+1][0]);
+            point.push_back(photoPoints[i+1][1]);
             endPoints.push_back(point);
             point.clear();
             break;
         }
         
         // Calculate heading between next to points. If heading is not 0, then we have reached a end point.
-        latDifC = drone->photoPoints[i][0]-drone->photoPoints[i+1][0];
-		lonDifC = drone->photoPoints[i][1]-drone->photoPoints[i+1][1]; 
-        latDifN = drone->photoPoints[i+1][0]-drone->photoPoints[i+2][0];
-		lonDifN = drone->photoPoints[i+1][1]-drone->photoPoints[i+2][1]; 
+        latDifC = photoPoints[i][0]-photoPoints[i+1][0];
+		lonDifC = photoPoints[i][1]-photoPoints[i+1][1]; 
+        latDifN = photoPoints[i+1][0]-photoPoints[i+2][0];
+		lonDifN = photoPoints[i+1][1]-photoPoints[i+2][1]; 
 
         // Calculate heading between current photopoint and next photopoint
         dotProduct = latDifC * latDifN + lonDifC * lonDifN;
@@ -168,8 +168,8 @@ void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
 
         if(!heading == 0) {
             //std::cout << "heading: " << heading << '\n';
-            point.push_back(drone->photoPoints[i+1][0]);
-            point.push_back(drone->photoPoints[i+1][1]);
+            point.push_back(photoPoints[i+1][0]);
+            point.push_back(photoPoints[i+1][1]);
             endPoints.push_back(point);
             point.clear();
         }    
@@ -190,10 +190,10 @@ void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
         magMeters = sqrt(pow(latDifMeter,2)+pow(lonDifMeter,2));
 
         // Line travel time
-        tf = magMeters/targetVelocity;
+        tf = magMeters/desiredVel;
 
         // Latitude acceleration
-        aLat = ((4*latDifC)/(tf*tf))*1.2;
+        aLat = ((4*latDifC)/(tf*tf)) * accGain;
         // Calculate time before shift to lineare piece, and latitude at that time
         tbLat = tf / 2 - fabs((sqrt(fabs((aLat*aLat)*(tf*tf)-4*aLat*(latDifC)))) / (2 * aLat));
         if(tbLat != tbLat) {
@@ -202,7 +202,7 @@ void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
         thetaBLat = 0.5 * (aLat*tbLat*tbLat) + endPoints[i][0];
 
         // Longitude acceleration
-        aLon = (4*(lonDifC)/(tf*tf)) * 1.2;
+        aLon = (4*(lonDifC)/(tf*tf)) * accGain;
         // Calculate time before shift to lineare piece, and longitude at that time.
         tbLon = tf / 2 - fabs((sqrt(fabs((aLon*aLon)*(tf*tf)-4*aLon*lonDifC))) / (2 * aLon));
         if(tbLon != tbLon) {
@@ -281,7 +281,7 @@ void Matrice100::interpolatePath(float desiredVel, int updateHz,float altitude){
         }
 		*/
 
-        drone->track.push_back(line);
+        track.push_back(line);
         line.clear();
 	}
 }

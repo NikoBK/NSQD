@@ -230,8 +230,6 @@ void updateState() {
 				<< "errorYaw" 
 				<< "\n";
 
-			// drone->loadRouteFromGPX(filePath)
-			// drone->calculateInterpolations(desired_vel, update_frequency)
 			drone->startMission();
 			state = ENROUTE_STATE;
 			break;
