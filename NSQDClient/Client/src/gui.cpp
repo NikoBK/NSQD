@@ -181,18 +181,13 @@ void makeManualInputWindow()
     ImGui::InputText("type", typeBuffer, sizeof(typeBuffer));
     ImGui::SameLine();
     if (ImGui::Button("Send PID")) {
-        try {
-            SetPIDMessage msg;
-            // TODO: This should be floats and not strings
-            msg.kp = propBuffer;//std::stof(propBuffer);
-            msg.ki = integBuffer;// std::stof(integBuffer);
-            msg.kd = diffBuffer;// std::stof(diffBuffer);
-            msg.flag = std::stoi(typeBuffer);
-            _socket->Send(msg);
-        }
-        catch (const std::invalid_argument& e) {
-            log("Send PID: Invalid argument!", "ERROR");
-        }
+        SetPIDMessage msg;
+        // TODO: This should be floats and not strings
+        msg.kp = propBuffer;//std::stof(propBuffer);
+        msg.ki = integBuffer;// std::stof(integBuffer);
+        msg.kd = diffBuffer;// std::stof(diffBuffer);
+        msg.flag = std::stoi(typeBuffer);
+        _socket->Send(msg);
     }
 
     ImGui::Text("Send RPYFT Message:");
