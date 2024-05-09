@@ -7,6 +7,7 @@
 // - Introduction, links and more at the top of imgui.cpp
 
 #include "../include/gui.h"
+#include "../include/TCPSocket.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
@@ -23,7 +24,9 @@
 #include <thread>
 #include "Message.hpp"
 
-TCPSocket* _socket = new TCPSocket();
+UpdateVariables updVars;
+
+TCPSocket* _socket = new TCPSocket(&updVars);
 
 // Data
 static LPDIRECT3D9              g_pD3D = nullptr;
@@ -74,8 +77,6 @@ char rpytFilenameBuffer[255]{};
 char hoverheightBuffer[255]{};
 char hoverFileNameBuffer[255]{};
 
-// Update variables (sent on every server tick)
-float roll_, pitch_, yaw_, thrust_, lat_, lon_, alt_;
 int state_;
 
 // Function to save data to a file
@@ -120,6 +121,17 @@ void log(std::string text, std::string prefix) {
     logs.push_back("[" + prefix + "] " + text);
 }
 
+void updateProps(UpdateVariables* updVars, UpdateMessage* msg)
+{
+    updVars->roll = msg->roll;
+    updVars->pitch = msg->pitch;
+    updVars->yaw = msg->yaw;
+    updVars->thrust = msg->thrust;
+    updVars->lat = msg->lat;
+    updVars->lon = msg->lon;
+    updVars->alt = msg->alt;
+    updVars->state = msg->state;
+}
 std::string OpenFileDialog(HWND hWnd, LPWSTR filePath, LPCWSTR defaultExtension, LPCWSTR fileFilter) {
     OPENFILENAME ofn;       // common dialog box structure
 
@@ -171,9 +183,10 @@ void makeManualInputWindow()
     if (ImGui::Button("Send PID")) {
         try {
             SetPIDMessage msg;
-            msg.kp = std::stof(propBuffer);
-            msg.ki = std::stof(integBuffer);
-            msg.kd = std::stof(diffBuffer);
+            // TODO: This should be floats and not strings
+            msg.kp = propBuffer;//std::stof(propBuffer);
+            msg.ki = integBuffer;// std::stof(integBuffer);
+            msg.kd = diffBuffer;// std::stof(diffBuffer);
             msg.flag = std::stoi(typeBuffer);
             _socket->Send(msg);
         }
@@ -297,17 +310,6 @@ void makeLogPanel() {
     ImGui::EndChild();
 }
 
-void updateProps(float roll, float pitch, float yaw, float thrust, float lat, float lon, float alt, int state) {
-    roll_ = roll;
-    pitch_ = pitch;
-    yaw_ = yaw;
-    thrust_ = thrust;
-    lat_ = lat;
-    lon_ = lon;
-    alt_ = alt;
-    state_ = state;
-}
-
 void makePropsPanel() {
     // Begin Properties Panel (Bottom Right)
     ImGui::SetNextWindowPos(ImVec2(1000, 319), ImGuiCond_Always);
@@ -323,13 +325,13 @@ void makePropsPanel() {
 
     ImGui::Text("Camera Feed FPS: %d", 0);
     ImGui::Text("Drone Current Time: %s", "0");
-    ImGui::Text("Drone Roll: %d", roll_);
-    ImGui::Text("Drone Pitch: %d", pitch_);
-    ImGui::Text("Drone Yaw: %d", yaw_);
-    ImGui::Text("Drone Thrust: %d", thrust_);
-    ImGui::Text("Drone Latitude: %d", lat_);
-    ImGui::Text("Drone Longitude: %d", lon_);
-    ImGui::Text("Drone Altitude: %d", alt_);
+    ImGui::Text("Drone Roll: %f", updVars.roll);
+    ImGui::Text("Drone Pitch: %f", updVars.pitch);
+    ImGui::Text("Drone Yaw: %f", updVars.yaw);
+    ImGui::Text("Drone Thrust: %f", updVars.thrust);
+    ImGui::Text("Drone Latitude: %f", updVars.lat);
+    ImGui::Text("Drone Longitude: %f", updVars.lon);
+    ImGui::Text("Drone Altitude: %f", updVars.alt);
 
     ImGui::EndChild();
 }
@@ -420,10 +422,8 @@ void makeCmdPanel(HWND hwnd) {
             std::string fileText;
 			std::string line;
 			while (std::getline(file, line)) {
-					log(line);
                     fileText += line;
 			}
-
             UploadFlightPathMessage msg;
             msg.data = fileText;
             _socket->Send(msg);
@@ -497,6 +497,7 @@ void renderUI(HWND hwnd)
     makeCamPanel();
     makeCmdPanel(hwnd);
     makePropsPanel();
+
     makeLogPanel();
     makeDebugPanel(hwnd);
 

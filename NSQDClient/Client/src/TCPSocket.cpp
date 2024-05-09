@@ -5,7 +5,9 @@
 #include <iostream>
 
 
-TCPSocket::TCPSocket() : _connected(false), _socket(-1), _currentSize(0)
+//UpdateVariables updVars;
+
+TCPSocket::TCPSocket(UpdateVariables* updVars) : _connected(false), _socket(-1), _currentSize(0), _updVars(updVars)
 { }
 
 TCPSocket::~TCPSocket()
@@ -120,7 +122,7 @@ void TCPSocket::HandleReceive()
 	std::vector<char> b(_currentSize);
 	int result = recv(_socket, b.data(), _currentSize, 0);
 
-	log("Entire message size is: " + std::to_string(result), "INFO");
+	//log("Entire message size is: " + std::to_string(result), "INFO");
 
 	if (result <= 0) {
 		int err = WSAGetLastError();
@@ -145,7 +147,7 @@ void TCPSocket::HandleReceive()
 	Decoder decoder(b.data() + 4, _currentSize);
 
 	//Debug
-	log("Current Size: " + std::to_string(_currentSize), "INFO");
+	//log("Current Size: " + std::to_string(_currentSize), "INFO");
 
 	unsigned char messageId;
 	decoder.ReadByte(&messageId);
@@ -168,7 +170,11 @@ void TCPSocket::HandleReceive()
 			UpdateMessage msg;
 			msg.decode(decoder);
 
-			updateProps(msg.roll, msg.pitch, msg.yaw, msg.thrust, msg.lat, msg.lon, msg.alt, msg.state);
+			//std::cout << msg.roll << "\n";
+
+			updateProps(_updVars, &msg);
+
+			//std::cout << "updVars.Roll: " + std::to_string(_updVars->roll) << "\n";
 			break;
 		}
 	}
