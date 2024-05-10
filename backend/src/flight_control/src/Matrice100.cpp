@@ -366,10 +366,10 @@ void Matrice100::startMission() {
 
 void Matrice100::initPIDValues() {
 	// Set PID values for a given axis
-	setPIDValues(0, 0, 0, 0);
-	setPIDValues(0, 0, 0, 1);
+	setPIDValues(2.751, 0, 2.514, 0);
+	setPIDValues(2.751, 0, 2.514, 1);
 	setPIDValues(5, 0.001, 5.5, 2);
-	setPIDValues(0, 0, 0, 3);
+	//setPIDValues(0, 0, 0, 3);
 	
 }
 
