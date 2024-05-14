@@ -142,10 +142,11 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
 	std::vector<std::vector<double>> endPoints = {};
 	
 	// Add starting point to endpoints
-	point.push_back(longitude);
 	point.push_back(latitude);
+	point.push_back(longitude);
 	endPoints.push_back(point);
     point.clear();
+    
    
     alti = altitude+alti; 
     float stepTime = 1/updateHz; // ms	
@@ -324,8 +325,12 @@ void Matrice100::interpolatePath(float desiredVel, float accGain, float updateHz
 //Callback event for dji_sdk/gps_position subscription event.
 void Matrice100::gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) {
 	// Gps position.
+	/*
 	latitude = msg->latitude;
 	longitude = msg->longitude;
+	*/
+	longitude = msg->latitude;
+	latitude = msg->longitude;
 	altitude = msg->altitude;
 }
 
@@ -362,13 +367,14 @@ void Matrice100::startMission() {
 	derivativeLon = 0;
 	derivativeAlt = 0;
 	derivativeYaw = 0;
+	controlData.axes[4] = 33;
 }
 
 void Matrice100::initPIDValues() {
 	// Set PID values for a given axis
-	setPIDValues(2.751, 0, 2.514, 0);
-	setPIDValues(2.751, 0, 2.514, 1);
-	setPIDValues(5, 0.001, 5.5, 2);
+	setPIDValues(0.08, 0, 1, 0);
+	setPIDValues(0.08, 0, 1, 1);
+	setPIDValues(0.8, 0.001, 1.6, 2);
 	//setPIDValues(0, 0, 0, 3);
 	
 }
@@ -413,7 +419,7 @@ float Matrice100::getTargetYaw() {
 
 void Matrice100::runPIDController() {
 	//Thrust input that is slightly below the gravitational pull
-	float gravityConst = 30; // % thrust   
+	float gravityConst = 33; // % thrust   
 
 	//Constants to convert from latitude and longitude to meters
 	//Approximated for a local scenario
@@ -444,6 +450,10 @@ void Matrice100::runPIDController() {
 	} else if (controlData.axes[2] < 0) {
 		controlData.axes[2] = 5;
 	}
+	
+	std::cout << "roll " << std::to_string(controlData.axes[0]) << std::endl;
+	std::cout << "pitch " << std::to_string(controlData.axes[1]) << std::endl;
+	std::cout << "thrust " << std::to_string(controlData.axes[2]) << std::endl;
 	
 }
 
@@ -486,25 +496,35 @@ void Matrice100::updateTargetLatLon() {
 
 
 void Matrice100::updateTargetYaw() {
+ 	
 	float lat1 = track[lineStep][0][0];
 	float lon1 = track[lineStep][0][1];
 	float lat2 = track[lineStep][track[lineStep].size() - 1][0];
 	float lon2 = track[lineStep][track[lineStep].size() - 1][1];
+	
 
 	std::vector<float> targetVector = {lat2 - lat1, lon2 - lon1};
-	std::vector<float> refVector = {0, 1};
-
+	std::vector<float> refVector = {1, 0};
+	
 	// targetVector = {lat2 - lat1, lon2 - lon1};
 	// refVector = {0, 1};
 	float dotProduct = targetVector[0] * refVector[0] + targetVector[1] * refVector[1];
 	float magTarget = sqrt(pow(targetVector[0], 2) + pow(targetVector[1], 2));
 	float magRef = sqrt(pow(refVector[0], 2) + pow(refVector[1], 2));
+	
 	targetYaw = acos(dotProduct / (magTarget * magRef));
+	
+	if(targetVector[1] < 0) {
+		targetYaw = targetYaw *-1;
+		controlData.axes[3] = targetYaw;
+		
+	}
 }
 
 // Publish message of type sensor::Joy drone orientation/angles (roll,pitch, thrust and yaw) with a given flag.
 void Matrice100::pubTargetValues() {
 	// Publish to flight topic
+	std::cout << "Published thrust " << std::to_string(controlData.axes[2]) << std::endl;
 	move.publish(controlData);
 }
 

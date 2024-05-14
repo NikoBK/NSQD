@@ -78,7 +78,6 @@ class Matrice100 {
 		std::vector<std::vector<std::vector<double>>> track;
 		std::vector<std::vector<double>> photoPoints;
 		
-
 		//Nodehandler
 		ros::NodeHandle _nh;
 
@@ -112,6 +111,9 @@ class Matrice100 {
 		void velocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
 	public:
+		std::vector<double> prevLati = {};
+		std::vector<double> prevLongi = {};
+		
 		void setPIDValues(float kp, float ki, float kd, int type);
 		void setTargetValues(float roll,float pitch, float thrust, float yaw,int flag);
 		void pubTargetValues();

@@ -33,6 +33,7 @@ int imgNum = 0;
 
 // DATA
 //Used for storing target thrust to be written to csv file
+float initial_alt = 0;
 float thrust = 0;
 float targetThrust = 0;
 float targetYaw = 0;
@@ -110,6 +111,31 @@ void terminate() {
 	cv::destroyAllWindows();
 }
 
+/*
+bool captureFrame() {
+	cv::Mat frame;
+	
+	cap >> frame;
+	
+	std::string dir = "images";
+	std::string prefix = "IMG";
+	std::string filepath;
+	std::string filename;
+	std::string extension = ".jpg";
+	
+	do {
+		std::ostringstream oss;
+		filename = oss << prefix << std::setfill('0') << std::setw(6) << std::rand() % 100000 << extension;
+		filepath = "flight_footage/" + filename;
+	} while (fs::exists(filepath));
+	
+	cv::imwrite(filepath, frame);
+	
+	imgNum++;
+	return true;
+}
+*/
+
 /** Capture the current frame and process it.
 */
 bool captureFrame() {
@@ -117,7 +143,7 @@ bool captureFrame() {
 	
 	cap >> frame;
 	
-	const std::string filename = "images/image_" + std::to_string(imgNum) + ".png"; 
+	const std::string filename = "flight_footage/image_" + std::to_string(imgNum) + ".png"; 
 	
 	cv::imwrite(filename, frame); 
 	
@@ -164,6 +190,9 @@ void updateState() {
 	{
 		case GROUNDED_STATE: {
 			//std::cout << "Grounded State currently does nothing..." << std::endl;
+			//drone->updateTargetYaw();
+			//targetYaw = drone->getTargetYaw();
+			//std::cout << "Target yaw: " << targetYaw << '\n';
 			
 			break;
 		}
@@ -252,6 +281,7 @@ void updateState() {
 
 			drone->startMission();
 			drone->updateTargetYaw();
+			//drone->setTargetAltitude(10);
 			drone->updateTargetPoints();
 
 			state = ENROUTE_TURN_STATE;
@@ -265,6 +295,9 @@ void updateState() {
 			drone->runPIDController(); // Function that has PID implemented and updates a controlData structure.
 			drone->pubTargetValues();
 			
+			targetThrust = drone->getTargetThrust();
+			drone->getTargetRPY(&targetRPY);
+			drone->getTargetGPS(&targetGPSData);
 			
 			if (drone->getTrackState() == 1) {
 				drone->updateTargetYaw();
@@ -282,23 +315,56 @@ void updateState() {
 			drone->calculateError();
 			drone->getError(&errorData);
 			drone->runPIDController();
-
+			drone->pubTargetValues();
+			
+			targetThrust = drone->getTargetThrust();
+			drone->getTargetRPY(&targetRPY);
 			targetYaw = drone->getTargetYaw();
 			drone->getTargetGPS(&targetGPSData);
-
-			float precision = 0.052; //rad
-			float precisionAlt = 1; //m
-			
+		
 			std::cout << "Target Yaw: " << targetYaw << '\n';
 			std::cout << "Imu Yaw: " << rpy.yaw << '\n';
 			std::cout << "Target Alt: " << targetGPSData.altitude << '\n';
 			std::cout << "GPS Alt: " << gps_data.altitude << '\n';
 			
-			if (rpy.yaw - precision < targetYaw && targetYaw < rpy.yaw + precision && 
-			    gps_data.altitude - precisionAlt < targetGPSData.altitude && targetGPSData.altitude < gps_data.altitude + precisionAlt) {
+			std::cout << "Target lat: " << targetGPSData.latitude << '\n';
+			std::cout << "Current lat: " << gps_data.latitude << '\n';
+			std::cout << "Target lon: " << targetGPSData.longitude << '\n';
+			std::cout << "Current lon: " << gps_data.longitude << '\n';
+			
+			float precision = 0.052; //rad
+			float precisionAlt = 1; //m
+			float precisionLati = 0.00001; //
+			float precisionLongi = 0.00001; // 
+			double avgPrevLati = 0;
+			double avgPrevLongi = 0;
+				
+			drone->prevLati.push_back(gps_data.latitude);
+			drone->prevLongi.push_back(gps_data.longitude);
+			
+			if(drone->prevLati.size() >= 50) {
+				drone->prevLati.erase(drone->prevLati.begin());
+				drone->prevLongi.erase(drone->prevLongi.begin());
+			}
+		
+			for(int i = 0; i < drone->prevLati.size(); i++) {
+				avgPrevLati += drone->prevLati[i];
+				avgPrevLongi += drone->prevLongi[i];
+			}
+			
+			avgPrevLati = avgPrevLati/drone->prevLati.size();
+			avgPrevLongi = avgPrevLongi/drone->prevLongi.size();
+			
+			if (gps_data.altitude - precisionAlt < targetGPSData.altitude && targetGPSData.altitude < gps_data.altitude + precisionAlt 
+				&& rpy.yaw - precision < targetYaw && targetYaw < rpy.yaw + precision
+				&& avgPrevLati - precisionLati < targetGPSData.latitude && targetGPSData.latitude < avgPrevLati + precisionLati
+				&& avgPrevLongi - precisionLongi < targetGPSData.longitude && targetGPSData.longitude < avgPrevLongi + precisionLongi) {
+				
 				state = ENROUTE_STATE;
 				std::cout << "On route" << '\n';
 			}
+			
+			//std::cout << "First entry in lati" << drone->prevLati[0] << '\n';
 
 			csvWritePathLog(begin, 1);
 			break;
@@ -336,7 +402,7 @@ void updateState() {
 				<< "errorYaw" 
 				<< "\n";
 		
-			drone->setTargetValues(0, 0, 45, rpy.yaw*180/3.14, 35);
+			drone->setTargetValues(0, 0, 45, rpy.yaw*180/3.14, 33);
 			
 			state = HOVER_LOGGING_STATE;
 			break;
@@ -392,9 +458,12 @@ int main(int argc, char** argv)
     // Set ROS refresh rate.
     // TODO: Would be nice to have this in initROS()
     ros::Rate rate(REFRESH_RATE_HZ);
+    ros::spinOnce();
     
+    drone->getGPSData(&gps_data);
+    initial_alt = gps_data.altitude;    
     drone->initPIDValues();
-
+	
 	// Superloop - runs at 50Hz (ROS)
     while (ros::ok()) 
 	{
@@ -423,7 +492,7 @@ int main(int argc, char** argv)
 				updMsg.thrust = drone->getTargetThrust();
 				updMsg.lat = (float)gps_data.latitude;
 				updMsg.lon = (float)gps_data.longitude;
-				updMsg.alt = (float)gps_data.altitude;
+				updMsg.alt = std::fabs(gps_data.altitude-initial_alt);
 			    updMsg.state = state;
 			    
 				server.Send(updMsg);

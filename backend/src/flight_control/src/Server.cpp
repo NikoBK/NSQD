@@ -303,6 +303,7 @@ void Server::HandleConnection(int *state)
             //TODO: Implement filename in msg to route log file
             static int test_num = 0;
             std::string fileName = "log_file_number_" + std::to_string(test_num);
+            test_num++;
         	
             _csvFile->open(fileName);
 
@@ -311,7 +312,7 @@ void Server::HandleConnection(int *state)
         	std::cout << xmlContent << "\n";
         	
         	const char* xmldata = xmlContent.c_str();  
-        	float desiredVel = 5;
+        	float desiredVel = 2.5;
         	float accGain = 1.2;
             float alti = 10;
         	float updateHz = 50;
