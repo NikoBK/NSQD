@@ -403,12 +403,12 @@ void updateState() {
 				<< "\n";
 		
 			drone->setTargetValues(0, 0, 45, rpy.yaw*180/3.14, 33);
+			drone->updateTargetLatLon();
 			
 			state = HOVER_LOGGING_STATE;
 			break;
 		}
 		case HOVER_LOGGING_STATE: {
-			drone->updateTargetLatLon();
 			drone->calculateError();
 			drone->getError(&errorData);
 			
