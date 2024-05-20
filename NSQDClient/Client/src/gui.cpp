@@ -7,6 +7,7 @@
 // - Introduction, links and more at the top of imgui.cpp
 
 #include "../include/gui.h"
+#include "../include/TCPSocket.h"
 
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
@@ -23,7 +24,9 @@
 #include <thread>
 #include "Message.hpp"
 
-TCPSocket* _socket = new TCPSocket();
+UpdateVariables updVars;
+
+TCPSocket* _socket = new TCPSocket(&updVars);
 
 // Data
 static LPDIRECT3D9              g_pD3D = nullptr;
@@ -70,6 +73,12 @@ char rpytThrustBuffer[255]{};
 char rpytFlagBuffer[255]{};
 char rpytFilenameBuffer[255]{};
 
+// USERDEFINED HOVER HEIGHT (MANUAL INPUT)
+char hoverheightBuffer[255]{};
+char hoverFileNameBuffer[255]{};
+
+int state_;
+
 // Function to save data to a file
 bool SaveDataToFile(const std::wstring& filePath) {
     std::ofstream outputFile(filePath, std::ios::out | std::ios::binary);
@@ -112,6 +121,17 @@ void log(std::string text, std::string prefix) {
     logs.push_back("[" + prefix + "] " + text);
 }
 
+void updateProps(UpdateVariables* updVars, UpdateMessage* msg)
+{
+    updVars->roll = msg->roll;
+    updVars->pitch = msg->pitch;
+    updVars->yaw = msg->yaw;
+    updVars->thrust = msg->thrust;
+    updVars->lat = msg->lat;
+    updVars->lon = msg->lon;
+    updVars->alt = msg->alt;
+    updVars->state = msg->state;
+}
 std::string OpenFileDialog(HWND hWnd, LPWSTR filePath, LPCWSTR defaultExtension, LPCWSTR fileFilter) {
     OPENFILENAME ofn;       // common dialog box structure
 
@@ -143,41 +163,9 @@ std::string OpenFileDialog(HWND hWnd, LPWSTR filePath, LPCWSTR defaultExtension,
     }
 }
 
-IDirect3DTexture9* createTextureFromImage(IDirect3DDevice9* device, const unsigned char* imageData, int width, int height) {
-    IDirect3DTexture9* texture = nullptr;
-    //D3DXCreateTextureFromFileInMemoryEx(device, imageData, width * height * 4, width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &texture);
-    device->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &texture, NULL);
-    D3DLOCKED_RECT lockedRect;
-    texture->LockRect(0, &lockedRect, NULL, 0);
-    unsigned char* dstPtr = static_cast<unsigned char*>(lockedRect.pBits);
-    const unsigned char* srcPtr = imageData;
-    int bytesPerPixel = 4; // RGBA format
-    for (int y = 0; y < height; y++) {
-        memcpy(dstPtr, srcPtr, width * bytesPerPixel);
-        dstPtr += lockedRect.Pitch;
-        srcPtr += width * bytesPerPixel;
-    }
-    texture->UnlockRect(0);
-    return texture;
-}
-
 void makeManualInputWindow()
 {
     ImGui::Begin("Send Manual Inputs");
-
-    ImGui::Text("Send RPY Message:");
-    ImGui::PushItemWidth(50);
-    ImGui::InputText("Roll", rollBuffer, sizeof(rollBuffer));
-    ImGui::SameLine();
-    ImGui::PushItemWidth(50);
-    ImGui::InputText("Pitch", pitchBuffer, sizeof(pitchBuffer));
-    ImGui::SameLine();
-    ImGui::PushItemWidth(50);
-    ImGui::InputText("Yaw", yawBuffer, sizeof(yawBuffer));
-    ImGui::SameLine();
-    if (ImGui::Button("Send RPY")) {
-        log("to be added...");
-    }
 
     ImGui::Text("Send PID Message:");
     ImGui::PushItemWidth(50);
@@ -193,17 +181,13 @@ void makeManualInputWindow()
     ImGui::InputText("type", typeBuffer, sizeof(typeBuffer));
     ImGui::SameLine();
     if (ImGui::Button("Send PID")) {
-        try {
-            SetPIDMessage msg;
-            msg.kp = std::stof(propBuffer);
-            msg.ki = std::stof(integBuffer);
-            msg.kd = std::stof(diffBuffer);
-            msg.flag = std::stoi(typeBuffer);
-            _socket->Send(msg);
-        }
-        catch (const std::invalid_argument& e) {
-            log("Send PID: Invalid argument!", "ERROR");
-        }
+        SetPIDMessage msg;
+        // TODO: This should be floats and not strings
+        msg.kp = propBuffer;//std::stof(propBuffer);
+        msg.ki = integBuffer;// std::stof(integBuffer);
+        msg.kd = diffBuffer;// std::stof(diffBuffer);
+        msg.flag = std::stoi(typeBuffer);
+        _socket->Send(msg);
     }
 
     ImGui::Text("Send RPYFT Message:");
@@ -231,9 +215,10 @@ void makeManualInputWindow()
             fileName = rpytFilenameBuffer;
 
             SetRPYTFFMessage msg;
-            msg.roll = std::stof(rpytRollBuffer);
-            msg.pitch = std::stof(rpytPitchBuffer);
-            msg.yaw = std::stof(rpytYawBuffer);
+            msg.roll = rpytRollBuffer; //std::stof(rpytRollBuffer);
+            msg.pitch = rpytPitchBuffer; //std::stof(rpytPitchBuffer);
+            msg.yaw = rpytYawBuffer; //std::stof(rpytYawBuffer);
+            msg.thrust = rpytThrustBuffer; //std::stof(rpytThrustBuffer);
             msg.flag = std::stoi(rpytFlagBuffer);
             msg.fileName = fileName;
             _socket->Send(msg);
@@ -242,6 +227,24 @@ void makeManualInputWindow()
         catch (const std::invalid_argument& e) {
             log("Send RPYFT: Invalid arguments!", "ERROR");
         }
+    }
+
+    ImGui::Text("Userdefined Hover Height");
+    ImGui::PushItemWidth(50);
+    ImGui::InputText("height", hoverheightBuffer, sizeof(hoverheightBuffer));
+    ImGui::SameLine();
+    ImGui::PushItemWidth(100);
+    ImGui::InputText("filename", hoverFileNameBuffer, sizeof(hoverFileNameBuffer));
+    ImGui::SameLine();
+    if (ImGui::Button("Send Height")) {
+        std::string fileName{ "hover_test" };
+        fileName = hoverFileNameBuffer;
+
+        SetHoverHeightMessage msg;
+        msg.height = std::stof(hoverheightBuffer);
+        msg.fileName = fileName;
+        _socket->Send(msg);
+        log("Hover height has been succesfully set!");
     }
 
     if (ImGui::Button("Close")) {
@@ -317,18 +320,19 @@ void makePropsPanel() {
 
     ImGui::Text("Camera Feed FPS: %d", 0);
     ImGui::Text("Drone Current Time: %s", "0");
-    ImGui::Text("Drone X: %d", 0);
-    ImGui::Text("Drone Y: %d", 0);
-    ImGui::Text("Drone Z: %d", 0);
-    ImGui::Text("Drone Roll: %d", 0);
-    ImGui::Text("Drone Pitch: %d", 0);
-    ImGui::Text("Drone Yaw: %d", 0);
-    ImGui::Text("Drone Thrust: %d", 0);
+    ImGui::Text("Drone Roll: %f", updVars.roll);
+    ImGui::Text("Drone Pitch: %f", updVars.pitch);
+    ImGui::Text("Drone Yaw: %f", updVars.yaw);
+    ImGui::Text("Drone Thrust: %f", updVars.thrust);
+    ImGui::Text("Drone Latitude: %f", updVars.lat);
+    ImGui::Text("Drone Longitude: %f", updVars.lon);
+    ImGui::Text("Drone Altitude: %f", updVars.alt);
+    ImGui::Text("Drone State: %d", updVars.state);
 
     ImGui::EndChild();
 }
 
-void makeCmdPanel() {
+void makeCmdPanel(HWND hwnd) {
     static WCHAR filePath[MAX_PATH] = L"";
 
     // Begin Hierachy Panel (Top Right)
@@ -342,53 +346,90 @@ void makeCmdPanel() {
     // will notice if were connected to server or not and adjust UI accordingly
     _connected = _socket->connected();
 
-    if (!_connected) 
-    {
+    if (!_connected) {
         if (ImGui::Button("Connect to Drone")) {
             _connecting = true;
         }
     }
-    else 
-    {
+    else {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f); // Adjust alpha to make button appear disabled
         ImGui::Button("Connect to Manifold");
         ImGui::PopStyleVar();
-
-        if (ImGui::Button("Set Control Authority")) {
-            SetAuthorityMessage msg;
-            _socket->Send(msg);
-            log("Authority Set\n", prefix);
-        }
-
-        if (ImGui::Button("Arm Drone")) {
-            ArmMessage msg;
-            msg.status = _droneArmed;
-            _socket->Send(msg);
-            log("Drone armed");
-        }
-
-        if (ImGui::Button("Take off")) {
-            TakeoffMessage msg;
-            _socket->Send(msg);
-            log("Takeoff Initialized\n", prefix);
-        }
-
-        if (ImGui::Button("Land")) {
-            LandMessage msg;
-            _socket->Send(msg);
-            log("Landing Initialized\n", prefix);
-        }
-
-        if (ImGui::Button("Manual Input")) {
-            _manualInput = !_manualInput;
-        }
-
-        if (ImGui::Button("Stop Test")) {
-            StopTestMessage msg;
-            _socket->Send(msg);
-            log("Test Stopped");
-        }
     }
+
+    if (ImGui::Button("Set Control Authority")) {
+        SetAuthorityMessage msg;
+        _socket->Send(msg);
+        log("Authority Set\n", prefix);
+    }
+
+    if (ImGui::Button("Arm Drone")) {
+        ArmMessage msg;
+        _droneArmed = !_droneArmed;
+        msg.status = _droneArmed;
+        _socket->Send(msg);
+        log("Drone armed");
+    }
+
+    if (ImGui::Button("Take off")) {
+        TakeoffMessage msg;
+        _socket->Send(msg);
+        log("Takeoff Initialized\n", prefix);
+    }
+
+    if (ImGui::Button("Land")) {
+        LandMessage msg;
+        _socket->Send(msg);
+        log("Landing Initialized\n", prefix);
+    }
+
+    if (ImGui::Button("Manual Input")) {
+        _manualInput = !_manualInput;
+    }
+
+    if (ImGui::Button("Stop Hover Test")) {
+        StopHoverTestMessage msg;
+        _socket->Send(msg);
+        log("Hover Test Stopped");
+    }
+    if (ImGui::Button("Stop Test")) {
+        StopTestMessage msg;
+        _socket->Send(msg);
+        log("Test Stopped");
+    }
+
+    if (ImGui::Button("Start Capturing imgs")) {
+        StartImageCaptureMessage msg;
+        _socket->Send(msg);
+        log("Image capture initiated!");
+    }
+
+    if (ImGui::Button("Stop Capturing imgs")) {
+        StopImageCaptureMessage msg;
+        _socket->Send(msg);
+        log("Image capture initiated!");
+    }
+
+	if (ImGui::Button("Upload Flight Path")) {
+		std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
+
+		std::ifstream file(gpxPath);
+		if (file.is_open()) {
+            std::string fileText;
+			std::string line;
+			while (std::getline(file, line)) {
+                    fileText += line;
+			}
+            UploadFlightPathMessage msg;
+            msg.data = fileText;
+            _socket->Send(msg);
+
+			file.close();
+		}
+		else {
+				log("failed to open GPX data file.", "ERROR");
+		}
+	}
 
     ImGui::EndChild();
 }
@@ -436,21 +477,6 @@ void makeDebugPanel(HWND hwnd) {
             log("Log export aborted", prefix);
         }
     }
-    if (ImGui::Button("Upload Flight Path Data")) {
-        std::string gpxPath = OpenFileDialog(hwnd, filePath, L"data.gpx", L"XML Files (*.xml)\0*.xml\0GPX Files (*.gpx)\0*.gpx\0All Files (*.*)\0*.*\0");
-        
-        std::ifstream file(gpxPath);
-        if (file.is_open()) {
-            std::string line;
-            while (std::getline(file, line)) {
-                log(line);
-            }
-            file.close();
-        }
-        else {
-            log("Failed to open file GPX data file.", "ERROR");
-        }
-    }
     ImGui::EndChild();
 }
 
@@ -465,8 +491,9 @@ void renderUI(HWND hwnd)
 
     // Make the info panels
     makeCamPanel();
-    makeCmdPanel();
+    makeCmdPanel(hwnd);
     makePropsPanel();
+
     makeLogPanel();
     makeDebugPanel(hwnd);
 

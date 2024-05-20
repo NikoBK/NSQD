@@ -5,11 +5,14 @@
 #include <WS2tcpip.h>
 #include <thread>
 
+//For data exchange between server and gui
+#include "../include/gui.h"
+
 class Message;
 class TCPSocket
 {
 public:
-	TCPSocket();
+	TCPSocket(UpdateVariables* updVars);
 	~TCPSocket();
 
 	bool Connect(const std::string& host, int port);
@@ -25,6 +28,9 @@ private:
 	std::thread _thread;
 	int _currentSize;
 	SOCKET _socket;
+
+	//For data exchange between server and gui
+	UpdateVariables * _updVars;
 };
 
 #endif // !TCP_SOCKET_H

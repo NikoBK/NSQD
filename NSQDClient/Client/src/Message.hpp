@@ -109,7 +109,7 @@ public:
         _position += size;
     }
 
-private:
+private: 
     void Read(char* data, unsigned int size) {
         if (_position + size > _buffer.size()) {
             throw std::runtime_error("Not enough data in buffer");
@@ -225,53 +225,55 @@ struct LandMessage : public Message
 
 struct SetPIDMessage : public Message
 {
-    float kp; // Proportional
-    float ki; // Integral
-    float kd; // Derivative
+    // TODO: Convert back to floats when float read/write works.
+    /*float*/std::string kp; // Proportional
+    /*float*/std::string ki; // Integral
+    /*float*/std::string kd; // Derivative
 
     // Flag for Roll (1), Pitch (2), Yaw (3), Thrust (4) PID regulator.
     int flag;
 
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(SET_PID_MSG);
-        encoder.WriteFloat(kp);
-        encoder.WriteFloat(ki);
-        encoder.WriteFloat(kd);
+        encoder./*WriteFloat*/WriteString(kp);
+        encoder./*WriteFloat*/WriteString(ki);
+        encoder./*WriteFloat*/WriteString(kd);
         encoder.WriteInt(flag);
     }
 
     virtual void decode(Decoder& decoder) override {
-        decoder.ReadFloat(&kp);
-        decoder.ReadFloat(&ki);
-        decoder.ReadFloat(&kd);
+        decoder./*ReadFloat*/ReadString(&kp);
+        decoder./*ReadFloat*/ReadString(&ki);
+        decoder./*ReadFloat*/ReadString(&kd);
         decoder.ReadInt(&flag);
     }
 };
 
 struct SetRPYTFFMessage : public Message
 {
-    float roll;
-    float pitch;
-    float yaw;
-    float thrust;
+    // TODO: Convert back to floats when float read/write works.
+    /*float*/std::string roll;
+    /*float*/std::string pitch;
+    /*float*/std::string yaw;
+    /*float*/std::string thrust;
     int flag;
     std::string fileName;
 
     virtual void encode(Encoder& encoder) override {
         encoder.WriteByte(SET_RPYTFF_MSG);
-        encoder.WriteFloat(roll);
-        encoder.WriteFloat(pitch);
-        encoder.WriteFloat(yaw);
-        encoder.WriteFloat(thrust);
+        encoder./*WriteFloat*/WriteString(roll);
+        encoder./*WriteFloat*/WriteString(pitch);
+        encoder./*WriteFloat*/WriteString(yaw);
+        encoder./*WriteFloat*/WriteString(thrust);
         encoder.WriteInt(flag);
         encoder.WriteString(fileName);
     }
 
     virtual void decode(Decoder& decoder) override {
-        decoder.ReadFloat(&roll);
-        decoder.ReadFloat(&pitch);
-        decoder.ReadFloat(&yaw);
-        decoder.ReadFloat(&thrust);
+        decoder./*ReadFloat*/ReadString(&roll);
+        decoder./*ReadFloat*/ReadString(&pitch);
+        decoder./*ReadFloat*/ReadString(&yaw);
+        decoder./*ReadFloat*/ReadString(&thrust);
         decoder.ReadInt(&flag);
         decoder.ReadString(&fileName);
     }
@@ -283,6 +285,71 @@ struct StopTestMessage : public Message
         encoder.WriteByte(STOP_TEST_MSG);
     }
     virtual void decode(Decoder& decoder) override { }
+};
+
+struct StartImageCaptureMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(CAPTURE_IMAGES_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct StopImageCaptureMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(STOP_CAPTURE_IMAGES_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct StopHoverTestMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(STOP_HOVER_TEST_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct SetHoverHeightMessage : public Message 
+{
+    // The hover height above the takeoff
+    // height hardcoded by DJI.
+    float height;
+    std::string fileName;
+
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(SET_HOVERHEIGHT_MSG);
+        encoder.WriteFloat(height);
+        encoder.WriteString(fileName);
+    }
+
+    virtual void decode(Decoder& decoder) override {
+        decoder.ReadFloat(&height);
+        decoder.ReadString(&fileName);
+    }
+};
+
+struct FollowLineMessage : public Message
+{
+    virtual void encode(Encoder& encoder) override {
+        encoder.WriteByte(FOLLOW_LINE_MSG);
+    }
+    virtual void decode(Decoder& decoder) override { }
+};
+
+struct UploadFlightPathMessage : public Message
+{
+		std::string data;
+
+		virtual void encode(Encoder& encoder) override {
+				encoder.WriteByte(UPLOAD_FLIGHTPATH_MSG);
+				encoder.WriteString(data);
+		}
+
+		virtual void decode(Decoder& decoder) override {
+				decoder.ReadString(&data);
+		}
 };
 
 #endif // !MESSAGE_HP
