@@ -56,7 +56,7 @@ struct Error {
 class Matrice100 {
 	private:
 		float imuRoll, imuPitch, imuYaw;
-		int pidParamsArray[4][3];    // = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_yaw, ki_yaw, kd_yaw}, {kp_alt, ki_alt, kd_alt}};
+		float pidParamsArray[3][3];    // = {{kp_roll, ki_roll, kd_roll}, {kp_pitch, ki_pitch, kd_pitch}, {kp_alt, ki_alt, kd_alt}, {kp_yaw, ki_yaw, kd_yaw}};
 		float targetLat, targetLon, targetAlt, targetYaw;
 		float errorLat, errorLon, errorAlt, errorYaw;
 		float integralLat, integralLon, integralAlt, integralYaw;
@@ -64,9 +64,9 @@ class Matrice100 {
 		float prevErrorLat, prevErrorLon, prevErrorAlt, prevErrorYaw;
 		float imuAccX, imuAccY , imuAccZ;
 		float batteryVoltage;
-		double latitude;
-		double longitude;
-		double altitude;
+		float latitude;
+		float longitude;
+		float altitude;
 		double x_vel;
 		double y_vel;
 		double z_vel;
@@ -76,8 +76,8 @@ class Matrice100 {
 		int pointStep; //aka time step
 
 		std::vector<std::vector<std::vector<double>>> track;
+		std::vector<std::vector<double>> photoPoints;
 		
-
 		//Nodehandler
 		ros::NodeHandle _nh;
 
@@ -111,6 +111,9 @@ class Matrice100 {
 		void velocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
 	public:
+		std::vector<double> prevLati = {};
+		std::vector<double> prevLongi = {};
+		
 		void setPIDValues(float kp, float ki, float kd, int type);
 		void setTargetValues(float roll,float pitch, float thrust, float yaw,int flag);
 		void pubTargetValues();
@@ -125,13 +128,21 @@ class Matrice100 {
 		void updateTargetPoints();
 		void startMission();
 		void calculateError();
+		void initPIDValues();
+		
+		//For testing
+		void setTargetAltitude(float altitude);
+		void updateTargetLatLon();
+		
+		void loadPathFromString(const char* xmlContent);
+		void interpolatePath(float desired_vel, float accGain, float update_frequency, float alti);
 
 		float getBatteryVoltage();
 		float getTargetYaw();
+		float getTargetThrust();
 		
 		int getTrackState();
 		int getFlightStatus();
-		int getTargetThrust();
 		int arm(int arm_drone);
 		int request_permission(int permission = 1);
 		int takeOff();

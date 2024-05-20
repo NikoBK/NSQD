@@ -119,7 +119,7 @@ void Server::HandleConnection(int *state)
         {
             int err = errno;
             if (err == EWOULDBLOCK) {
-            	std::cout << "[DEBUG] No content - non blocking return" << std::endl;
+            	//std::cout << "[DEBUG] No content - non blocking return" << std::endl;
                 return;
             }
 
@@ -189,6 +189,7 @@ void Server::HandleConnection(int *state)
             if (result == 0) {
                 SendError("<drone::request_permission>: Failed to call sdk authority service");
             }
+            //SendError("wut da fuk");
             break;
         }
         case ARM_MSG: {
@@ -197,14 +198,14 @@ void Server::HandleConnection(int *state)
 
             int result = _drone->arm(msg.status);
             if (result == 0) {
-                SendError("<drone::arm>: Failed to call service arm");
+                //SendError("<drone::arm>: Failed to call service arm");
             }
             break;
         }
         case TAKEOFF_MSG: {
             int result = _drone->takeOff();
             if (result == 0) {
-                SendError("<drone::takeOff>: Failed to call flight control");
+                //SendError("<drone::takeOff>: Failed to call flight control");
             }
             else {
                 *state = HOVER_STATE;
@@ -214,7 +215,7 @@ void Server::HandleConnection(int *state)
         case LAND_MSG: {
             int result = _drone->land();
             if (result == 0) {
-                SendError("<drone::land>: Failed to call flight control");
+                //SendError("<drone::land>: Failed to call flight control");
             }
             else {
                 *state = GROUNDED_STATE;
@@ -224,10 +225,22 @@ void Server::HandleConnection(int *state)
         case SET_PID_MSG: {
             SetPIDMessage msg;
             msg.decode(decoder);
-
-            _drone->setPIDValues(msg.kp, msg.ki, msg.kd, msg.flag);
-            // TODO: Should'nt we change state here in order to
-            // prevent continously setting PID values?
+            
+            if (msg.flag < 0 || msg.flag > 2) {
+            	//SendError("wat");//("PID Flag must not exceed 2 and must be positive!");
+            	return;
+            }
+			
+			// TODO: Convert these values back to floats when float read/write works again.
+			float kp = std::stof(msg.kp);
+			float ki = std::stof(msg.ki);
+			float kd = std::stof(msg.kd);
+			
+			std::cout << "Net kp: " << std::to_string(/*msg.*/kp) << std::endl;
+			std::cout << "Net ki: " << std::to_string(/*msg.*/ki) << std::endl;
+			std::cout << "Net kd: " << std::to_string(/*msg.*/kd) << std::endl;
+	
+            _drone->setPIDValues(/*msg.*/kp, /*msg.*/ki, /*msg.*/kd, msg.flag);
             break;
         }
         case SET_RPYTFF_MSG: {
@@ -237,9 +250,16 @@ void Server::HandleConnection(int *state)
             // Open or create file at ~/. (linux)
             _csvFile->open(msg.fileName);
 
-            // Set target values
-            _drone->setTargetValues(msg.roll, msg.pitch, msg.thrust, msg.yaw, msg.flag);
-
+            // TODO: Convert these values back to floats when float read/write works again.
+            // Set target values in degrees
+            _drone->setTargetValues(std::stof(msg.roll), 
+                                    std::stof(msg.pitch), 
+                                    std::stof(msg.thrust), 
+                                    std::stof(msg.yaw), 
+                                    msg.flag);
+			
+			std::cout << "filename: " << msg.fileName << std::endl;
+			std::cout << "Init csv" << "\n";
             // Update state
             *state = START_TEST_STATE;
             break;
@@ -248,15 +268,83 @@ void Server::HandleConnection(int *state)
             *state = STOP_TEST_STATE;
             break;
         }
+        case SET_HOVERHEIGHT_MSG: {
+        	// TODO: Thor do some magic :)
+        	
+        	SetHoverHeightMessage msg;
+            msg.decode(decoder);
+            
+            _drone->setTargetAltitude(msg.height);
+            
+            // Open or create file at ~/. (linux)
+            _csvFile->open(msg.fileName);
+            
+            *state = START_HOVER_TEST_STATE;
+            
+        	std::cout << msg.fileName << "\n";
+        	break;
+    	}
+    	case STOP_HOVER_TEST_MSG: {
+    		std::cout << "received stop state" << "\n";
+        	*state = STOP_HOVER_LOGGING_STATE;
+            break;
+    	}
+    	case FOLLOW_LINE_MSG: {
+          
+        	break;
+    	}
+    	case UPLOAD_FLIGHTPATH_MSG: {
+    	
+    		UploadFlightPathMessage msg;
+    		msg.decode(decoder);
+    		
+    		std::cout << "Follow route started" << "\n";
+
+            //TODO: Implement filename in msg to route log file
+            static int test_num = 0;
+            std::string fileName = "log_file_number_" + std::to_string(test_num);
+            test_num++;
+        	
+            _csvFile->open(fileName);
+
+        	// Temp variable holders
+        	std::string xmlContent = msg.data;
+        	std::cout << xmlContent << "\n";
+        	
+        	const char* xmldata = xmlContent.c_str();  
+        	float desiredVel = 2.5;
+        	float accGain = 1.2;
+            float alti = 10;
+        	float updateHz = 50;
+        	
+        	// Convert xml string to photoPoint vector.
+        	_drone->loadPathFromString(xmldata);
+        	
+        	// Interpolate path from photoPoint vector
+        	_drone->interpolatePath(desiredVel, accGain, updateHz, alti);
+        	
+        	*state = INITIALISE_ENROUTE_STATE;
+    		break;
+    	}
+    	case CAPTURE_IMAGES_MSG: {
+    		std::cout << "INIT CAPTURE" << "\n";
+			*state = CAPTURE_IMAGES_STATE;
+    		break;
+    	}
+    	case STOP_CAPTURE_IMAGES_MSG: {
+    		std::cout << "CLOSE CAPTURE" << "\n";
+			*state = HOVER_STATE;
+    		break;
+    	}
 		default: {
 			std::cerr << "Unrecognized message id: " << (int)messageId << std::endl;
             
             // Send error to frontend.
             std::string errText = "Drone received unrecognized message with id: ";
             errText += std::to_string((int)messageId);
-            SendError(errText);
+            //SendError(errText);
 
-            // TODO: Hover state?
+            *state = HOVER_STATE;
 			break;
 		}
     }
