@@ -1,0 +1,7 @@
+@software{nsqd,
+  title = {NSQD},
+  author = {Bay Baastrup, Gustav and Iversen, Thor and Lauritsen, Kasper and Jensen, Silas and Bjørnager Krebs, Nikolaj},
+  version = {1},
+  date = {2024},
+  url = {https://github.com/NikoBK/NSQD}
+}
