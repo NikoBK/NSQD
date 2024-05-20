@@ -31,3 +31,6 @@ This project was developed by group 463 on Aalborg University, Robot Technology 
     <td align="center"><a target="_blank" rel="noreferrer noopener" href="https://github.com/nikobk"><img src="https://avatars.githubusercontent.com/u/112914618?v=4" width="100px;" alt=""/><br/><sub><b>Nikolaj Bjørnager Krebs</b></sub></a></br><a href="gttps://github.com/nikobk" title="">🤠</a></td>
   </tr>
 </table>
+
+## License
+This project is licensed under the terms of the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
