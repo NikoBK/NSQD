@@ -327,6 +327,7 @@ void makePropsPanel() {
     ImGui::Text("Drone Latitude: %f", updVars.lat);
     ImGui::Text("Drone Longitude: %f", updVars.lon);
     ImGui::Text("Drone Altitude: %f", updVars.alt);
+    ImGui::Text("Drone State: %d", updVars.state);
 
     ImGui::EndChild();
 }

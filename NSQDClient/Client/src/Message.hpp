@@ -109,7 +109,7 @@ public:
         _position += size;
     }
 
-private:
+private: 
     void Read(char* data, unsigned int size) {
         if (_position + size > _buffer.size()) {
             throw std::runtime_error("Not enough data in buffer");
