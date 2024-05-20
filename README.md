@@ -5,9 +5,6 @@
 NoStoneQuadDrone (NSQD) is a 4th semester project by Group 463 on Aalborg University.
 This project is made for the curriculum 'Interaction with Surroundings' on the bachelor 'Robot Technology' of the 2024 class.
 
-## Images
-To be added...
-
 ## Dependencies
 The code in this repository was made using the following dependencies:
 
