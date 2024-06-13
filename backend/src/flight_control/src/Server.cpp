@@ -231,16 +231,15 @@ void Server::HandleConnection(int *state)
             	return;
             }
 			
-			// TODO: Convert these values back to floats when float read/write works again.
 			float kp = std::stof(msg.kp);
 			float ki = std::stof(msg.ki);
 			float kd = std::stof(msg.kd);
 			
-			std::cout << "Net kp: " << std::to_string(/*msg.*/kp) << std::endl;
-			std::cout << "Net ki: " << std::to_string(/*msg.*/ki) << std::endl;
-			std::cout << "Net kd: " << std::to_string(/*msg.*/kd) << std::endl;
+			std::cout << "Net kp: " << std::to_string(kp) << std::endl;
+			std::cout << "Net ki: " << std::to_string(ki) << std::endl;
+			std::cout << "Net kd: " << std::to_string(kd) << std::endl;
 	
-            _drone->setPIDValues(/*msg.*/kp, /*msg.*/ki, /*msg.*/kd, msg.flag);
+            _drone->setPIDValues(kp, ki, kd, msg.flag);
             break;
         }
         case SET_RPYTFF_MSG: {
@@ -250,16 +249,16 @@ void Server::HandleConnection(int *state)
             // Open or create file at ~/. (linux)
             _csvFile->open(msg.fileName);
 
-            // TODO: Convert these values back to floats when float read/write works again.
             // Set target values in degrees
             _drone->setTargetValues(std::stof(msg.roll), 
-                                    std::stof(msg.pitch), 
-                                    std::stof(msg.thrust), 
-                                    std::stof(msg.yaw), 
-                                    msg.flag);
-			
+                std::stof(msg.pitch), 
+                std::stof(msg.thrust), 
+                std::stof(msg.yaw), 
+                msg.flag
+            );	
 			std::cout << "filename: " << msg.fileName << std::endl;
 			std::cout << "Init csv" << "\n";
+            
             // Update state
             *state = START_TEST_STATE;
             break;

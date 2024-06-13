@@ -483,7 +483,6 @@ int main(int argc, char** argv)
         	server.HandleConnection(&state);
         	
 			// Instantiate and send the update message.
-        	// TODO: Why 5??
         	if (imuReady(imuSample, 20)) {
 				UpdateMessage updMsg;
         		updMsg.roll = 1.2; //rpy.roll;
@@ -499,7 +498,6 @@ int main(int argc, char** argv)
 				
         	}
     	}
-		// TODO: Implement finite state machine here.
 		updateState();
 		
 		// Update properties and restart the loop.
