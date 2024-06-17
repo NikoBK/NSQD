@@ -189,7 +189,6 @@ void Server::HandleConnection(int *state)
             if (result == 0) {
                 SendError("<drone::request_permission>: Failed to call sdk authority service");
             }
-            //SendError("wut da fuk");
             break;
         }
         case ARM_MSG: {
@@ -267,9 +266,7 @@ void Server::HandleConnection(int *state)
             *state = STOP_TEST_STATE;
             break;
         }
-        case SET_HOVERHEIGHT_MSG: {
-        	// TODO: Thor do some magic :)
-        	
+        case SET_HOVERHEIGHT_MSG: {    	
         	SetHoverHeightMessage msg;
             msg.decode(decoder);
             
