@@ -21,7 +21,7 @@ default_params = {"epochs": 100,
                   }
 
 #Opens file with different hyperparameter iterations
-with open("hyperparam_tuning\optimizer.json", "r") as f:
+with open("utils\YOLO\HyperparamSettings\optimizer.json", "r") as f:
     data = yaml.load(f, Loader=yaml.FullLoader)
 
 
@@ -35,9 +35,9 @@ if __name__ == '__main__':
             params[param] = config[param]
 
 
-        model = YOLO("yolov8n.pt")
+        model = YOLO("utils\YOLO\yolov8n.pt")
 
-        results = model.train(data="config.yaml", 
+        results = model.train(data="utils\YOLO\config.yaml", 
                               epochs = params["epochs"],
                               batch = params["batch"],
                               optimizer = params["optimizer"],

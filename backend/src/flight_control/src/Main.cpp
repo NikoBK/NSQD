@@ -77,24 +77,25 @@ void csvWritePathLog(ros::Time begin, int sampleRate)
 		// Get the time difference between now and begin
 		ros::Duration timeDiff = ros::Time::now() - begin;
 		
+		
 		// write to file
   		csvFile << timeDiff 
   		<< " , " << rpy.roll 
   		<< " , " << rpy.pitch 
   		<< " , " << rpy.yaw 
-  		<< " , " << gps_data.latitude 
-  		<< " , " << gps_data.longitude 
+  		<< " , " << std::fixed << std::setprecision(7) << gps_data.latitude 
+  		<< " , " << std::fixed << std::setprecision(7) << gps_data.longitude 
   		<< " , " << gps_data.altitude 
   		<< " , " << thrust
         << " , " << targetRPY.roll 
         << " , " << targetRPY.pitch 
         << " , " << targetRPY.yaw 
-        << " , " << targetGPSData.latitude 
-        << " , " << targetGPSData.longitude 
+        << " , " << std::fixed << std::setprecision(7) << targetGPSData.latitude 
+        << " , " << std::fixed << std::setprecision(7) << targetGPSData.longitude 
         << " , " << targetGPSData.altitude 
         << " , " << targetThrust
-        << " , " << errorData.errorLat 
-        << " , " << errorData.errorLon 
+        << " , " << std::fixed << std::setprecision(7) << errorData.errorLat 
+        << " , " << std::fixed << std::setprecision(7) << errorData.errorLon 
         << " , " << errorData.errorAlt 
         << " , " << errorData.errorYaw 
         << "\n";

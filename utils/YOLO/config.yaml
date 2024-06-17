@@ -2,7 +2,7 @@
 #Path is set the seteings file located at
 #C:\Users\Thor9\AppData\Roaming\Ultralytics\settings.yaml
 
-path: C:\Users\Thor9\OneDrive - Aalborg Universitet\Dokumenter\AAU\Projektarbejde\p4\P4 - Projektmappe\YOLO_test\data
+path: utils\YOLO\data 
 train: images\train
 val: images\val
 test: images\test

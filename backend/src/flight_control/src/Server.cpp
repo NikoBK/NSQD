@@ -312,7 +312,7 @@ void Server::HandleConnection(int *state)
         	
         	const char* xmldata = xmlContent.c_str();  
         	float desiredVel = 2.5;
-        	float accGain = 1.2;
+        	float accGain = 1;
             float alti = 10;
         	float updateHz = 50;
         	
